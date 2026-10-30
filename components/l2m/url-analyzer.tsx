@@ -101,7 +101,7 @@ export function UrlAnalyzer({
             ))}
           </ol>
           <div className="flex flex-wrap items-center gap-3">
-            <Link href="/start/rebuild" className="inline-flex min-h-11 items-center gap-2 rounded-md bg-lime px-4 font-semibold text-ink">
+            <Link href="/start/rebuild" onClick={() => { try { sessionStorage.setItem('vf:rebuild-url', result.normalized) } catch {} }} className="inline-flex min-h-11 items-center gap-2 rounded-md bg-lime px-4 font-semibold text-ink">
               {lang === 'zh' ? '提交真实 Rebuild 项目需求' : 'Send a real Rebuild inquiry'}
               <ArrowRight className="size-4" aria-hidden="true"/>
             </Link>
@@ -143,7 +143,7 @@ export function UrlAnalyzer({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Link href="/start/rebuild" className="inline-flex min-h-11 items-center gap-2 rounded-md bg-lime px-4 font-semibold text-ink">
+          <Link href="/start/rebuild" onClick={() => { try { sessionStorage.setItem('vf:rebuild-url', result.normalized) } catch {} }} className="inline-flex min-h-11 items-center gap-2 rounded-md bg-lime px-4 font-semibold text-ink">
             {lang === 'zh' ? '提交真实改造需求' : 'Send a real project inquiry'}
             <ArrowRight className="size-4" aria-hidden="true"/>
           </Link>

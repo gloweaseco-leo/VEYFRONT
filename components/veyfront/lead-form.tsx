@@ -24,6 +24,15 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
   const [error, setError] = useState('')
 
   useEffect(() => { if (defaultWebsite) setWebsite(defaultWebsite) }, [defaultWebsite])
+  useEffect(() => {
+    if (service !== 'rebuild') return
+    try {
+      const saved = sessionStorage.getItem('vf:rebuild-url')
+      if (saved && checkUrl(saved).state === 'valid') setWebsite(saved)
+      sessionStorage.removeItem('vf:rebuild-url')
+    } catch { /* Session storage is optional; the form remains usable. */ }
+  }, [service])
+
 
   const field = 'min-h-12 w-full rounded-md border border-ink/25 bg-white px-4 text-ink outline-offset-2 focus-visible:outline-2 focus-visible:outline-ink'
   const requiresWebsite = service === 'rebuild'

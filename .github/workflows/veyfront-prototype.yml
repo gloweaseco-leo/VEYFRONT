@@ -2,7 +2,7 @@ name: VEYFRONT prototype checks
 on:
   pull_request:
   push:
-    branches: [feature/veyfront-brand-v1]
+    branches: [feature/veyfront-brand-v1, feature/veyfront-commercial-closure-v1]
 permissions:
   contents: read
 jobs:
@@ -17,6 +17,8 @@ jobs:
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm check:demo
+      - run: pnpm check:commercial
+      - run: pnpm check:brand
       - run: node scripts/check-veyfront-brand.mjs
       - run: pnpm exec tsc --noEmit
       - run: pnpm build
