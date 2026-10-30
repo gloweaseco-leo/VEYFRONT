@@ -13,9 +13,9 @@ import { Proof } from '@/components/home/proof'
 import { Invitation, SiteFooter } from '@/components/home/invitation'
 
 export const metadata: Metadata = {
-  title: 'Legacy2Modern — Make your existing website work better for your customers',
+  title: 'VEYFRONT — Building Digital Frontiers for Global Business',
   description:
-    'Start from the website you already have. Upgrade its visual design, content structure and customer actions. Design prototype — not a production website.',
+    'Build or rebuild a B2B website that helps global buyers discover, evaluate and contact your business. Design prototype only.',
   robots: { index: false, follow: false },
 }
 

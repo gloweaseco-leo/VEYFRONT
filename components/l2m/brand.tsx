@@ -4,22 +4,8 @@ import { useLang, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 export function Logo({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
-  return (
-    <span className="flex items-center gap-2.5">
-      <span
-        aria-hidden="true"
-        className={cn(
-          'flex h-7 items-center rounded-sm px-1.5 font-mono text-xs font-bold tracking-tight',
-          tone === 'dark' ? 'bg-lime text-ink' : 'bg-ink text-lime',
-        )}
-      >
-        L2M
-      </span>
-      <span className={cn('text-[15px] font-semibold tracking-tight', tone === 'dark' ? 'text-ivory' : 'text-ink')}>
-        Legacy2Modern
-      </span>
-    </span>
-  )
+  // Temporary text fallback. Use the approved VEYFRONT 1.0 SVG assets once supplied.
+  return <span className={cn('inline-flex items-center text-[18px] font-bold tracking-[0.13em] sm:text-[21px]', tone === 'dark' ? 'text-ivory' : 'text-ink')}>VEYFRONT</span>
 }
 
 export function LangToggle({ tone = 'light' }: { tone?: 'light' | 'dark' }) {

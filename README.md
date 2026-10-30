@@ -1,32 +1,46 @@
-# Legacy2Modern Website — Design Handoff
+# VEYFRONT — Building Digital Frontiers for Global Business
 
-This repository is for **the standalone commercial website of Legacy2Modern (L2M)**, not the L2M website-generation engine itself.
+**Source-of-truth repository:** `gloweaseco-leo/VEYFRONT` (private).
+**Commercial website baseline:** VEYFRONT Visual Identity 1.0 + the inherited L2M Website V1.2 client-journey prototype.
+**Status:** Brand conversion in development, **NOT** approved for public production launch.
 
-**Approved commercial baseline:** L2M Website V1.2  
-**Current work:** v0 high-fidelity design exploration  
-**Production readiness:** NOT APPROVED; demo UI ≠ live product capability
+## Site routes
 
-## Start here
+- `/` — eight-section homepage, with Website Launch and Website Rebuild entry points.
+- `/services` — Launch, Rebuild and future Grow service descriptions.
+- `/start/launch` — local, copyable project brief; **nothing is submitted**.
+- `/start/rebuild` — URL-format-only demo; **no website fetch or AI analysis**.
+- `/transformations` — fictional Hartwell Before/After comparison.
+- `/how-it-works` — Rebuild journey prototype.
+- `/pricing` — sample-only Rebuild pricing interface, not a real quote.
+- `/review/stage-1`, `/a`, `/b` — historic design review routes.
 
-1. **[Full design brief V1.0](docs/L2M_WEB_V0_HIGH_FIDELITY_DESIGN_BRIEF_V1.0.md)** — canonical product/visual/interaction requirements, eight-section homepage, product journey, truthful claims, acceptance gates.
-2. **[v0 Phase 1 prompt](docs/V0_PHASE_1_PROMPT.md)** — the only authorized first-round task: create two visual directions for the hero + flagship Before/After demo, desktop and mobile.
+**VEYFRONT** is the commercial brand. **L2M** is the underlying website-reconstruction engine, not the public brand or a full enterprise internal platform. Website hosting is optional.
 
-## Design workflow
+## Development
 
-- **Phase 1 (now):** compare A Editorial Product and B Interactive Product. Stop for owner review.
-- **Phase 2:** complete eight homepage sections after visual direction approval.
-- **Phase 3:** public supporting pages.
-- **Phase 4:** prototype self-serve product journey (URL → diagnosis → plan → purchase → review → delivery).
-- **Phase 5:** independent review, then handoff to Codex for actual engineering.
+```bash
+corepack enable
+pnpm install --frozen-lockfile
+pnpm check:demo
+node scripts/check-veyfront-brand.mjs
+pnpm exec tsc --noEmit
+pnpm build
+pnpm dev
+```
 
-## Non-negotiable boundaries
+The production build and browser tests have not yet been demonstrated for this brand branch. See `docs/VEYFRONT_BRAND_IMPLEMENTATION_V1.md` for evidence and release blockers.
 
-- Primary CTA: **Analyze My Website / 分析我的网站**.
-- The value is website transformation: visual design, information architecture, customer-facing commercial interaction, reliable delivery.
-- Hosting is optional and secondary; it must not become the selling point or required purchase.
-- Do not fabricate customer cases, outcomes, testimonials, prices or verified product capabilities.
-- Explicitly label fake data, website samples, diagnostic reports and payments as **DEMO / SAMPLE**.
-- Do not connect real payment, authentication, scraping, deployment or AI generation services in a design-only phase.
-- Do not expand the first v0 task to a whole website or change the approved commercial baseline.
+## Brand assets
 
-**Note:** This repository was empty when the initial brief was added. Documentation commits do not authorize an implementation, domain configuration, or production launch.
+Frozen brand colors: Ink `#17262D`, Ivory `#F7F7F2`, Lime `#B8F06B`, Mist `#D9E5E4`.
+
+**The original, approved Open V/VEYFRONT SVGs have not been uploaded to this repository.** The logo is a text-only placeholder. Do not generate an imitation. See `public/brand/README.md`.
+
+## Product truth and ownership
+
+All Hartwell case screens are fictional, hand-built demonstrations **not produced by the L2M engine**. Pricing is SAMPLE-only. No actual login, diagnosis, payment or lead intake service is connected. Website source handover requires compatible hosting and service dependency configuration.
+
+Original source snapshot: `chatgpters6/L2M-Web2` branch `stage-3-visual-final` at `25ca2ef0454228182f65f8912eb326c85ea551fa`. The missing historical screenshot is non-blocking. The user-provided demo valve image remains to be committed to `public/demo/valve.png`; until then the demo renders a SHA-pinned copy from the public source repository.
+
+The original design brief and Stage 1/2 audit artifacts remain under `docs/` as history.

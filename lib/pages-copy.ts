@@ -121,7 +121,7 @@ const en = {
       {
         key: 'deliver',
         name: 'Deliver',
-        title: 'Yours to run anywhere.',
+        title: 'Built to hand over.',
         summary: 'You receive the complete source code. Launch assistance is a one-time service with an agreed scope. Hosting with L2M is optional, never required.',
         you: ['Receive the complete source code and assets', 'Choose where to host the website'],
         l2m: ['Hands over source code, assets and setup notes', 'Provides one-time launch assistance within the agreed scope'],
@@ -168,11 +168,11 @@ const en = {
       },
     },
     boundaryEyebrow: 'Boundaries',
-    boundaryTitle: 'What L2M does not do.',
+    boundaryTitle: 'What VEYFRONT does not do.',
     boundaries: [
       ['Modify your current website', 'The diagnosis only reads public pages.'],
       ['Connect to ERP, CRM or internal systems', 'L2M upgrades your public website, not internal software.'],
-      ['Require hosting with L2M', 'The delivered website runs anywhere you choose.'],
+      ['Require hosting with L2M', 'The agreed website source can be deployed to a compatible host; external services require their own configuration.'],
       ['Publish your project without permission', 'Cases are shown only with written authorization.'],
     ] as [string, string][],
     ctaTitle: 'Start with phase one.',
@@ -226,7 +226,7 @@ const en = {
         name: 'Independent delivery',
         status: 'Included · Base choice',
         body: 'You receive the complete source code and run the website with any host you choose.',
-        points: ['Source code and assets', 'Setup notes', 'No dependency on L2M'],
+        points: ['Source code and assets', 'Setup notes', 'Not tied to VEYFRONT hosting'],
         tier: 'base',
       },
       {
@@ -239,7 +239,7 @@ const en = {
       {
         name: 'Managed hosting',
         status: 'Optional · After delivery',
-        body: 'Ongoing hosting can be added later. Your website works without it, and you keep the source code either way.',
+        body: 'Ongoing hosting can be added later. The site may be deployed independently in a compatible environment, with separately configured services.',
         points: ['Never required', 'Does not affect ownership'],
         tier: 'later',
       },
@@ -258,7 +258,7 @@ const en = {
     faq: [
       ['When will I know the price?', 'After the diagnosis, on the scope sheet — before any payment.'],
       ['What if my website needs something the product does not support?', 'It is identified before payment and listed as outside the scope. It is never added to the bill afterwards.'],
-      ['Do I need to host with L2M?', 'No. Independent delivery is the base choice. Managed hosting is an optional service you can add later.'],
+      ['Do I need VEYFRONT hosting?', 'No. Independent delivery is the standard option for compatible environments; managed hosting may be offered separately.'],
       ['Is launch assistance included?', 'It is a separate, one-time service. Its scope is stated before you decide.'],
     ] as [string, string][],
     ctaTitle: 'Your price starts with a diagnosis.',
@@ -367,7 +367,7 @@ const zh: PagesCopy = {
       {
         key: 'deliver',
         name: '交付',
-        title: '交付后，你可以在任何地方运行。',
+        title: '交付后，可在兼容环境独立部署。',
         summary: '你将获得完整源码。上线协助是一次性服务，按约定范围提供。L2M 托管可选，从不强制。',
         you: ['获得完整源码与素材', '自行选择网站托管位置'],
         l2m: ['移交源码、素材与部署说明', '在约定范围内提供一次性上线协助'],
@@ -418,7 +418,7 @@ const zh: PagesCopy = {
     boundaries: [
       ['修改你现有的网站', '诊断只读取公开页面。'],
       ['接入 ERP、CRM 或内部系统', 'L2M 升级的是你的公开网站，而不是内部软件。'],
-      ['强制使用 L2M 托管', '交付的网站可以运行在你选择的任何地方。'],
+      ['强制使用 L2M 托管', '约定范围内的网站源码可部署到兼容环境；外部服务需按实际依赖配置。'],
       ['未经许可公开你的项目', '只有获得书面授权才会展示案例。'],
     ],
     ctaTitle: '从第一阶段开始。',
@@ -472,7 +472,7 @@ const zh: PagesCopy = {
         name: '独立交付',
         status: '包含 · 基础选择',
         body: '你将获得完整源码，可以使用任何你选择的托管服务运行网站。',
-        points: ['源码与素材', '部署说明', '不依赖 L2M'],
+        points: ['源码与素材', '部署说明', '不强制 VEYFRONT 托管'],
         tier: 'base',
       },
       {
@@ -485,7 +485,7 @@ const zh: PagesCopy = {
       {
         name: '托管服务',
         status: '可选 · 交付之后',
-        body: '可在之后添加长期托管。没有托管，网站同样可以使用；无论是否托管，源码都归你所有。',
+        body: '可在之后添加长期托管。可选择在兼容环境自行部署，动态服务需另行配置；交付源码的权利按合同约定。',
         points: ['从不强制', '不影响网站所有权'],
         tier: 'later',
       },
@@ -498,7 +498,7 @@ const zh: PagesCopy = {
     faq: [
       ['什么时候知道价格？', '诊断之后，在范围清单上 — 在任何付款之前。'],
       ['如果我的网站需要产品不支持的功能怎么办？', '会在付款前识别并标记为超出范围，不会在事后追加费用。'],
-      ['必须使用 L2M 托管吗？', '不需要。独立交付是基础选择，托管是可以之后添加的可选服务。'],
+      ['必须使用 VEYFRONT 托管吗？', '不需要。兼容环境中的独立交付是基础选择；托管如有提供，也属于可选服务。'],
       ['上线协助是否包含在内？', '它是单独的一次性服务，范围会在你决定之前说明。'],
     ],
     ctaTitle: '你的价格，从一次诊断开始。',

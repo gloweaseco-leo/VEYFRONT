@@ -102,3 +102,11 @@
     }
   }
 }
+
+/* VEYFRONT Visual Identity 1.0 — supplementary visual primitives, not the official logo. */
+.vf-lines { position:relative; isolation:isolate; overflow:hidden }
+.vf-lines::after { content:''; position:absolute; z-index:-1; right:-8%; top:10%; width:45%; height:85%; pointer-events:none; opacity:.15; background:repeating-linear-gradient(125deg,transparent 0 24px,#B8F06B 25px 26px,transparent 27px 47px); mask-image:linear-gradient(to left,#000,transparent) }
+.vf-open-frame { position:relative; isolation:isolate }
+.vf-open-frame::after { content:''; pointer-events:none; position:absolute; inset:13px; border:1px solid rgba(23,38,45,.16); clip-path:polygon(0 0,30% 0,30% 5px,70% 5px,70% 0,100% 0,100% 100%,0 100%); border-radius:4px }
+.vf-evidence { border-top:2px solid var(--ink); display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; padding-block:1rem }
+@media(prefers-reduced-motion:reduce){ .vf-lines::after { transition:none; animation:none } }

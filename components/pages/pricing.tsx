@@ -221,7 +221,7 @@ function Estimator() {
               </span>
               <span className="flex items-baseline gap-2" aria-live="polite">
                 <span className="font-mono text-xs text-lime">{p.common.sample}</span>
-                <span className="font-mono text-3xl font-semibold tabular-nums">{fmt(total)}</span>
+                <span className="font-mono text-3xl font-semibold tabular-nums">{complex.length > 0 ? '—' : fmt(total)}</span>
               </span>
             </div>
             <p className="border-t border-ivory/15 bg-lime/10 px-5 py-3 text-xs leading-relaxed text-ivory/80">

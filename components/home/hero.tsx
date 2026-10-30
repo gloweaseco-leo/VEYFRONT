@@ -1,6 +1,7 @@
 'use client'
 
-import { ArrowDown } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowDown, ArrowUpRight, Globe2, RefreshCw } from 'lucide-react'
 import { UrlAnalyzer } from '@/components/l2m/url-analyzer'
 import { DemoViewport } from '@/components/l2m/demo-viewport'
 import { Segmented } from '@/components/l2m/brand'
@@ -30,7 +31,20 @@ export function Hero() {
             {t.hero.headline}
           </h1>
           <p className="text-pretty leading-relaxed text-ivory/75 lg:text-lg">{t.hero.subtitle}</p>
-          <UrlAnalyzer tone="dark" inputId={HERO_INPUT_ID} size="lg" sampleReportHref="#report" />
+          <div className="grid gap-3 sm:grid-cols-2" aria-label={lang === 'zh' ? '选择网站服务' : 'Choose your website service'}>
+            <Link href="/start/launch" className="group flex min-h-28 flex-col justify-between rounded-lg bg-lime p-4 text-ink transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-lime">
+              <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-widest"><Globe2 className="size-4" /> Launch <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5" /></span>
+              <span className="text-lg font-semibold">{lang === 'zh' ? '建立新网站' : 'Build a new website'}</span>
+            </Link>
+            <Link href="/start/rebuild" className="group flex min-h-28 flex-col justify-between rounded-lg border border-ivory/40 p-4 text-ivory transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-lime">
+              <span className="flex items-center justify-between text-xs font-semibold uppercase tracking-widest"><RefreshCw className="size-4" /> Rebuild <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5" /></span>
+              <span className="text-lg font-semibold">{lang === 'zh' ? '重构已有网站' : 'Transform an existing website'}</span>
+            </Link>
+          </div>
+          <div className="border-l-2 border-lime/70 pl-4">
+            <p className="mb-3 font-mono text-xs uppercase tracking-wider text-ivory/70">{lang === 'zh' ? '已有网站？体验 Rebuild 的网址诊断入口（原型）' : 'Already have a site? Try the Rebuild URL entry (prototype)'}</p>
+            <UrlAnalyzer tone="dark" inputId={HERO_INPUT_ID} size="lg" sampleReportHref="#report" />
+          </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
             <a
               href="#transformation"

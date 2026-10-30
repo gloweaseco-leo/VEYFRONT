@@ -76,7 +76,7 @@ export const DEMO_PRODUCT = {
     en: 'Full-bore 316 stainless ball valve for corrosive process media.',
     zh: '用于腐蚀性工艺介质的 316 不锈钢全通径球阀。',
   } as Text,
-  image: '/demo/valve.png',
+  image: 'https://raw.githubusercontent.com/chatgpters6/L2M-Web2/25ca2ef0454228182f65f8912eb326c85ea551fa/public/demo/valve.png',
   imageAlt: { en: 'Stainless steel ball valve (demo product image)', zh: '不锈钢球阀（演示产品图）' } as Text,
   specs: [
     { key: 'size', label: { en: 'Size range', zh: '通径范围' }, value: { en: 'DN15 – DN100', zh: 'DN15 – DN100' } },

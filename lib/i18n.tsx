@@ -14,19 +14,20 @@ export type HotspotCopy = {
 
 const en = {
   nav: {
+    services: 'Services',
     transformations: 'Transformations',
     howItWorks: 'How It Works',
     pricing: 'Pricing',
     signIn: 'Sign In',
-    analyze: 'Analyze My Website',
+    analyze: 'Start a Project',
     navLabel: 'Primary',
     navDemo: 'Navigation is a visual placeholder in this design round.',
   },
   hero: {
-    brandLine: 'Beyond Redesign.',
-    headline: 'Make your existing website work better for your customers.',
+    brandLine: 'VEYFRONT / BEYOND REDESIGN',
+    headline: 'Building Digital Frontiers for Global Business.',
     subtitle:
-      'Start from the website you already have. Upgrade its visual design, content structure and the path your customers take to act. See what is worth upgrading first — then decide what comes next.',
+      'Launch a credible new B2B website or transform the one you already have. Help global buyers understand, trust and contact your business.',
     ctaPrimary: 'Analyze My Website',
     ctaSecondary: 'See a Transformation',
     boundary: ['Diagnosis starts after sign-up', 'Your current website is never modified'],
@@ -131,18 +132,19 @@ export type Dict = typeof en
 
 const zh: Dict = {
   nav: {
+    services: '服务',
     transformations: '改造作品',
     howItWorks: '工作方式',
     pricing: '价格与交付',
     signIn: '登录',
-    analyze: '分析我的网站',
+    analyze: '开始项目',
     navLabel: '主导航',
     navDemo: '本轮设计中导航仅为视觉占位。',
   },
   hero: {
-    brandLine: 'Beyond Redesign.',
-    headline: '让现有网站，成为更有说服力的客户入口。',
-    subtitle: '从现有网站出发，升级视觉设计、内容结构与客户行动路径。先了解哪里值得升级，再决定下一步。',
+    brandLine: 'VEYFRONT / BEYOND REDESIGN',
+    headline: '让企业网站，成为连接全球客户的可信商业入口。',
+    subtitle: '从零建立专业 B2B 网站，或重构已有网站。让全球买家更容易理解、信任并联系你的企业。',
     ctaPrimary: '分析我的网站',
     ctaSecondary: '查看改造演示',
     boundary: ['注册后开始诊断', '不会修改现有网站'],

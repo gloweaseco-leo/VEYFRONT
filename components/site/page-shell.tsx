@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 import { ArrowRight, Info } from 'lucide-react'
 import { ProtoBar } from '@/components/home/proto-bar'
 import { SiteFooter } from '@/components/home/invitation'
-import { HOME_INPUT_ID, SiteHeader } from '@/components/l2m/site-header'
+import { SiteHeader } from '@/components/l2m/site-header'
 import { useLang } from '@/lib/i18n'
 import { pagesCopy } from '@/lib/pages-copy'
 import { cn } from '@/lib/utils'
@@ -88,7 +88,7 @@ export function PageCta({ title, body, secondary }: { title: string; body: strin
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
-            href={`/#${HOME_INPUT_ID}`}
+            href="/services"
             className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-lime px-6 font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
           >
             {p.common.analyze}

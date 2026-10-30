@@ -32,6 +32,7 @@ export function ReviewBar({ direction }: { direction: 'A' | 'B' }) {
 export function useSiteLinks() {
   const { t } = useLang()
   return [
+    { label: t.nav.services, href: '/services' },
     { label: t.nav.transformations, href: '/transformations' },
     { label: t.nav.howItWorks, href: '/how-it-works' },
     { label: t.nav.pricing, href: '/pricing' },
@@ -61,20 +62,15 @@ export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark
     dark ? 'bg-lime text-ink focus-visible:outline-lime' : 'bg-ink text-ivory focus-visible:outline-ink',
   )
 
-  const analyze = inputId ? (
-    <button type="button" onClick={() => focusHeroInput(inputId)} className={cn(ctaCls, 'hidden sm:inline-flex')}>
-      {t.nav.analyze}
-    </button>
-  ) : (
-    <Link href={`/#${HOME_INPUT_ID}`} className={cn(ctaCls, 'hidden sm:inline-flex')}>
-      {t.nav.analyze}
-    </Link>
+  void inputId // kept for compatibility with the existing homepage
+  const analyze = (
+    <Link href="/services" className={cn(ctaCls, 'hidden sm:inline-flex')}>{t.nav.analyze}</Link>
   )
 
   return (
     <header className={cn('relative', dark ? 'bg-ink text-ivory' : 'border-b border-ink/10 bg-ivory text-ink')}>
       <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-5 py-4 md:px-10">
-        <Link href="/" aria-label="Legacy2Modern — Home" className="inline-flex min-h-11 items-center focus-visible:outline-2 focus-visible:outline-offset-4">
+        <Link href="/" aria-label="VEYFRONT — Home" className="inline-flex min-h-11 items-center focus-visible:outline-2 focus-visible:outline-offset-4">
           <Logo tone={tone} />
         </Link>
         <nav aria-label={t.nav.navLabel} className="hidden items-center gap-8 text-sm font-medium lg:flex">
@@ -114,7 +110,7 @@ export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark
       </div>
       {open && (
         <nav id={menuId} aria-label={t.nav.navLabel} className={cn('flex flex-col border-t px-5 pb-4 lg:hidden', dark ? 'border-ivory/15' : 'border-ink/10')}>
-          {[{ label: 'Legacy2Modern', href: '/' }, ...links].map((l) => {
+          {[{ label: 'VEYFRONT', href: '/' }, ...links].map((l) => {
             const active = pathname === l.href
             return (
               <Link
@@ -133,26 +129,10 @@ export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark
               </Link>
             )
           })}
-          {inputId ? (
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false)
-                focusHeroInput(inputId)
-              }}
-              className={cn('mt-4 inline-flex min-h-12 items-center justify-center rounded-md font-semibold', dark ? 'bg-lime text-ink' : 'bg-ink text-ivory')}
-            >
-              {t.nav.analyze}
-            </button>
-          ) : (
-            <Link
-              href={`/#${HOME_INPUT_ID}`}
-              onClick={() => setOpen(false)}
-              className={cn('mt-4 inline-flex min-h-12 items-center justify-center rounded-md font-semibold', dark ? 'bg-lime text-ink' : 'bg-ink text-ivory')}
-            >
-              {t.nav.analyze}
-            </Link>
-          )}
+          <Link href="/services" onClick={() => setOpen(false)}
+            className={cn('mt-4 inline-flex min-h-12 items-center justify-center rounded-md font-semibold', dark ? 'bg-lime text-ink' : 'bg-ink text-ivory')}>
+            {t.nav.analyze}
+          </Link>
         </nav>
       )}
     </header>

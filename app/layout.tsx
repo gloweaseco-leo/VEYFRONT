@@ -16,9 +16,9 @@ const notoSC = Noto_Sans_SC({
 })
 
 export const metadata: Metadata = {
-  title: 'Legacy2Modern — Design prototype',
+  title: 'VEYFRONT — Building Digital Frontiers for Global Business (prototype)',
   description:
-    'Design prototype of the Legacy2Modern website: homepage, Transformations, How It Works and Pricing. DEMO only — not a production website.',
+    'VEYFRONT brand-site prototype for B2B Website Launch and Rebuild. No live lead submission, AI analysis, sign-up or payment is connected.',
   generator: 'v0.app',
   robots: { index: false, follow: false },
 }
