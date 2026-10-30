@@ -1,9 +1,14 @@
-# VEYFRONT Visual 1.0 brand assets — not yet imported
+# VEYFRONT Visual Identity V1.0 — Official Assets
 
-The previously approved Open V symbol and VEYFRONT wordmark must be taken **unchanged** from the frozen 1.0 asset package.
+The following three source files were copied byte-for-byte from the supplied master:
+- `logo_primary_dark.svg`: Warm Ivory lockup on Deep Ink background
+- `logo_primary_light.svg`: Deep Ink lockup on Warm Ivory background
+- `mark_color_transparent.svg`: standalone Open V mark, transparent
 
-This branch currently uses a text-only VEYFRONT wordmark, **not** an official logo recreation.
+Header and footer use the original lockup, without reconstruction.
 
-Expected originals: `logo_primary_dark.svg`, `logo_primary_light.svg`, `mark_color_transparent.svg`, `veyfront-design-tokens.css` and the brand guidelines. Verify background variants, safe area and contrast before replacing the temporary wordmark.
+The web favicon is the original mark SVG. Derived 16×16, 32×32, 180×180 (Apple) and 192×192 (Android) raster icons keep the exact source geometry, brand colors and a Warm Ivory background with safe area. For high-resolution vector-capable platforms the manifest also references the original scalable mark SVG.
 
-Do not invent or redraw the trademark, or declare final visual sign-off before official assets are available.
+The supplied tokens are preserved at `styles/veyfront-design-tokens.css`. Chinese usage guidelines are at `docs/brand/VEYFRONT_Brand_Guidelines_CN_V1.0.md`.
+
+Brand legal review remains outstanding per the supplied guidelines.

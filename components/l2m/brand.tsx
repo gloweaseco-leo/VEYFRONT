@@ -1,11 +1,23 @@
 'use client'
 
+import Image from 'next/image'
 import { useLang, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 export function Logo({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
-  // Temporary text fallback. Use the approved VEYFRONT 1.0 SVG assets once supplied.
-  return <span className={cn('inline-flex items-center text-[18px] font-bold tracking-[0.13em] sm:text-[21px]', tone === 'dark' ? 'text-ivory' : 'text-ink')}>VEYFRONT</span>
+  const src = tone === 'dark' ? '/brand/logo_primary_dark.svg' : '/brand/logo_primary_light.svg'
+  return (
+    <Image
+      src={src}
+      alt="VEYFRONT"
+      width={710}
+      height={140}
+      priority
+      unoptimized
+      className="block h-auto w-[168px] shrink-0 select-none sm:w-[180px] xl:w-[194px]"
+      draggable={false}
+    />
+  )
 }
 
 export function LangToggle({ tone = 'light' }: { tone?: 'light' | 'dark' }) {

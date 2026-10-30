@@ -24,6 +24,7 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm check:demo
 node scripts/check-veyfront-brand.mjs
+node scripts/check-brand-assets.mjs
 pnpm exec tsc --noEmit
 pnpm build
 pnpm dev
@@ -35,7 +36,7 @@ The production build and browser tests have not yet been demonstrated for this b
 
 Frozen brand colors: Ink `#17262D`, Ivory `#F7F7F2`, Lime `#B8F06B`, Mist `#D9E5E4`.
 
-**The original, approved Open V/VEYFRONT SVGs have not been uploaded to this repository.** The logo is a text-only placeholder. Do not generate an imitation. See `public/brand/README.md`.
+**Original VEYFRONT Visual V1.0 SVG lockups and Open V mark have been supplied and integrated without redrawing.** Header and footer use the exact source lockups; favicon and Apple/Android icons derive from the original mark. Brand tokens and Chinese guidelines are preserved in the repository. See `public/brand/README.md`. Trademark clearance remains separate.
 
 ## Product truth and ownership
 

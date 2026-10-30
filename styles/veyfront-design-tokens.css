@@ -1,0 +1,28 @@
+/* VEYFRONT Brand System V1.0 — proposal, pending brand approval */
+:root {
+  --vf-ink: #17262D;
+  --vf-ivory: #F7F7F2;
+  --vf-lime: #B8F06B;
+  --vf-mist: #D9E5E4;
+  --vf-slate: #60737A;
+  --vf-text: var(--vf-ink);
+  --vf-background: var(--vf-ivory);
+  --vf-surface: #FFFFFF;
+  --vf-border: #CBD7D3;
+  --vf-focus: var(--vf-ink);
+  --vf-font-display: 'Inter Display', 'Geist', Inter, sans-serif;
+  --vf-font-body: Inter, 'Geist', 'Noto Sans SC', sans-serif;
+  --vf-font-mono: 'Geist Mono', ui-monospace, monospace;
+  --vf-radius-sm: 6px;
+  --vf-radius-md: 10px;
+  --vf-radius-lg: 16px;
+  --vf-layout-max: 1360px;
+  --vf-space-1: 8px;
+  --vf-space-2: 16px;
+  --vf-space-3: 24px;
+  --vf-space-4: 32px;
+  --vf-space-5: 48px;
+  --vf-space-6: 64px;
+}
+/* Keep sample/client websites in their OWN palettes; do not overwrite with these tokens. */
+/* Always validate actual component foreground/background contrast against WCAG 2.2 AA. */

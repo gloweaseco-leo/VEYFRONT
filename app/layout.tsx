@@ -19,7 +19,17 @@ export const metadata: Metadata = {
   title: 'VEYFRONT — Building Digital Frontiers for Global Business (prototype)',
   description:
     'VEYFRONT brand-site prototype for B2B Website Launch and Rebuild. No live lead submission, AI analysis, sign-up or payment is connected.',
-  generator: 'v0.app',
+  applicationName: 'VEYFRONT',
+  manifest: '/site.webmanifest',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    shortcut: '/favicon.svg',
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
   robots: { index: false, follow: false },
 }
 
