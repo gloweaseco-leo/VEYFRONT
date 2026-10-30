@@ -45,7 +45,7 @@ export function PolicyPage({ kind }: { kind: 'privacy' | 'terms' }) {
  </div></section>
  <div className="mx-auto max-w-[1040px] space-y-8 px-5 py-14 md:px-10 lg:py-20">
    {sections.map(([heading,body])=><section key={heading} className="border-b border-ink/15 pb-7"><h2 className="text-xl font-semibold">{heading}</h2><p className="mt-3 max-w-3xl leading-relaxed text-ink/75">{body}</p></section>)}
-   <p className="text-sm text-ink/75">{zh?'需要进一步沟通？':'Need to reach us?'} <Link href="/contact" className="font-semibold underline underline-offset-4">{zh?'联系 VEYFRONT':'Contact VEYFRONT'}</Link>.</p>
+   <p className="text-sm text-ink/75">{zh?'需要进一步沟通？':'Need to reach us?'} <Link href={privacy ? "/contact/privacy" : "/contact"} className="font-semibold underline underline-offset-4">{zh?'联系 VEYFRONT':'Contact VEYFRONT'}</Link>.</p>
  </div>
  </PageShell>
 }

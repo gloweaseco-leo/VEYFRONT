@@ -7,7 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "check:demo": "node scripts/check-demo-facts.mjs"
+    "check:demo": "node scripts/check-demo-facts.mjs",
+    "check:commercial": "node scripts/check-commercial-intake.mjs",
+    "check:brand": "node scripts/check-brand-assets.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
