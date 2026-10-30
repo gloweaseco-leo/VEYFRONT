@@ -1,0 +1,104 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: 'Geist', 'Geist Fallback', var(--font-noto-sc), 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback', ui-monospace, var(--font-noto-sc), monospace;
+
+  /* L2M brand palette */
+  --color-ink: var(--ink);
+  --color-ivory: var(--ivory);
+  --color-lime: var(--lime);
+  --color-mist: var(--mist);
+
+  /* Fictional DEMO sample-site media palettes (not part of the L2M brand) */
+  --color-site-bg: #ffffff;
+  --color-site-ink: #13212e;
+  --color-site-soft: #eef2f6;
+  --color-site-line: #d7dee6;
+  --color-site-brand: #1f4e79;
+  --color-legacy-bg: #e9e9e9;
+  --color-legacy-link: #1a3ea8;
+  --color-legacy-bar: #3a5fa0;
+  --color-legacy-line: #b9b9b9;
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  color-scheme: light;
+  --ink: #17262d;
+  --ivory: #f7f7f2;
+  --lime: #b8f06b;
+  --mist: #d9e5e4;
+
+  --background: var(--ivory);
+  --foreground: var(--ink);
+  --card: var(--ivory);
+  --card-foreground: var(--ink);
+  --popover: var(--ivory);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--ivory);
+  --secondary: var(--mist);
+  --secondary-foreground: var(--ink);
+  --muted: var(--mist);
+  --muted-foreground: color-mix(in oklab, var(--ink) 72%, var(--ivory));
+  --accent: var(--lime);
+  --accent-foreground: var(--ink);
+  --destructive: #b42318;
+  --border: color-mix(in oklab, var(--ink) 16%, transparent);
+  --input: color-mix(in oklab, var(--ink) 28%, transparent);
+  --ring: var(--ink);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
