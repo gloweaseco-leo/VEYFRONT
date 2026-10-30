@@ -1,6 +1,7 @@
 'use client'
 
 import { useId, type FormEvent } from 'react'
+import Link from 'next/link'
 import { ArrowLeft, ArrowRight, Check, CircleAlert, Pencil } from 'lucide-react'
 import { checkUrl } from '@/lib/url'
 import { useLang } from '@/lib/i18n'
@@ -22,7 +23,7 @@ export function UrlAnalyzer({
   size?: 'md' | 'lg'
   sampleReportHref?: string
 }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const generatedId = useId()
   const id = inputId ?? generatedId
   const messageId = `${id}-message`
@@ -100,6 +101,10 @@ export function UrlAnalyzer({
             ))}
           </ol>
           <div className="flex flex-wrap items-center gap-3">
+            <Link href="/start/rebuild" className="inline-flex min-h-11 items-center gap-2 rounded-md bg-lime px-4 font-semibold text-ink">
+              {lang === 'zh' ? '提交真实 Rebuild 项目需求' : 'Send a real Rebuild inquiry'}
+              <ArrowRight className="size-4" aria-hidden="true"/>
+            </Link>
             {sampleReportHref && (
               <a
                 href={sampleReportHref}
@@ -138,6 +143,10 @@ export function UrlAnalyzer({
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <Link href="/start/rebuild" className="inline-flex min-h-11 items-center gap-2 rounded-md bg-lime px-4 font-semibold text-ink">
+            {lang === 'zh' ? '提交真实改造需求' : 'Send a real project inquiry'}
+            <ArrowRight className="size-4" aria-hidden="true"/>
+          </Link>
           <button
             type="button"
             onClick={() => goTo('next', statusId)}

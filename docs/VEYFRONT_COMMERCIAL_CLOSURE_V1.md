@@ -1,6 +1,6 @@
 # VEYFRONT Commercial Closure V1.0 — operational handoff
 
-**Status:** Draft commercial intake implementation. Not a full L2M diagnosis/payment service.
+**Status:** First production intake implemented and validated on 2026-10-30; not a full L2M diagnosis/payment service. Broad public promotion is NOT approved.
 
 ## Customer journeys
 
@@ -46,3 +46,16 @@ On successful submission, the server writes a private JSON blob and returns a sh
 - Existing Hartwell fictional demo and SAMPLE pricing remain clearly labeled; do not equate the inquiry endpoint with actual L2M generation or a purchase.
 
 No project, contract, paid conversion, business results, customer references or completed L2M generation are implied by this feature.
+
+
+## Actual online acceptance evidence (2026-10-30)
+
+- Source: `feature/veyfront-commercial-closure-v1`, SHA `3a10a7f3ea82d6e29a10075dd0c39926c850a80d`.
+- Vercel preview build: READY; strict TypeScript validation PASS.
+- Vercel production deployment: `dpl_H7bvYN36tsfez2YMJsmH6PMdh6gd`, READY, `veyfront.com`.
+- Live GET: `/`, `/contact`, `/privacy`, `/terms`, `/contact/privacy`, `/start/launch`, `/start/rebuild` returned HTTP 200.
+- GET `/api/leads` returned 405.
+- POST invalid email returned 422, invalid origin returned 403, missing consent returned 422.
+- POST of fictional QA-only Rebuild request returned HTTP 201 and reference `VF-DAE82C80`. Vercel authenticated PRIVATE Blob list showed exactly one `inquiries/2026/10/*.json` object (430 bytes). No real customer's information was used.
+- These tests confirm private persistence. They do NOT prove human email notifications, CRM routing, durable rate limiting or automated deletion, none of which is connected.
+- `noindex` retained pending verified legal operating entity and privacy-compliance sign-off.
