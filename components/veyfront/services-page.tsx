@@ -19,7 +19,7 @@ export function ServicesPage() {
       <article className="vf-open-frame flex flex-col gap-6 rounded-xl bg-mist/50 p-7 md:p-10">
         <Globe2 className="size-7 text-ink" aria-hidden="true" />
         <div><p className="font-mono text-xs uppercase tracking-widest text-ink/65">01 / Launch</p><h2 className="mt-3 text-3xl font-semibold">{zh ? '从零建立网站' : 'Build from the beginning'}</h2></div>
-        <p className="text-base leading-relaxed text-ink/75">{zh ? '基于已确认的企业信息、产品、目标市场和客户行动，规划并建设专业 B2B 企业网站。当前提供需求梳理原型，尚未接通在线委托或自动建站。' : 'Start with your verified business facts, products, buyer markets and inquiry goals. The intake is currently a local brief prototype, not a live order or autonomous site generator.'}</p>
+        <p className="text-base leading-relaxed text-ink/75">{zh ? '基于已确认的企业信息、产品、目标市场和客户行动，规划并建设专业 B2B 企业网站。可先真实提交项目需求，具体服务范围与报价需另行确认；自动建站尚未上线。' : 'Start with your verified business facts, products, buyer markets and inquiry goals. You can submit a real project inquiry. Scope and pricing are confirmed separately; automated generation is not live.'}</p>
         <ul className="grid gap-2 text-sm text-ink/80">
           <li>01 — {zh ? '企业定位与目标市场' : 'Business positioning and markets'}</li>
           <li>02 — {zh ? '内容、页面和视觉规划' : 'Content, pages and visual direction'}</li>
@@ -30,7 +30,7 @@ export function ServicesPage() {
       <article className="vf-open-frame flex flex-col gap-6 rounded-xl border border-ink/20 bg-ivory p-7 md:p-10">
         <RefreshCw className="size-7 text-ink" aria-hidden="true" />
         <div><p className="font-mono text-xs uppercase tracking-widest text-ink/65">02 / Rebuild</p><h2 className="mt-3 text-3xl font-semibold">{zh ? '重构现有网站' : 'Transform the website you have'}</h2></div>
-        <p className="text-base leading-relaxed text-ink/75">{zh ? '从旧站网址出发，围绕视觉品质、商业内容和客户询盘路径做系统升级。当前仅演示网址校验与样例诊断，不会真实抓取或修改网站。' : 'Start from your existing URL. Rebuild the visual experience, content and inquiry journey. The current prototype validates URL format only; it does not fetch or alter your site.'}</p>
+        <p className="text-base leading-relaxed text-ink/75">{zh ? '从旧站网址出发，围绕视觉品质、商业内容和客户询盘路径做系统升级。现在可以提交真实改造咨询；自动诊断尚未上线，提交时不会抓取或修改你的网站。' : 'Start from your existing URL. Rebuild the visual experience, content and inquiry journey. The inquiry is live; automatic diagnosis is not. Submitting does not fetch or alter your site.'}</p>
         <ul className="grid gap-2 text-sm text-ink/80">
           <li>01 — {zh ? '旧站诊断与证据' : 'Evidence-led website review'}</li>
           <li>02 — {zh ? '改造方案与范围确认' : 'Upgrade plan and scope'}</li>

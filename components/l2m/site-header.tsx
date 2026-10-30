@@ -35,6 +35,7 @@ export function useSiteLinks() {
     { label: t.nav.transformations, href: '/transformations' },
     { label: t.nav.howItWorks, href: '/how-it-works' },
     { label: t.nav.pricing, href: '/pricing' },
+    { label: t.nav.contact, href: '/contact' },
   ]
 }
 
@@ -63,7 +64,7 @@ export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark
 
   void inputId // kept for compatibility with the existing homepage
   const analyze = (
-    <Link href="/services" className={cn(ctaCls, 'hidden sm:inline-flex')}>{t.nav.analyze}</Link>
+    <Link href="/contact" className={cn(ctaCls, 'hidden sm:inline-flex')}>{t.nav.analyze}</Link>
   )
 
   return (
@@ -84,13 +85,6 @@ export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark
         </nav>
         <div className="flex items-center gap-3">
           <LangToggle tone={tone} />
-          <span
-            aria-disabled="true"
-            title={t.nav.navDemo}
-            className={cn('hidden min-h-11 cursor-not-allowed items-center text-sm font-medium md:inline-flex', dark ? 'text-ivory/55' : 'text-ink/55')}
-          >
-            {t.nav.signIn}
-          </span>
           {analyze}
           <button
             type="button"
@@ -128,7 +122,7 @@ export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark
               </Link>
             )
           })}
-          <Link href="/services" onClick={() => setOpen(false)}
+          <Link href="/contact" onClick={() => setOpen(false)}
             className={cn('mt-4 inline-flex min-h-12 items-center justify-center rounded-md font-semibold', dark ? 'bg-lime text-ink' : 'bg-ink text-ivory')}>
             {t.nav.analyze}
           </Link>

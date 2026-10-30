@@ -46,34 +46,23 @@ export function Invitation() {
 }
 
 export function SiteFooter() {
-  const { h } = useHomeCopy()
+  const { h, lang } = useHomeCopy()
   const links = useSiteLinks()
   return (
     <footer className="border-t border-ivory/10 bg-ink text-ivory">
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-6 px-5 py-10 md:flex-row md:items-center md:justify-between md:px-10">
-        <div className="flex flex-col gap-3">
-          <Link href="/" aria-label="VEYFRONT — Home" className="w-fit focus-visible:outline-2 focus-visible:outline-lime">
-            <Logo tone="dark" />
-          </Link>
-          <p className="max-w-md text-sm leading-relaxed text-ivory/60">{h.footer.note}</p>
+      <div className="mx-auto flex max-w-[1440px] flex-col gap-6 px-5 py-10 md:px-10">
+        <div className="flex flex-wrap items-start justify-between gap-6">
+          <div className="flex flex-col gap-3">
+            <Link href="/" aria-label="VEYFRONT — Home" className="w-fit focus-visible:outline-2 focus-visible:outline-lime"><Logo tone="dark" /></Link>
+            <p className="max-w-lg text-sm leading-relaxed text-ivory/65">{h.footer.note}</p>
+          </div>
+          <Link href="/contact" className="inline-flex min-h-12 items-center rounded-md bg-lime px-5 font-semibold text-ink">{lang === 'zh' ? '联系 VEYFRONT' : 'Contact VEYFRONT'}</Link>
         </div>
-        <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
-          {links.map((l) => (
-            <Link key={l.href} href={l.href} className="inline-flex min-h-11 items-center text-ivory/85 underline-offset-4 hover:text-lime hover:underline focus-visible:outline-2 focus-visible:outline-lime">
-              {l.label}
-            </Link>
-          ))}
+        <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-7 gap-y-2 border-t border-ivory/15 pt-5 text-sm">
+          {links.map(l=><Link key={l.href} href={l.href} className="inline-flex min-h-11 items-center text-ivory/85 hover:text-lime">{l.label}</Link>)}
+          <Link href="/privacy" className="inline-flex min-h-11 items-center text-ivory/80 hover:text-lime">{lang === 'zh' ? '隐私说明' : 'Privacy'}</Link>
+          <Link href="/terms" className="inline-flex min-h-11 items-center text-ivory/80 hover:text-lime">{lang === 'zh' ? '使用条款' : 'Terms'}</Link>
         </nav>
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ivory/70">
-          {[h.footer.privacy, h.footer.terms].map((l) => (
-            <span key={l} title={h.footer.placeholder} aria-disabled="true">
-              {l}
-            </span>
-          ))}
-          <Link href="/review/stage-1" className="underline underline-offset-4 hover:text-lime focus-visible:outline-2 focus-visible:outline-lime">
-            {h.reviewLink}
-          </Link>
-        </div>
       </div>
     </footer>
   )

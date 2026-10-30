@@ -16,9 +16,9 @@ const notoSC = Noto_Sans_SC({
 })
 
 export const metadata: Metadata = {
-  title: 'VEYFRONT — Building Digital Frontiers for Global Business (prototype)',
+  title: 'VEYFRONT — Building Digital Frontiers for Global Business',
   description:
-    'VEYFRONT brand-site prototype for B2B Website Launch and Rebuild. No live lead submission, AI analysis, sign-up or payment is connected.',
+    'VEYFRONT designs and rebuilds B2B websites for global business. Submit a Launch or Rebuild project inquiry. Automated diagnosis and online checkout are not yet available.',
   applicationName: 'VEYFRONT',
   manifest: '/site.webmanifest',
   icons: {

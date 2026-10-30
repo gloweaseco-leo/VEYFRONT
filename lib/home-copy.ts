@@ -20,7 +20,7 @@ const PDF_SIZE = DEMO_PRODUCT.datasheet.size
 const PRESSURE = demoSpec('pressure').value.en
 
 const en = {
-  proto: 'VEYFRONT · Design prototype · Not a live service · Hartwell is fictional',
+  proto: 'VEYFRONT · Interactive samples are illustrative · Hartwell is fictional',
   reviewLink: 'Stage 1 A/B review',
   nav: {
     menu: 'Menu',
@@ -246,7 +246,7 @@ const en = {
     boundary: ['Diagnosis starts after sign-up', 'Your current website is never modified', 'No consultation call needed'],
   },
   footer: {
-    note: 'VEYFRONT brand website prototype. No live diagnosis, lead submission, account or payment is connected.',
+    note: 'VEYFRONT accepts project inquiries. Interactive diagnosis, payment and the Hartwell showcase are demonstrations, not live customer services.',
     privacy: 'Privacy',
     terms: 'Terms',
     placeholder: 'Placeholder — not yet written',
@@ -256,7 +256,7 @@ const en = {
 export type HomeCopy = typeof en
 
 const zh: HomeCopy = {
-  proto: 'VEYFRONT · 品牌网站原型 · 尚未接入真实服务 · Hartwell 为虚构演示',
+  proto: 'VEYFRONT · 网站改造演示为示例 · Hartwell 为虚构企业',
   reviewLink: '第一阶段 A/B 评审',
   nav: en.nav,
   hero: {
@@ -460,7 +460,7 @@ const zh: HomeCopy = {
     boundary: ['注册后开始诊断', '不会修改现有网站', '无需预约咨询'],
   },
   footer: {
-    note: 'VEYFRONT 品牌网站原型，尚未接入真实诊断、需求提交、账户或支付。',
+    note: 'VEYFRONT 已开放项目需求咨询。自动诊断、在线支付和 Hartwell 案例均为演示，尚未提供真实产品服务。',
     privacy: '隐私政策',
     terms: '服务条款',
     placeholder: '占位 — 尚未撰写',

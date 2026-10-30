@@ -15,7 +15,7 @@ import { Invitation, SiteFooter } from '@/components/home/invitation'
 export const metadata: Metadata = {
   title: 'VEYFRONT — Building Digital Frontiers for Global Business',
   description:
-    'Build or rebuild a B2B website that helps global buyers discover, evaluate and contact your business. Design prototype only.',
+    'Build or rebuild a B2B website that helps global buyers discover, evaluate and contact your business. Submit a Launch or Rebuild inquiry.',
   robots: { index: false, follow: false },
 }
 

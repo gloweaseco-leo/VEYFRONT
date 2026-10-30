@@ -88,7 +88,7 @@ export function PageCta({ title, body, secondary }: { title: string; body: strin
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
-            href="/services"
+            href="/contact"
             className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-lime px-6 font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
           >
             {p.common.analyze}

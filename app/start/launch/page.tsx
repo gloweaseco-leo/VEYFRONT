@@ -1,4 +1,4 @@
 import type { Metadata } from 'next'
-import { StartPage } from '@/components/veyfront/start-pages'
-export const metadata: Metadata = { title: 'Website Launch — VEYFRONT (prototype)', robots: { index: false, follow: false } }
-export default function Page() { return <StartPage kind="launch" /> }
+import { IntakePage } from '@/components/veyfront/intake-pages'
+export const metadata: Metadata = { title: 'Launch Inquiry — VEYFRONT' }
+export default function Page(){ return <IntakePage service="launch" /> }
