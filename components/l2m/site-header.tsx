@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { ChevronLeft, Menu, X } from 'lucide-react'
 import { Logo, LangToggle } from './brand'
-import { focusHeroInput } from './use-flagship'
 import { useLang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 

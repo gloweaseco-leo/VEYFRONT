@@ -181,8 +181,8 @@ const en = {
   },
   get: {
     eyebrow: 'What You Get',
-    title: 'A better website. Ready for your business.',
-    lede: 'You are buying an upgraded website — not server space, not a template.',
+    title: 'A stronger website. Ready for global buyers.',
+    lede: 'A credible, usable business website — not a hosting subscription or a generic template.',
     showcaseLabel: 'Fictional DEMO website — illustrates the format, not a customer delivery',
     desktopLabel: 'Desktop',
     mobileLabel: 'Mobile',

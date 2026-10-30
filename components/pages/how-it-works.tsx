@@ -33,6 +33,12 @@ export function HowItWorksPage() {
   return (
     <PageShell>
       <PageHero eyebrow={p.hw.eyebrow} title={p.hw.title} lede={p.hw.lede} />
+      <div className="border-b border-ink/15 bg-mist/40">
+        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-3 px-5 py-5 md:px-10">
+          <a href="/start/rebuild" className="inline-flex min-h-11 items-center rounded-md bg-ink px-5 font-semibold text-ivory">Rebuild / 旧站重构</a>
+          <a href="/start/launch" className="inline-flex min-h-11 items-center rounded-md border border-ink/25 px-5 font-semibold text-ink">Launch / 建立新网站</a>
+        </div>
+      </div>
 
       <nav aria-label={p.hw.railLabel} className="sticky top-0 z-20 border-b border-ink/15 bg-ivory/95 backdrop-blur">
         <ol className="mx-auto flex max-w-[1440px] items-stretch px-2 md:px-8">
