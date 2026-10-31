@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       || input.authorization_confirmed !== true) return reject(422,'This preview only accepts the authorized VEYFRONT homepage.')
 
   const target = process.env.L2M_ACY_P2A2_URL?.trim() || ''
-  const token = process.env.L2M_ACY_P2A_SERVICE_TOKEN?.trim() || ''
+  const token = process.env.L2M_ACY_P2A2_SERVICE_TOKEN?.trim() || ''
   if (!target || token.length < 32) return reject(503,'L2M P2-A2 is not configured.')
   let endpoint: URL
   try { endpoint = new URL(target) } catch { return reject(503,'Invalid service configuration.') }
