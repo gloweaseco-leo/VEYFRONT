@@ -70,3 +70,15 @@ test('Vercel Preview alias requires exact origin and cannot weaken production',(
  assert.equal(allowedP2A2Origin(testRequest(null),preview),false)
  assert.equal(allowedP2A2Origin(testRequest(allowed),{...preview,ACY_P2A2_ALLOWED_ORIGIN:'https://evil.example'}),false)
 })
+
+test('Origin-less protected browser POST is allowed only with same-origin Fetch Metadata',()=>{
+ const allowed='https://veyfront-git-feature-acy-p2a2-3988c5-gloweaseco-1757s-projects.vercel.app'
+ const preview={VERCEL_ENV:'preview',ACY_P2A2_ALLOWED_ORIGIN:allowed}
+ const req = (fetchSite,marker)=>({url:'https://veyfront-random.vercel.app/api/acy/p2a2',
+   headers:new Headers({'sec-fetch-site':fetchSite,'x-acy-preview-request':marker})})
+ assert.equal(allowedP2A2Origin(req('same-origin','p2a2'),preview),true)
+ assert.equal(allowedP2A2Origin(req('cross-site','p2a2'),preview),false)
+ assert.equal(allowedP2A2Origin(req('same-site','p2a2'),preview),false)
+ assert.equal(allowedP2A2Origin(req('same-origin','incorrect'),preview),false)
+ assert.equal(allowedP2A2Origin(req('same-origin','p2a2'),{...preview,VERCEL_ENV:'production'}),false)
+})
