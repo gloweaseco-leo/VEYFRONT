@@ -1,4 +1,9 @@
-import { isSameOrigin } from './lead-request.ts'
+function isSameOrigin(request: Pick<Request,'url'|'headers'>): boolean {
+  const origin = request.headers.get('origin')
+  if (!origin) return false
+  try { return new URL(origin).origin === new URL(request.url).origin && origin === new URL(origin).origin }
+  catch { return false }
+}
 
 /**
  * The authenticated Vercel Preview may serve a branch alias while NextRequest.url
