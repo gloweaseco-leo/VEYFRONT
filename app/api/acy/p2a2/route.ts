@@ -49,6 +49,13 @@ export async function POST(request: NextRequest) {
   } catch { return reject(502,'L2M live assessment service is unavailable.') }
   if (!response.ok) {
     if (response.status === 401) {
+      const headerDiagnosis = response.headers.get('x-l2m-qa-auth-result')
+      if (headerDiagnosis === 'QA_AUTH_HEADER_MISSING' || headerDiagnosis === 'QA_AUTH_TOKEN_MISMATCH') {
+        return reject(502, `L2M preview authentication diagnostic: ${headerDiagnosis}`)
+      }
+      // A platform-level 401 will not have the application-specific diagnostic header.
+      return reject(502, 'L2M preview authentication diagnostic: UPSTREAM_401_NO_APP_MARKER')
+
       // Temporary protected-Preview diagnostic; only forward two hard-coded categories.
       let diagnostic: unknown
       try { diagnostic = await response.json() } catch { /* No diagnostic body */ }
