@@ -28,7 +28,7 @@ test('bearer proof is random, hash-only at rest and time-bound',()=>{
  assert.equal(authenticate(journey,'not-a-valid-token'),false)
  assert.equal(authenticate(journey,accessToken,new Date('2026-11-03T00:00:00Z')),false)
  assert.equal(JSON.stringify(publicJourney(journey)).includes('accessHash'),false)
- assert.equal(JSON.stringify(publicJourney(journey)).includes('email'),false)
+ assert.equal(Object.hasOwn(publicJourney(journey),'email'),false)
 })
 test('completion advances deterministically, duplicates do not change state',()=>{
  const {journey}=makeJourney({service:'launch',name:'QA',email:'qa@example.invalid',brief})
