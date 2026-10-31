@@ -48,7 +48,16 @@ export async function POST(request: NextRequest) {
     })
   } catch { return reject(502,'L2M live assessment service is unavailable.') }
   if (!response.ok) {
-    // Avoid forwarding upstream text, potentially including untrusted HTML or traces.
+    if (response.status === 401) {
+      // Temporary protected-Preview diagnostic; only forward two hard-coded categories.
+      let diagnostic: unknown
+      try { diagnostic = await response.json() } catch { /* No diagnostic body */ }
+      const category = diagnostic && typeof diagnostic === 'object' && 'message' in diagnostic
+        ? (diagnostic as {message?: unknown}).message : ''
+      if (category === 'QA_AUTH_HEADER_MISSING' || category === 'QA_AUTH_TOKEN_MISMATCH') {
+        return reject(502, `L2M preview authentication diagnostic: ${category}`)
+      }
+    }
     return reject(502,`L2M live assessment could not proceed (HTTP ${response.status}).`)
   }
   let result: unknown
