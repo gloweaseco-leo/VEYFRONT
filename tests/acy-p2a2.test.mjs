@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { isLiveAssessment, p2a2Enabled } from '../lib/l2m-p2a2.ts'
+import { signP2A2, P2A2_APPROVED_URL } from '../lib/acy-p2a2-signature.ts'
 
 function fixture() {
   return {
@@ -48,4 +49,11 @@ test('Rejects findings whose evidence hash or route does not match',()=>{
     source_page_sha256:'e'.repeat(64),observation:'Claim',suggested_next_step:'Review',
     claim_type:'BOUNDED_OBSERVATION',customer_verified:false})
   assert.equal(isLiveAssessment(c),false)
+})
+
+test('HMAC proof matches the independent Python L2M cross-language test vector',()=>{
+  const signature=signP2A2(100000, '0123456789abcdef'.repeat(2), 'a'.repeat(40))
+  assert.equal(P2A2_APPROVED_URL,'https://veyfront.com/')
+  assert.equal(signature,'4e49e44bc1c7bc3424ac8b85b354d156bbab03a000e0c1769e1418a298780c7d')
+  assert.notEqual(signature,signP2A2(100001,'0123456789abcdef'.repeat(2),'a'.repeat(40)))
 })
