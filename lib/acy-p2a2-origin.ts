@@ -21,8 +21,15 @@ export function allowedP2A2Origin(
   if (env.VERCEL_ENV !== 'preview') return false
   const permitted = env.ACY_P2A2_ALLOWED_ORIGIN?.trim() || ''
   const origin = request.headers.get('origin')
-  if (!permitted || !origin || !/^https:\/\/veyfront-git-feature-acy-p2a2-[a-z0-9-]+\.vercel\.app$/.test(permitted)) {
+  if (!permitted || !/^https:\/\/veyfront-git-feature-acy-p2a2-[a-z0-9-]+\.vercel\.app$/.test(permitted)) {
     return false
+  }
+  if (!origin) {
+    // Some Vercel protected browser sessions omit Origin on a same-origin POST.
+    // Browser-controlled Fetch Metadata plus a non-simple request marker prevents
+    // other-origin form submissions from being accepted by this QA-only endpoint.
+    return request.headers.get('sec-fetch-site') === 'same-origin'
+      && request.headers.get('x-acy-preview-request') === 'p2a2'
   }
   try {
     return origin === permitted && new URL(origin).origin === permitted
