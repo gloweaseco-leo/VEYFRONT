@@ -32,7 +32,7 @@ export function AcyLivePreview() {
   return <main className="min-h-screen bg-ivory text-ink">
     <section className="bg-ink text-ivory">
       <div className="mx-auto max-w-[1000px] px-5 py-12 md:px-10 md:py-20">
-        <Link href="/p2" className="inline-flex min-h-11 items-center gap-2 text-sm text-ivory/75"><ArrowLeft className="size-4"/>P2-A contract</Link>
+        <Link href="/" className="inline-flex min-h-11 items-center gap-2 text-sm text-ivory/75"><ArrowLeft className="size-4"/>VEYFRONT</Link>
         <p className="mt-8 font-mono text-xs tracking-widest text-lime">P2-A2 · BOUNDED LIVE HOMEPAGE · PRIVATE PREVIEW</p>
         <h1 className="mt-4 max-w-3xl text-4xl font-semibold md:text-6xl">
           {zh ? '从受控快照走向真实网页观察。' : 'A real homepage. Evidence, not claims.'}
