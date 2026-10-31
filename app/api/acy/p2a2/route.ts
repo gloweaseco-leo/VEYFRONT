@@ -30,11 +30,15 @@ export async function POST(request: NextRequest) {
       || endpoint.username || endpoint.password || endpoint.port) {
     return reject(503,'Unsupported service target.')
   }
+  // Vercel inserts the short-lived signed identity token into the Function request.
+  // The L2M target independently validates the issuing project and preview->preview rule.
+  // Never send the token to a browser, log it, or allow the destination to vary by request.
+  const oidc = request.headers.get('x-vercel-oidc-token')
+  if (!oidc || oidc.split('.').length !== 3) return reject(503,'Vercel preview identity is unavailable.')
   const upstreamHeaders: Record<string,string> = {
     'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json',
+    'x-vercel-trusted-oidc-idp-token': oidc,
   }
-  const bypass = process.env.L2M_ACY_P2A2_BYPASS?.trim()
-  if (bypass) upstreamHeaders['x-vercel-protection-bypass'] = bypass
   let response: Response
   try {
     response = await fetch(endpoint, {
