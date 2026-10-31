@@ -18,7 +18,7 @@ export function AcyLivePreview() {
     try {
       const response = await fetch('/api/acy/p2a2', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-acy-preview-request':'p2a2' },
         body: JSON.stringify({ url:'https://veyfront.com/', authorization_confirmed:true }),
         cache: 'no-store',
       })
