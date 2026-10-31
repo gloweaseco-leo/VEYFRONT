@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server'
-import { createHmac, randomBytes } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
+import { signP2A2, P2A2_APPROVED_URL } from '@/lib/acy-p2a2-signature'
 import { isSameOrigin, isJsonContentType, readLeadBody } from '@/lib/lead-request'
 import { isLiveAssessment, p2a2Enabled } from '@/lib/l2m-p2a2'
 
@@ -7,13 +8,6 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 const headers = { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff', 'X-Robots-Tag': 'noindex, nofollow' }
 const reject = (status: number, message: string) => Response.json({ok:false,message},{status,headers})
-const APPROVED_URL = 'https://veyfront.com/'
-
-export function signP2A2(issuedAt: number, nonce: string, secret: string): string {
-  const message = `VEYFRONT_P2A2_V1\n${APPROVED_URL}\n${issuedAt}\n${nonce}\n1`
-  return createHmac('sha256',secret).update(message,'utf8').digest('hex')
-}
-
 export async function POST(request: NextRequest) {
   if (!p2a2Enabled()) return reject(404,'Not available.')
   if (!isSameOrigin(request)) return reject(403,'Origin not allowed.')
@@ -24,7 +18,7 @@ export async function POST(request: NextRequest) {
   try { parsed = JSON.parse(body.text) } catch { return reject(400,'Invalid JSON.') }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return reject(422,'Invalid input.')
   const input = parsed as Record<string,unknown>
-  if (Object.keys(input).length !== 2 || input.url !== APPROVED_URL
+  if (Object.keys(input).length !== 2 || input.url !== P2A2_APPROVED_URL
       || input.authorization_confirmed !== true) return reject(422,'This preview only accepts the authorized VEYFRONT homepage.')
 
   const target = process.env.L2M_ACY_P2A2_URL?.trim() || ''
@@ -44,7 +38,7 @@ export async function POST(request: NextRequest) {
   const issuedAt = Math.floor(Date.now()/1000)
   const nonce = randomBytes(16).toString('hex')
   const signedPayload = {
-    url: APPROVED_URL, authorization_confirmed: true,
+    url: P2A2_APPROVED_URL, authorization_confirmed: true,
     issued_at: issuedAt, nonce, signature: signP2A2(issuedAt,nonce,secret),
   }
   let response: Response
