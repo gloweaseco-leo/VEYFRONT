@@ -3,6 +3,7 @@ import { sendLeadAlert } from '@/lib/lead-alert'
 import { randomUUID } from 'node:crypto'
 import type { NextRequest } from 'next/server'
 import { checkUrl } from '@/lib/url'
+import { isJsonContentType, isSameOrigin, readLeadBody } from '@/lib/lead-request'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -36,23 +37,14 @@ function validEmail(value: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
-  // No cross-origin form submissions. Do not depend on client-provided service claims.
-  const origin = request.headers.get('origin')
-  if (origin && origin !== new URL(request.url).origin) return reject('Origin not allowed.', 403)
-  if (!request.headers.get('content-type')?.startsWith('application/json')) {
-    return reject('JSON request required.', 415)
-  }
-  if (Number(request.headers.get('content-length') || '0') > 12_000) {
-    return reject('Request too large.', 413)
-  }
-
-  let raw: string
-  try {
-    raw = await request.text()
-    if (new TextEncoder().encode(raw).length > 12_000) return reject('Request too large.', 413)
-  } catch {
-    return reject('Unable to read your request.', 400)
-  }
+  // Only the first-party browser application may submit. Spoofed Origins remain possible
+  // outside browsers; this check is not bot authentication or durable rate limiting.
+  if (!isSameOrigin(request)) return reject('Origin not allowed.', 403)
+  if (!isJsonContentType(request)) return reject('JSON request required.', 415)
+  const body = await readLeadBody(request)
+  if (body.kind === 'too-large') return reject('Request too large.', 413)
+  if (body.kind === 'invalid') return reject('Unable to read your request.', 400)
+  const raw = body.text
   let data: LeadInput
   try { data = JSON.parse(raw) as LeadInput } catch { return reject('Invalid request.', 400) }
   if (typeof data !== 'object' || data === null || Array.isArray(data)) return reject('Invalid request.', 400)

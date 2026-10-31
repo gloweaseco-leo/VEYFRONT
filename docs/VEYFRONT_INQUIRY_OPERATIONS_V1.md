@@ -41,3 +41,12 @@ For sustained bot attacks, consider provider-supported CAPTCHA/Turnstile and for
 
 ## Verification
 Run `pnpm check:commercial && pnpm check:ops && pnpm exec tsc --noEmit && pnpm build`. On a Vercel preview, verify GET /api/leads=405 and validation failures; do not create a live test lead unless needed, and do not accidentally delete real customer data.
+
+
+## Security hardening (2026-10-31)
+
+The POST endpoint now requires a first-party Origin and a genuine `application/json` media type. Requests with a missing Origin are rejected: browser form `fetch` is supported, but this is not a server-to-server public API. Stateless Origin checks can be spoofed outside the browser and do **not** constitute bot authentication.
+
+Incoming JSON is read through a bounded byte stream. Even without a Content-Length header, the request is rejected once it exceeds 12,000 bytes; malformed UTF-8 is rejected. This prevents unbounded buffering of oversized chunked input at the handler layer.
+
+The new behavior tests run in `pnpm check:security`, covering same-origin checking, oversized streamed bodies, Unicode byte lengths, and alerts without personal data. These do not prove durable rate limiting. WAF remains pending a provider pricing and operational decision.
