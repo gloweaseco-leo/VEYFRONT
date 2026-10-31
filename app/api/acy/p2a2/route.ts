@@ -11,7 +11,15 @@ const headers = { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options'
 const reject = (status: number, message: string) => Response.json({ok:false,message},{status,headers})
 export async function POST(request: NextRequest) {
   if (!p2a2Enabled()) return reject(404,'Not available.')
-  if (!allowedP2A2Origin(request)) return reject(403,'Origin not allowed.')
+  if (!allowedP2A2Origin(request)) {
+    const origin = request.headers.get('origin')
+    const allowed = process.env.ACY_P2A2_ALLOWED_ORIGIN || ''
+    const host = request.headers.get('host')
+    const forwardedHost = request.headers.get('x-forwarded-host')
+    const fetchSite = request.headers.get('sec-fetch-site')
+    // QA booleans only. No raw headers, credentials or customer identifiers.
+    return reject(403, `Origin QA: present=${!!origin}; allowConfigured=${!!allowed}; aliasEqual=${!!origin && origin===allowed}; requestEqual=${!!origin && origin===new URL(request.url).origin}; hostEqual=${!!origin && origin==='https://'+host}; forwardedEqual=${!!origin && origin==='https://'+forwardedHost}; fetchSameOrigin=${fetchSite==='same-origin'}.`)
+  }
   if (!isJsonContentType(request)) return reject(415,'JSON only.')
   const body = await readLeadBody(request, 512)
   if (body.kind !== 'ok') return reject(body.kind === 'too-large' ? 413 : 400,'Invalid request.')
