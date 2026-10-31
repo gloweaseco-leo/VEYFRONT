@@ -52,7 +52,20 @@ export async function POST(request: NextRequest) {
       redirect:'error',
     })
   } catch { return reject(502,'L2M live assessment service is unavailable.') }
-  if (!response.ok) return reject(502,`L2M live assessment could not proceed (HTTP ${response.status}).`)
+  if (!response.ok) {
+    // Scoped Preview QA: reveal only which of the two known HMAC auth gates
+    // denied the request. Do not reflect arbitrary upstream text.
+    if (response.status === 401) {
+      let diagnostic: unknown
+      try { diagnostic = await response.json() } catch { /* fail closed */ }
+      const message = diagnostic && typeof diagnostic === 'object' && 'message' in diagnostic
+        ? (diagnostic as {message?: unknown}).message : null
+      if (message === 'Request expired.') return reject(502,'P2A2_QA_CLOCK_SKEW')
+      if (message === 'Unauthorized.') return reject(502,'P2A2_QA_SIGNATURE_MISMATCH')
+      return reject(502,'P2A2_QA_UNCLASSIFIED_401')
+    }
+    return reject(502,`L2M live assessment could not proceed (HTTP ${response.status}).`)
+  }
   let result: unknown
   try { result = await response.json() } catch { return reject(502,'Invalid L2M response.') }
   if (!result || typeof result !== 'object' || !('assessment' in result)
