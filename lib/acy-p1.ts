@@ -26,8 +26,9 @@ export type AcyJourney = {
 export const PREVIEW_QA_EMAILS = ['hello@veyfront.com', 'qa@example.invalid'] as const
 export const P1_EXPIRES_MS = 48 * 3600 * 1000
 
-export function p1Enabled(env: { VERCEL_ENV?: string; ACY_P1_ENABLED?: string } = process.env): boolean {
-  return env.VERCEL_ENV === 'preview' && env.ACY_P1_ENABLED === 'true'
+export function p1Enabled(env?: { VERCEL_ENV?: string; ACY_P1_ENABLED?: string }): boolean {
+  const flags = env ?? { VERCEL_ENV: process.env.VERCEL_ENV, ACY_P1_ENABLED: process.env.ACY_P1_ENABLED }
+  return flags.VERCEL_ENV === 'preview' && flags.ACY_P1_ENABLED === 'true'
 }
 
 export function safeText(value: unknown, length: number): string | null {
