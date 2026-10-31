@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server'
+import { createHmac, randomBytes } from 'node:crypto'
 import { isSameOrigin, isJsonContentType, readLeadBody } from '@/lib/lead-request'
 import { isLiveAssessment, p2a2Enabled } from '@/lib/l2m-p2a2'
 
@@ -6,6 +7,12 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 const headers = { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff', 'X-Robots-Tag': 'noindex, nofollow' }
 const reject = (status: number, message: string) => Response.json({ok:false,message},{status,headers})
+const APPROVED_URL = 'https://veyfront.com/'
+
+export function signP2A2(issuedAt: number, nonce: string, secret: string): string {
+  const message = `VEYFRONT_P2A2_V1\n${APPROVED_URL}\n${issuedAt}\n${nonce}\n1`
+  return createHmac('sha256',secret).update(message,'utf8').digest('hex')
+}
 
 export async function POST(request: NextRequest) {
   if (!p2a2Enabled()) return reject(404,'Not available.')
@@ -17,12 +24,12 @@ export async function POST(request: NextRequest) {
   try { parsed = JSON.parse(body.text) } catch { return reject(400,'Invalid JSON.') }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return reject(422,'Invalid input.')
   const input = parsed as Record<string,unknown>
-  if (Object.keys(input).length !== 2 || input.url !== 'https://veyfront.com/'
+  if (Object.keys(input).length !== 2 || input.url !== APPROVED_URL
       || input.authorization_confirmed !== true) return reject(422,'This preview only accepts the authorized VEYFRONT homepage.')
 
   const target = process.env.L2M_ACY_P2A2_URL?.trim() || ''
-  const token = process.env.L2M_ACY_P2A2_SERVICE_TOKEN?.trim() || ''
-  if (!target || token.length < 32) return reject(503,'L2M P2-A2 is not configured.')
+  const secret = process.env.L2M_ACY_P2A2_SERVICE_TOKEN || ''
+  if (!target || secret.length < 32) return reject(503,'L2M P2-A2 is not configured.')
   let endpoint: URL
   try { endpoint = new URL(target) } catch { return reject(503,'Invalid service configuration.') }
   if (endpoint.protocol !== 'https:' || !endpoint.hostname.endsWith('.vercel.app')
@@ -30,43 +37,27 @@ export async function POST(request: NextRequest) {
       || endpoint.username || endpoint.password || endpoint.port) {
     return reject(503,'Unsupported service target.')
   }
-  // Vercel inserts the short-lived signed identity token into the Function request.
-  // The L2M target independently validates the issuing project and preview->preview rule.
-  // Never send the token to a browser, log it, or allow the destination to vary by request.
+  // Token originates from the Vercel preview runtime, never the browser.
   const oidc = request.headers.get('x-vercel-oidc-token')
   if (!oidc || oidc.split('.').length !== 3) return reject(503,'Vercel preview identity is unavailable.')
-  const upstreamHeaders: Record<string,string> = {
-    'x-l2m-service-token': token, 'Content-Type': 'application/json',
-    'x-vercel-trusted-oidc-idp-token': oidc,
+
+  const issuedAt = Math.floor(Date.now()/1000)
+  const nonce = randomBytes(16).toString('hex')
+  const signedPayload = {
+    url: APPROVED_URL, authorization_confirmed: true,
+    issued_at: issuedAt, nonce, signature: signP2A2(issuedAt,nonce,secret),
   }
   let response: Response
   try {
     response = await fetch(endpoint, {
-      method:'POST',headers:upstreamHeaders,
-      body:JSON.stringify({url:'https://veyfront.com/',authorization_confirmed:true}),
+      method:'POST',
+      headers: {'Content-Type':'application/json','x-vercel-trusted-oidc-idp-token':oidc},
+      body:JSON.stringify(signedPayload),
       cache:'no-store',signal:AbortSignal.timeout(18000),
+      redirect:'error',
     })
   } catch { return reject(502,'L2M live assessment service is unavailable.') }
-  if (!response.ok) {
-    if (response.status === 401) {
-      const headerDiagnosis = response.headers.get('x-l2m-qa-auth-result')
-      if (headerDiagnosis === 'QA_AUTH_HEADER_MISSING' || headerDiagnosis === 'QA_AUTH_TOKEN_MISMATCH') {
-        return reject(502, `L2M preview authentication diagnostic: ${headerDiagnosis}`)
-      }
-      // A platform-level 401 will not have the application-specific diagnostic header.
-      return reject(502, 'L2M preview authentication diagnostic: UPSTREAM_401_NO_APP_MARKER')
-
-      // Temporary protected-Preview diagnostic; only forward two hard-coded categories.
-      let diagnostic: unknown
-      try { diagnostic = await response.json() } catch { /* No diagnostic body */ }
-      const category = diagnostic && typeof diagnostic === 'object' && 'message' in diagnostic
-        ? (diagnostic as {message?: unknown}).message : ''
-      if (category === 'QA_AUTH_HEADER_MISSING' || category === 'QA_AUTH_TOKEN_MISMATCH') {
-        return reject(502, `L2M preview authentication diagnostic: ${category}`)
-      }
-    }
-    return reject(502,`L2M live assessment could not proceed (HTTP ${response.status}).`)
-  }
+  if (!response.ok) return reject(502,`L2M live assessment could not proceed (HTTP ${response.status}).`)
   let result: unknown
   try { result = await response.json() } catch { return reject(502,'Invalid L2M response.') }
   if (!result || typeof result !== 'object' || !('assessment' in result)
@@ -75,5 +66,4 @@ export async function POST(request: NextRequest) {
   }
   return Response.json({ok:true,assessment:(result as {assessment:unknown}).assessment},{headers})
 }
-
 export async function GET() { return reject(405,'POST only.') }
