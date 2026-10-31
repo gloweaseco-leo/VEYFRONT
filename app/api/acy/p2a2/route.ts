@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
   const oidc = request.headers.get('x-vercel-oidc-token')
   if (!oidc || oidc.split('.').length !== 3) return reject(503,'Vercel preview identity is unavailable.')
   const upstreamHeaders: Record<string,string> = {
-    'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json',
+    'x-l2m-service-token': token, 'Content-Type': 'application/json',
     'x-vercel-trusted-oidc-idp-token': oidc,
   }
   let response: Response
