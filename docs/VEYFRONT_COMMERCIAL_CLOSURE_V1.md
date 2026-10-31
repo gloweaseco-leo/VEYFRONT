@@ -59,3 +59,8 @@ No project, contract, paid conversion, business results, customer references or 
 - POST of fictional QA-only Rebuild request returned HTTP 201 and reference `VF-DAE82C80`. Vercel authenticated PRIVATE Blob list showed exactly one `inquiries/2026/10/*.json` object (430 bytes). No real customer's information was used.
 - These tests confirm private persistence. They do NOT prove human email notifications, CRM routing, durable rate limiting or automated deletion, none of which is connected.
 - `noindex` retained pending verified legal operating entity and privacy-compliance sign-off.
+
+
+## Operations hardening extension (2026-10-31)
+
+Optional no-PII email alert, safe local/private Blob metadata review and explicit deletion helper are implemented on an **ops hardening branch**. These controls require configuration and human validation: no mail provider credentials are installed by this commit, and no legal operator has been chosen. See `docs/VEYFRONT_INQUIRY_OPERATIONS_V1.md`. Vercel WAF rate limiting remains an unactivated recommendation pending pricing/traffic observation.

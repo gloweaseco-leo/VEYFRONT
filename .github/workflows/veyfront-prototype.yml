@@ -19,6 +19,7 @@ jobs:
       - run: pnpm check:demo
       - run: pnpm check:commercial
       - run: pnpm check:brand
+      - run: pnpm check:ops
       - run: node scripts/check-veyfront-brand.mjs
       - run: pnpm exec tsc --noEmit
       - run: pnpm build

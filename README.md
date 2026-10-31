@@ -49,3 +49,8 @@ All Hartwell case screens are fictional, hand-built demonstrations **not produce
 Original source snapshot: `chatgpters6/L2M-Web2` branch `stage-3-visual-final` at `25ca2ef0454228182f65f8912eb326c85ea551fa`. The missing historical screenshot is non-blocking. The user-provided demo valve image remains to be committed to `public/demo/valve.png`; until then the demo renders a SHA-pinned copy from the public source repository.
 
 The original design brief and Stage 1/2 audit artifacts remain under `docs/` as history.
+
+
+## Operational readiness extension
+
+An optional, minimal-data email alert can be enabled only when Resend credentials and a verified sender are configured in server-side Vercel settings. Until that time a human must inspect the private store every working day. `node scripts/lead-ops.mjs list` provides metadata-only review; destructive deletion requires an explicit exact-path confirmation. See `docs/VEYFRONT_INQUIRY_OPERATIONS_V1.md`.

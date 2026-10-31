@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict'
+import { readFileSync,existsSync } from 'node:fs'
+const read = file=>readFileSync(file,'utf8')
+const notifier=read('lib/lead-alert.ts')
+const api=read('app/api/leads/route.ts')
+const operations=read('scripts/lead-ops.mjs')
+for(const name of ['RESEND_API_KEY','VF_ALERT_TO_EMAIL','VF_ALERT_FROM_EMAIL']) assert.match(notifier,new RegExp(name))
+assert.match(notifier,/No customer personal information/)
+assert.doesNotMatch(notifier,/(info\.(?:email|name|company|details|website))/)
+assert.match(api,/await put\(/)
+assert.match(api,/await sendLeadAlert/)
+assert.ok(api.indexOf('await put(')<api.indexOf('await sendLeadAlert('),'Durable write must precede alert')
+assert.match(api,/alert === 'failed'/)
+assert.match(operations,/--confirm=/)
+assert.match(operations,/await del\(match.pathname\)/)
+assert.ok(existsSync('docs/VEYFRONT_INQUIRY_OPERATIONS_V1.md'))
+console.log('VEYFRONT intake operations guard PASS (static verification; no email sent and no private record deleted)')

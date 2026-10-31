@@ -1,4 +1,5 @@
 import { put } from '@vercel/blob'
+import { sendLeadAlert } from '@/lib/lead-alert'
 import { randomUUID } from 'node:crypto'
 import type { NextRequest } from 'next/server'
 import { checkUrl } from '@/lib/url'
@@ -107,6 +108,10 @@ export async function POST(request: NextRequest) {
     console.error('VEYFRONT inquiry storage failed', error instanceof Error ? error.name : 'unknown')
     return reject('We could not save your request. Please try again later.', 503)
   }
+  // Alerting is best-effort and contains no client PII. The private Blob receipt remains authoritative.
+  // Await the bounded delivery attempt so the serverless function doesn't discard a background promise.
+  const alert = await sendLeadAlert({ reference, service: category, receivedAt: record.receivedAt })
+  if (alert === 'failed') console.warn('VEYFRONT inquiry alert unavailable; manual private-store review required')
   return Response.json({ ok: true, reference, message: 'Your request was received.' }, { status: 201, headers: noStore })
 }
 
