@@ -9,3 +9,6 @@ The same-origin server route sends the request to L2M's protected `/api/acy_url_
 `pnpm check:p2a2`, `pnpm build`. Verification must include authenticated browser POST plus server-to-server live POST, not just GET or Vercel READY. Vercel Authentication must remain on.
 
 Pending gates: branch-scoped preview secrets and flags, deployment build/CI, independently authenticated POST, 1-page HTML sample evidence, P1 create/resume/status browser E2E, abuse/rate control, owner identity validation and full context/planner truth gates. P4 generation remains locked.
+
+# Authentication update
+VEYFRONT authenticates to protected L2M using preview-to-preview Trusted Sources OIDC and a 60-second HMAC-SHA256 request signature (timestamp + 128-bit nonce + fixed URL + explicit consent). The shared service key never travels as a header or raw body. Untrusted URL input, model calls, production use and arbitrary website scans remain forbidden. A real signed POST is required before calling this accepted.\n
