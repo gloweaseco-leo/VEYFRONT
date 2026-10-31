@@ -1,7 +1,8 @@
 import type { NextRequest } from 'next/server'
 import { randomBytes } from 'node:crypto'
 import { signP2A2, P2A2_APPROVED_URL } from '@/lib/acy-p2a2-signature'
-import { isSameOrigin, isJsonContentType, readLeadBody } from '@/lib/lead-request'
+import { isJsonContentType, readLeadBody } from '@/lib/lead-request'
+import { allowedP2A2Origin } from '@/lib/acy-p2a2-origin'
 import { isLiveAssessment, p2a2Enabled } from '@/lib/l2m-p2a2'
 
 export const runtime = 'nodejs'
@@ -10,7 +11,7 @@ const headers = { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options'
 const reject = (status: number, message: string) => Response.json({ok:false,message},{status,headers})
 export async function POST(request: NextRequest) {
   if (!p2a2Enabled()) return reject(404,'Not available.')
-  if (!isSameOrigin(request)) return reject(403,'Origin not allowed.')
+  if (!allowedP2A2Origin(request)) return reject(403,'Origin not allowed.')
   if (!isJsonContentType(request)) return reject(415,'JSON only.')
   const body = await readLeadBody(request, 512)
   if (body.kind !== 'ok') return reject(body.kind === 'too-large' ? 413 : 400,'Invalid request.')
