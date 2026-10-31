@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://veyfront.com/contracts/l2m-acy-assessment-0.1",
+  "title": "L2M evidence-only P2-A assessment",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "assessment_id",
+    "snapshot_id",
+    "source",
+    "findings",
+    "limitations",
+    "execution"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "const": "l2m.acy.assessment/0.1"
+    },
+    "assessment_id": {
+      "type": "string",
+      "pattern": "^assessment-[a-f0-9]{20}$"
+    },
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "type",
+        "inventory_schema",
+        "manifest_sha256",
+        "source_rights",
+        "scope",
+        "network_fetch_performed",
+        "pages",
+        "evidence_ids"
+      ],
+      "properties": {
+        "type": {
+          "const": "AUTHORIZED_LOCAL_HTML_SNAPSHOT"
+        },
+        "inventory_schema": {
+          "const": "site-snapshot-inventory/0.2"
+        },
+        "manifest_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source_rights": {
+          "const": "NOT_VERIFIED"
+        },
+        "scope": {
+          "const": "SUPPLIED_PAGES_ONLY"
+        },
+        "network_fetch_performed": {
+          "const": false
+        },
+        "pages": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": [
+              "route",
+              "sha256",
+              "title_observed",
+              "heading_observed",
+              "form_count_observed",
+              "nav_destinations_in_snapshot"
+            ],
+            "properties": {
+              "route": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "title_observed": {
+                "type": "string"
+              },
+              "heading_observed": {
+                "type": "string"
+              },
+              "form_count_observed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "nav_destinations_in_snapshot": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "severity",
+          "route",
+          "source_page_sha256",
+          "observation",
+          "suggested_next_step",
+          "claim_type",
+          "customer_verified"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "severity": {
+            "const": "review"
+          },
+          "route": {
+            "type": "string"
+          },
+          "source_page_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "observation": {
+            "type": "string"
+          },
+          "suggested_next_step": {
+            "type": "string"
+          },
+          "claim_type": {
+            "const": "BOUNDED_OBSERVATION"
+          },
+          "customer_verified": {
+            "const": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "execution": {
+      "type": "object",
+      "required": [
+        "mode",
+        "model_calls",
+        "generation_calls",
+        "customer_ready",
+        "review_required"
+      ],
+      "properties": {
+        "mode": {
+          "const": "DETERMINISTIC_EVIDENCE_ONLY"
+        },
+        "model_calls": {
+          "const": 0
+        },
+        "generation_calls": {
+          "const": 0
+        },
+        "customer_ready": {
+          "const": false
+        },
+        "review_required": {
+          "const": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
