@@ -1,4 +1,4 @@
-import { isSameOrigin } from './lead-request'
+import { isSameOrigin } from './lead-request.ts'
 
 /**
  * The authenticated Vercel Preview may serve a branch alias while NextRequest.url
