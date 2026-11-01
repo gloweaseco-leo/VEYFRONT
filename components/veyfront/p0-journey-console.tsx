@@ -7,7 +7,7 @@ type Journey={
  id:string;reference:string;service:'launch'|'rebuild';status:Status;expiresAt:string;channel:'email'|'wechat'|'feishu'
  brief:{company:string;website:string;markets:string;desiredAction:string;description:string}
  nextQuestions:string[];notification:string;blockedReason:string
- ledger:{eventCount:number;events:{sequence:number;code:string;at:string;why:string;to:Status;
+ ledger:{eventCount:number;integrity:string;stages:{stage:string;status:string;reason:string}[];events:{sequence:number;code:string;at:string;why:string;to:Status;
   evidence:{kind:string;sha256:string|null;consentVersion:string|null};
   usage:{modelCalls:number;generationCalls:number;billableAmountMinor:number|null;billing:string}}[];
  costs:{knownMinorUnits:null;modelCalls:0;generationCalls:0;status:string};evidenceLabel:string;sourceOfTruth:string}
@@ -80,7 +80,10 @@ export function JourneyConsole(){
    <aside className="space-y-6">
     <div className="rounded-xl border border-ink/15 bg-white p-6">
      <div className="flex items-center gap-2"><ShieldCheck className="size-5"/><h3 className="text-lg font-semibold">Event, evidence and cost ledger</h3></div>
-     <p className="mt-2 text-xs text-ink/60">Private record · {j.ledger.sourceOfTruth} · {j.ledger.eventCount} events</p>
+     <p className="mt-2 text-xs text-ink/60">Private record · {j.ledger.sourceOfTruth} · {j.ledger.eventCount} events · {j.ledger.integrity}</p>
+     <div className="mt-4 space-y-2">{j.ledger.stages.map(s=><div className="rounded-md border border-ink/15 p-3" key={s.stage}>
+      <p className="font-semibold">{s.stage} · {s.status}</p><p className="mt-1 text-xs text-ink/65">{s.reason}</p>
+     </div>)}</div>
      <p className="mt-3 text-sm">Recorded model calls: {j.ledger.costs.modelCalls}. Generation calls: {j.ledger.costs.generationCalls}. Monetary costs: <strong>NOT RECONCILED</strong> (no zero-cost claim).</p>
      <ol className="mt-5 space-y-4">{j.ledger.events.map(e=><li className="border-t border-ink/10 pt-3 text-sm" key={e.sequence}>
       <div className="flex justify-between gap-2 font-semibold"><span>{e.sequence}. {e.code.replaceAll('_',' ')}</span><time className="text-xs font-normal text-ink/60">{new Date(e.at).toLocaleString()}</time></div>
