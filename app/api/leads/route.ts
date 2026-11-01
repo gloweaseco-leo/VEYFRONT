@@ -1,5 +1,7 @@
 import { put } from '@vercel/blob'
 import { sendLeadAlert } from '@/lib/lead-alert'
+import { enabledP0,p0Origin } from '@/lib/p0-journey'
+import { receiveP0 } from '@/lib/p0-intake'
 import { randomUUID } from 'node:crypto'
 import type { NextRequest } from 'next/server'
 import { checkUrl } from '@/lib/url'
@@ -39,7 +41,7 @@ function validEmail(value: string): boolean {
 export async function POST(request: NextRequest) {
   // Only the first-party browser application may submit. Spoofed Origins remain possible
   // outside browsers; this check is not bot authentication or durable rate limiting.
-  if (!isSameOrigin(request)) return reject('Origin not allowed.', 403)
+  if (enabledP0() ? !p0Origin(request) : !isSameOrigin(request)) return reject('Origin not allowed.', 403)
   if (!isJsonContentType(request)) return reject('JSON request required.', 415)
   const body = await readLeadBody(request)
   if (body.kind === 'too-large') return reject('Request too large.', 413)
@@ -68,6 +70,15 @@ export async function POST(request: NextRequest) {
   if (category === 'rebuild') {
     const result = checkUrl(website || '')
     if (result.state !== 'valid') return reject('Please provide a public website address.', 422)
+  }
+  if (enabledP0()) {
+    // This Preview branch intercepts the real Launch/Rebuild lead endpoint and
+    // stores ONE canonical Journey v2 rather than a separate inquiry + P1 copy.
+    // Never enable real-customer intake until email proof, WAF and legal gates pass.
+    if (category !== 'launch' && category !== 'rebuild') return reject('This Preview tests Launch and Rebuild only.', 404)
+    if (!process.env.BLOB_READ_WRITE_TOKEN) return reject('Private storage unavailable.', 503)
+    return receiveP0(request, {service:category,name,email,company:company||'',website:website||'',
+      markets:markets||'',details})
   }
   if (!process.env.BLOB_READ_WRITE_TOKEN) return reject('Request intake is temporarily unavailable. Please try again later.', 503)
 
