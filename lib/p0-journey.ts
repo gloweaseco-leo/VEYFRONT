@@ -1,12 +1,13 @@
 import {createHash,createHmac,timingSafeEqual} from 'node:crypto'
 import type {AcyBrief,AcyChannel,AcyStatus} from './acy-p1'
 import type {EvidenceInventory} from './l2m-p2-evidence'
+import {launchContext} from './p2-launch-context'
 // Mirror frozen P1 rule contract; the parity regression covers both implementations.
 const missingBriefFields=(brief:AcyBrief)=>(['markets','desiredAction'] as const).filter(x=>brief[x].trim().length<3)
 const deriveStatus=(brief:AcyBrief):AcyStatus=>missingBriefFields(brief).length?'needs_completion':'qualified'
 
 export type P0EventCode='intake_received'|'missing_information_requested'|'intake_qualified'|
- 'email_provider_accepted'|'email_failed'|'email_disabled'|'brief_completed'|'channel_preference_recorded'|'human_review_requested'|'p2_evidence_plan_review_drafted'|'p2_review_started'|'p2_review_failed'
+ 'email_provider_accepted'|'email_failed'|'email_disabled'|'brief_completed'|'channel_preference_recorded'|'human_review_requested'|'p2_evidence_plan_review_drafted'|'p2_review_started'|'p2_review_failed'|'launch_context_prepared'
 export type P0Event={
  sequence:number;eventId:string;actionId:string;code:P0EventCode;at:string;previousHash:string|null;entryHash:string;
  from:AcyStatus|null;to:AcyStatus;why:string;
@@ -26,6 +27,7 @@ export type P0Journey={
  brief:AcyBrief;status:AcyStatus;channel:AcyChannel;consent:{accepted:true;version:'VEYFRONT-PRIVACY-2026-10-30';at:string};
  notification:'pending'|'provider_accepted'|'failed'|'disabled';
  p2?:P0P2Review;
+ launch?:ReturnType<typeof launchContext>;
  p2Attempt?:{actionId:string;startedAt:string;state:'IN_PROGRESS'|'FAILED';reason:string};
  events:P0Event[];ownerStatus:'unassigned';costs:{currency:null;knownMinorUnits:null;modelCalls:0;generationCalls:0;status:'NOT_RECONCILED'};
 }
@@ -90,6 +92,14 @@ export function verifyLedger(j:P0Journey):boolean{
   const ended=j.events.filter(e=>e.code==='p2_review_failed'&&e.actionId===j.p2Attempt?.actionId)
   if(j.p2Attempt.state==='IN_PROGRESS'&&(ended.length!==0||j.p2))return false
   if(j.p2Attempt.state==='FAILED'&&(ended.length!==1||ended[0].why!==j.p2Attempt.reason||j.p2))return false
+ }
+ if(j.launch){
+  const expected=launchContext({company:j.brief.company,markets:j.brief.markets,
+   description:j.brief.description,desiredAction:j.brief.desiredAction})
+  const logged=j.events.filter(e=>e.code==='launch_context_prepared')
+  if(j.service!=='launch'||j.p2||j.launch.evidenceSha!==expected.evidenceSha||
+    j.launch.status!=='REVIEW_REQUIRED'||j.launch.cbp2PlannerAuthorized!==false||
+    logged.length!==1||logged[0].evidence.sha256!==j.launch.evidenceSha)return false
  }
  if(j.p2){
   const p=j.p2
@@ -190,6 +200,12 @@ export function changeP0(j:P0Journey,input:Record<string,unknown>,now=new Date()
   next.brief.markets=input.markets.trim();next.brief.desiredAction=input.desiredAction.trim()
   next.status=deriveStatus(next.brief);code='brief_completed';why=next.status==='qualified'?'Customer-supplied missing fields complete; ready for next stage, not yet approved.':'More information is needed.'
   kind='CUSTOMER_SELF_REPORTED';hash=sha(JSON.stringify({markets:next.brief.markets,desiredAction:next.brief.desiredAction}))
+ }else if(input.type==='prepare_launch_context'&&j.service==='launch'&&j.status==='qualified'&&!j.launch){
+  next.launch=launchContext({company:j.brief.company,markets:j.brief.markets,
+   description:j.brief.description,desiredAction:j.brief.desiredAction})
+  code='launch_context_prepared'
+  why='Customer-self-reported Launch Context drafted without old URL; industry/buyer/offerings need confirmation. CBP2 not invoked.'
+  hash=next.launch.evidenceSha;kind='CUSTOMER_SELF_REPORTED'
  }else if(input.type==='choose_channel'&&(input.channel==='email'||input.channel==='wechat'||input.channel==='feishu')){
   next.channel=input.channel;code='channel_preference_recorded';why='Preference saved only; third-party messaging not connected.'
  }else if(input.type==='request_human'){
@@ -203,13 +219,13 @@ export function visibleP0(j:P0Journey){
   expiresAt:j.expiresAt,channel:j.channel,brief:j.brief,nextQuestions:missingBriefFields(j.brief),
   notification:j.notification,blockedReason:j.status==='needs_completion'?'Waiting for target markets and/or desired buyer action.':
   j.status==='human_review'?'Awaiting a human operations owner.':'P1 qualified; P2 needs separate authorized source evidence.',
-  p2:j.p2??null,
+  p2:j.p2??null,launchContext:j.launch??null,
   ledger:{events:j.events.map(e=>({...e})),eventCount:j.events.length,
    integrity:verifyLedger(j)?'HASH_CHAIN_VALID':'INVALID',
    stages:[
     {stage:'P1',status:j.status,reason:j.status==='needs_completion'?'Customer needs to complete brief fields.':j.status==='human_review'?'Operations owner review pending.':'Brief sufficient for next-stage evaluation.'},
-    {stage:'P2',status:j.p2?'REVIEW_REQUIRED':j.p2Attempt?.state??'NOT_STARTED',
-     reason:j.p2?'Bounded homepage evidence and unverified plan require customer review.':
+    {stage:'P2',status:j.p2||j.launch?'REVIEW_REQUIRED':j.p2Attempt?.state??'NOT_STARTED',
+     reason:j.launch?'Customer-only Launch Context prepared; buyer/product proof and Planner remain gated.':j.p2?'Bounded homepage evidence and unverified plan require customer review.':
       j.p2Attempt?.state==='IN_PROGRESS'?'Read-only homepage observation is in progress.':
       j.p2Attempt?.state==='FAILED'?'Previous source review failed: '+j.p2Attempt.reason:
       'No authorized customer URL evidence linked to this journey.'},
