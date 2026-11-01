@@ -41,7 +41,7 @@ export function p0Origin(request:Pick<Request,'url'|'headers'>,env?:{VERCEL_ENV?
  const e=env??process.env
  if(e.VERCEL_ENV!=='preview')return false
  const allowed=e.ACY_P0_ALLOWED_ORIGIN?.trim()
- if(!allowed||!/^https:\/\/veyfront-git-feature-(?:p0|p2-evidence)-[a-z0-9-]+\.vercel\.app$/.test(allowed))return false
+ if(!allowed||!/^https:\/\/veyfront-git-feature-(?:p0|p2-eviden)[a-z0-9-]*\.vercel\.app$/.test(allowed))return false
  const origin=request.headers.get('origin')
  if(origin)return origin===allowed
  return request.headers.get('sec-fetch-site')==='same-origin'&&request.headers.get('x-vf-preview-p0')==='journey'
