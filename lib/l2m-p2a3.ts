@@ -1,4 +1,4 @@
-import { isLiveAssessment, type LiveHomeAssessment } from './l2m-p2a2'
+import type { LiveHomeAssessment } from './l2m-p2a2'
 
 export type GroundedOpportunity = {
   id: string
@@ -29,8 +29,8 @@ export function p2a3Enabled(env?:{VERCEL_ENV?:string;ACY_P2A3_ENABLED?:string;VE
  const e=env??{VERCEL_ENV:process.env.VERCEL_ENV,ACY_P2A3_ENABLED:process.env.ACY_P2A3_ENABLED,VERCEL_GIT_COMMIT_REF:process.env.VERCEL_GIT_COMMIT_REF}
  return e.VERCEL_ENV==='preview'&&e.ACY_P2A3_ENABLED==='true'&&e.VERCEL_GIT_COMMIT_REF==='feature/acy-p2a3-consumer'
 }
-export function isGroundedPlan(value:unknown,assessment:unknown):value is GroundedPlan{
- if(!isLiveAssessment(assessment)||!obj(value)||!obj(value.source)||!obj(value.context)||!obj(value.execution))return false
+export function isGroundedPlan(value:unknown,assessment:LiveHomeAssessment):value is GroundedPlan{
+ if(!assessment||!obj(value)||!obj(value.source)||!obj(value.context)||!obj(value.execution))return false
  const a=assessment as LiveHomeAssessment
  const s=value.source,c=value.context,x=value.execution,o=c.observed
  if(value.contract_version!=='l2m.acy.plan/0.1'||typeof value.plan_id!=='string'||!/^plan-[a-f0-9]{20}$/.test(value.plan_id)
