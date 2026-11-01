@@ -54,6 +54,7 @@ test('consecutive P1 steps and state transitions are attributed and recoverable'
  assert.equal(first.kind,'updated')
  const qualified=first.journey
  assert.equal(qualified.status,'qualified')
+ assert.equal(changeP0(qualified,{actionId:randomUUID(),type:'complete_brief',markets:'',desiredAction:''}).kind,'invalid')
  assert.equal(qualified.events.at(-1).code,'brief_completed')
  assert.equal(qualified.events.at(-1).from,'needs_completion')
  assert.equal(qualified.events.at(-1).to,'qualified')
@@ -121,6 +122,13 @@ test('P2 is a consented review in same journey; duplicate, busy and failure are 
  const started=beginP2Review(qualified,attemptId,new Date('2026-11-01T00:30:00Z'))
  assert.equal(started.kind,'updated')
  assert.equal(verifyLedger(started.journey),true)
+ const tamperLease=structuredClone(started.journey)
+ tamperLease.p2Attempt.actionId=randomUUID()
+ assert.equal(verifyLedger(tamperLease),false)
+ const tamperState=structuredClone(started.journey)
+ tamperState.status='needs_completion'
+ assert.equal(verifyLedger(tamperState),false)
+ assert.equal(changeP0(started.journey,{actionId:randomUUID(),type:'complete_brief',markets:'',desiredAction:''}).kind,'invalid')
  assert.equal(started.journey.events.at(-1).evidence.consentVersion,'VEYFRONT-READONLY-HOMEPAGE-2026-10-31')
  assert.equal(started.journey.events.at(-1).evidence.kind,'EXPLICIT_SOURCE_AUTHORIZATION')
  assert.equal(visibleP0(started.journey).ledger.stages[1].status,'IN_PROGRESS')
@@ -146,6 +154,9 @@ test('P2 is a consented review in same journey; duplicate, busy and failure are 
  const fail=failP2Review(started.journey,attemptId,'UPSTREAM_FAILED',new Date('2026-11-01T00:30:20Z'))
  assert.equal(fail.p2Attempt.state,'FAILED')
  assert.equal(verifyLedger(fail),true)
+ const tamperFailure=structuredClone(fail)
+ tamperFailure.p2Attempt.reason='SUCCEEDED'
+ assert.equal(verifyLedger(tamperFailure),false)
  const retry=beginP2Review(fail,randomUUID(),new Date('2026-11-01T00:30:22Z'))
  assert.equal(retry.kind,'updated')
  assert.equal(beginP2Review(initial,randomUUID()).kind,'invalid')
