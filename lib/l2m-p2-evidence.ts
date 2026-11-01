@@ -45,7 +45,9 @@ export function validateEvidence(value:unknown,assessment:LiveHomeAssessment):va
   const expected=v.kind==='OFFERING_CANDIDATE'?'CANDIDATE_NOT_A_VERIFIED_PRODUCT_OR_SERVICE':
     v.kind==='CASE_CANDIDATE'?'CANDIDATE_NOT_A_VERIFIED_CUSTOMER_CASE':
     v.kind==='FORM_MARKUP'?'HTML_PRESENT_NOT_FUNCTIONALLY_TESTED':'OBSERVED_UNVERIFIED'
-  if(v.claim_status!==expected)return false
+  const stableId='observed-'+sha(String(s.source_page_sha256)+'|'+String(v.kind)+'|'+
+    String(v.selector)+'|'+String(v.excerpt)+'|'+String(v.target_observed)).slice(0,20)
+  if(v.id!==stableId||v.claim_status!==expected)return false
   seen.add(v.id as string)
  }
  for(const kind of kinds){
