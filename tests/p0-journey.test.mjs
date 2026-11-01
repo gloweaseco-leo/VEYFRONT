@@ -161,3 +161,27 @@ test('P2 is a consented review in same journey; duplicate, busy and failure are 
  assert.equal(retry.kind,'updated')
  assert.equal(beginP2Review(initial,randomUUID()).kind,'invalid')
 })
+
+test('Launch can prepare URL-free Context on the same Journey without inventing industry or invoking CBP2',()=>{
+ const initial=makeP0({service:'launch',name:'Internal QA',email:'qa@example.invalid',
+  company:'Launch Pilot',website:'',markets:'',details:'We want a new overseas business site with inquiry capabilities.'},
+  randomUUID(),SECRET,new Date('2026-11-01T01:00:00Z')).journey
+ assert.equal(initial.status,'needs_completion')
+ const complete=changeP0(initial,{type:'complete_brief',actionId:randomUUID(),
+  markets:'European Union',desiredAction:'Request product details'})
+ assert.equal(complete.kind,'updated')
+ assert.equal(complete.journey.status,'qualified')
+ const prepared=changeP0(complete.journey,{type:'prepare_launch_context',actionId:randomUUID()})
+ assert.equal(prepared.kind,'updated')
+ assert.equal(prepared.journey.launch.source,'CUSTOMER_ONLY_NO_SOURCE_URL')
+ assert.equal(prepared.journey.launch.cbp2PlannerAuthorized,false)
+ assert.equal(prepared.journey.launch.modelCalls,0)
+ assert.equal(prepared.journey.launch.facts.every(f=>f.provenance==='CUSTOMER_SELF_REPORTED_UNVERIFIED'),true)
+ assert.equal(prepared.journey.launch.missing.includes('buyer_roles'),true)
+ assert.equal(verifyLedger(prepared.journey),true)
+ assert.equal(visibleP0(prepared.journey).ledger.stages[1].status,'REVIEW_REQUIRED')
+ assert.equal(changeP0(prepared.journey,{type:'prepare_launch_context',actionId:randomUUID()}).kind,'invalid')
+ const tampered=structuredClone(prepared.journey)
+ tampered.launch.facts[0].value='fabricated approved customer'
+ assert.equal(verifyLedger(tampered),false)
+})
