@@ -22,3 +22,10 @@ Owner scope: P1 stable intake, P2 business analysis only. P3 payments and P4 gen
 5. For *dynamic* CBP2: validate real Site IR & Context 2.0, separate customer factual confirmation, permission to transmit data to an approved model and explicit call/cost authorization. Until then dynamic planning remains NOT IMPLEMENTED.
 
 No merge, production update or P3/P4 scope change is approved by this record.
+
+## Latest integrity and Preview findings — 2026-11-01 UTC
+- Consumer now recomputes each HTML observation identity from the bound page SHA, category, DOM locator, text excerpt, and bounded CTA target. A changed locator/target does not survive the contract validator.
+- The structured facts digest is stored in the final P2 event **and** the event hash chain, not merely alongside an independently recomputable manifest. Replacing both facts and their detached SHA without rewriting audit history fails validation.
+- Current code head `77a66a491fdb04db7c8471a09cc1e6ab4c1b8c7a`: GitHub Actions run `41262767280` **SUCCESS**, P0/P2 tests, TypeScript and full Next.js build all PASS. L2M strict source/Context tests independently **21/21 PASS**.
+- New branch-scoped protected Preview settings were created for `ACY_P2_FACTS_ENABLED`, `ACY_P0_ENABLED`, exact Origin, HMAC identity and server-side L2M token. **No upstream URL is configured** because the new L2M evidence branch has no real deployment; deliberately fail closed instead of pointing at the old P2-A3 plan endpoint.
+- New L2M protected evidence Preview creation remains blocked by Vercel `402 api-deployments-free-per-day`. Consumer's latest actual READY Preview still predates the final source/audit commits. **End-to-end for this new contract remains NOT ACCEPTED**. Prior P1→P2-A3 E2E remains separately valid only for its earlier contract.
