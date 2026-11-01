@@ -9,7 +9,7 @@ export type P0EventCode='intake_received'|'missing_information_requested'|'intak
 export type P0Event={
  sequence:number;eventId:string;actionId:string;code:P0EventCode;at:string;previousHash:string|null;entryHash:string;
  from:AcyStatus|null;to:AcyStatus;why:string;
- evidence:{kind:'CUSTOMER_SELF_REPORTED'|'SYSTEM_RULE'|'PROVIDER_RESPONSE'|'BOUNDED_PUBLIC_SNAPSHOT';sha256:string|null;consentVersion:string|null}
+ evidence:{kind:'CUSTOMER_SELF_REPORTED'|'SYSTEM_RULE'|'PROVIDER_RESPONSE'|'BOUNDED_PUBLIC_SNAPSHOT'|'EXPLICIT_SOURCE_AUTHORIZATION';sha256:string|null;consentVersion:string|null}
  usage:{modelCalls:0;generationCalls:0;billableAmountMinor:null;billing:'NOT_MEASURED'}
 }
 export type P0P2Review={
@@ -29,6 +29,7 @@ export type P0Journey={
 }
 export const P0_PREFIX='acy-p0/preview/journeys/'
 export const P0_CONSENT='VEYFRONT-PRIVACY-2026-10-30'
+export const P2_SOURCE_CONSENT='VEYFRONT-READONLY-HOMEPAGE-2026-10-31'
 const allowedStatus=['needs_completion','qualified','human_review']
 export function enabledP0(env?:{VERCEL_ENV?:string;VERCEL_GIT_COMMIT_REF?:string;ACY_P0_ENABLED?:string}):boolean{
  const e=env??process.env
@@ -64,7 +65,7 @@ export function event(j:P0Journey,code:P0EventCode,why:string,actionId:string,ki
  const base={
   sequence:j.events.length+1,eventId:sha(j.id+'|'+actionId+'|'+code).slice(0,32),actionId,code,at,
   from,to:j.status,previousHash:j.events.at(-1)?.entryHash??null,why,
-  evidence:{kind,sha256:sourceHash,consentVersion:kind==='CUSTOMER_SELF_REPORTED'?P0_CONSENT:null},
+  evidence:{kind,sha256:sourceHash,consentVersion:kind==='EXPLICIT_SOURCE_AUTHORIZATION'?P2_SOURCE_CONSENT:kind==='CUSTOMER_SELF_REPORTED'?P0_CONSENT:null},
   usage:{modelCalls:0 as const,generationCalls:0 as const,billableAmountMinor:null,billing:'NOT_MEASURED' as const}
  }
  return {...base,entryHash:sha(JSON.stringify(base))}
@@ -79,6 +80,18 @@ export function verifyLedger(j:P0Journey):boolean{
   if(sha(JSON.stringify(base))!==entryHash)return false
   if(e.usage.modelCalls!==0||e.usage.generationCalls!==0||e.usage.billableAmountMinor!==null)return false
   previous=entryHash
+ }
+ if(j.p2){
+  const p=j.p2
+  const linked=j.events.filter(e=>e.code==='p2_evidence_plan_review_drafted')
+  if(linked.length!==1||linked[0].evidence.sha256!==p.sourcePageSha256||
+    p.status!=='REVIEW_REQUIRED'||p.customerReady!==false||
+    p.sourceUrl!=='https://veyfront.com/'||p.sourceRights!=='USER_ASSERTED_NOT_INDEPENDENTLY_VERIFIED'||
+    !/^[a-f0-9]{64}$/.test(p.sourceManifestSha256)||!/^[a-f0-9]{64}$/.test(p.sourcePageSha256)||
+    !/^assessment-[a-f0-9]{20}$/.test(p.assessmentId)||!/^plan-[a-f0-9]{20}$/.test(p.planId)||
+    p.opportunities.length!==4||p.modelCalls!==0||p.generationCalls!==0)return false
+  if(!['discover','understand','trust','convert'].every((stage,i)=>
+   p.opportunities[i]?.stage===stage&&p.opportunities[i]?.claim==='UNVERIFIED_HYPOTHESIS'))return false
  }
  return true
 }
@@ -121,7 +134,7 @@ export function beginP2Review(j:P0Journey,actionId:string,now=new Date()):
  const next:P0Journey={...j,events:[...j.events],updatedAt:at,
   p2Attempt:{actionId,startedAt:at,state:'IN_PROGRESS',reason:'Source evidence request running.'}}
  next.events.push(event(next,'p2_review_started','Authorized source review started; not a verified customer claim.',
-  actionId,'SYSTEM_RULE',at,j.status,null))
+  actionId,'EXPLICIT_SOURCE_AUTHORIZATION',at,j.status,sha('https://veyfront.com/|'+actionId+'|consented')))
  return {kind:'updated',journey:next}
 }
 export function failP2Review(j:P0Journey,actionId:string,category:string,now=new Date()):P0Journey|null{
