@@ -109,3 +109,36 @@ test('real P0 API + mocked private CAS + bounded P2 provider use one Journey; P3
   assert.equal(calls,1)
  }finally{globalThis.fetch=original}
 })
+
+test('failed P2 upstream leaves no false report, records reason and permits controlled retry',async()=>{
+ const form={service:'rebuild',name:'Internal QA',email:'qa@example.invalid',company:'VEYFRONT QA',
+  website:'https://veyfront.com/',markets:'',details:'Synthetic failure recovery test; no customer data or production changes.'}
+ const created=await receiveP0({url:alias+'/api/leads',headers:new Headers({'x-vf-intake-key':randomUUID()})},form)
+ assert.equal(created.status,201)
+ const params=new URLSearchParams(new URL((await created.json()).resumeUrl).hash.slice(1))
+ const id=params.get('id'),token=params.get('token')
+ assert.equal((await POST(request({op:'update',id,token,type:'complete_brief',actionId:randomUUID(),
+  markets:'European Union',desiredAction:'Request a quotation'}))).status,200)
+ let count=0
+ const original=globalThis.fetch
+ globalThis.fetch=async()=>{count++;return count===1?new Response('{}',{status:401}):Response.json(fixture())}
+ try{
+  const rejected=await POST(request({op:'assess_p2',id,token,actionId:randomUUID(),authorization_confirmed:true}))
+  assert.equal(rejected.status,502)
+  const after=await POST(request({op:'read',id,token}))
+  assert.equal(after.status,200)
+  const blocked=(await after.json()).journey
+  assert.equal(blocked.p2,null)
+  assert.equal(blocked.ledger.integrity,'HASH_CHAIN_VALID')
+  assert.equal(blocked.ledger.stages[1].status,'FAILED')
+  assert.equal(blocked.ledger.events.at(-1).code,'p2_review_failed')
+  assert.equal(blocked.ledger.events.at(-1).why,'UPSTREAM_FAILED')
+  const recovered=await POST(request({op:'assess_p2',id,token,actionId:randomUUID(),authorization_confirmed:true}))
+  assert.equal(recovered.status,200)
+  const ok=(await recovered.json()).journey
+  assert.equal(ok.p2.status,'REVIEW_REQUIRED')
+  assert.equal(ok.ledger.integrity,'HASH_CHAIN_VALID')
+  assert.equal(ok.ledger.stages[1].status,'REVIEW_REQUIRED')
+  assert.equal(count,2)
+ }finally{globalThis.fetch=original}
+})
