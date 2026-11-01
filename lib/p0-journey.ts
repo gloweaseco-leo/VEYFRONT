@@ -7,7 +7,7 @@ const deriveStatus=(brief:AcyBrief):AcyStatus=>missingBriefFields(brief).length?
 export type P0EventCode='intake_received'|'missing_information_requested'|'intake_qualified'|
  'email_provider_accepted'|'email_failed'|'email_disabled'|'brief_completed'|'channel_preference_recorded'|'human_review_requested'
 export type P0Event={
- sequence:number;eventId:string;actionId:string;code:P0EventCode;at:string;
+ sequence:number;eventId:string;actionId:string;code:P0EventCode;at:string;previousHash:string|null;entryHash:string;
  from:AcyStatus|null;to:AcyStatus;why:string;
  evidence:{kind:'CUSTOMER_SELF_REPORTED'|'SYSTEM_RULE'|'PROVIDER_RESPONSE';sha256:string|null;consentVersion:string|null}
  usage:{modelCalls:0;generationCalls:0;billableAmountMinor:null;billing:'NOT_MEASURED'}
@@ -53,10 +53,28 @@ export function authentic(j:P0Journey,token:unknown,now=new Date()):boolean{
 }
 export function event(j:P0Journey,code:P0EventCode,why:string,actionId:string,kind:P0Event['evidence']['kind'],
  at:string,from:AcyStatus|null,sourceHash:string|null):P0Event{
- return {sequence:j.events.length+1,eventId:sha(j.id+'|'+actionId+'|'+code).slice(0,32),actionId,code,at,from,to:j.status,
- why,evidence:{kind,sha256:sourceHash,consentVersion:kind==='CUSTOMER_SELF_REPORTED'?P0_CONSENT:null},
- usage:{modelCalls:0,generationCalls:0,billableAmountMinor:null,billing:'NOT_MEASURED'}}
+ const base={
+  sequence:j.events.length+1,eventId:sha(j.id+'|'+actionId+'|'+code).slice(0,32),actionId,code,at,
+  from,to:j.status,previousHash:j.events.at(-1)?.entryHash??null,why,
+  evidence:{kind,sha256:sourceHash,consentVersion:kind==='CUSTOMER_SELF_REPORTED'?P0_CONSENT:null},
+  usage:{modelCalls:0 as const,generationCalls:0 as const,billableAmountMinor:null,billing:'NOT_MEASURED' as const}
+ }
+ return {...base,entryHash:sha(JSON.stringify(base))}
 }
+export function verifyLedger(j:P0Journey):boolean{
+ if(!Array.isArray(j.events)||j.events.length<2||j.events.length>60)return false
+ let previous:string|null=null
+ for(let i=0;i<j.events.length;i++){
+  const e=j.events[i]
+  if(e.sequence!==i+1||e.previousHash!==previous||!/^([a-f0-9]{64})$/.test(e.entryHash))return false
+  const {entryHash,...base}=e
+  if(sha(JSON.stringify(base))!==entryHash)return false
+  if(e.usage.modelCalls!==0||e.usage.generationCalls!==0||e.usage.billableAmountMinor!==null)return false
+  previous=entryHash
+ }
+ return true
+}
+
 export function makeP0(input:{service:'launch'|'rebuild';name:string;email:string;company:string;website:string;markets:string;details:string},
  key:string,secret:string,now=new Date()):{journey:P0Journey;token:string}{
  const {id,token}=idempotentIdentity(key,input.email,secret)
@@ -111,6 +129,13 @@ export function visibleP0(j:P0Journey){
   notification:j.notification,blockedReason:j.status==='needs_completion'?'Waiting for target markets and/or desired buyer action.':
   j.status==='human_review'?'Awaiting a human operations owner.':'Qualified for subsequent review; P2/P3 not authorized.',
   ledger:{events:j.events.map(e=>({...e})),eventCount:j.events.length,
+   integrity:verifyLedger(j)?'HASH_CHAIN_VALID':'INVALID',
+   stages:[
+    {stage:'P1',status:j.status,reason:j.status==='needs_completion'?'Customer needs to complete brief fields.':j.status==='human_review'?'Operations owner review pending.':'Brief sufficient for next-stage evaluation.'},
+    {stage:'P2',status:'NOT_STARTED',reason:'No authorized customer URL evidence linked to this journey.'},
+    {stage:'P3',status:'LOCKED',reason:'No confirmed scope, offer or accepted price.'},
+    {stage:'P4',status:'LOCKED',reason:'No accepted order, generation authorization or delivery.'}
+   ],
    costs:j.costs,stage:'P1_INTAKE',sourceOfTruth:'PRIVATE_BLOB_VERSION_2',
    evidenceLabel:'CUSTOMER_SELF_REPORTED_NOT_INDEPENDENTLY_VERIFIED'}}
 }
