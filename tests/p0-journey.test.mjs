@@ -121,6 +121,8 @@ test('P2 is a consented review in same journey; duplicate, busy and failure are 
  const started=beginP2Review(qualified,attemptId,new Date('2026-11-01T00:30:00Z'))
  assert.equal(started.kind,'updated')
  assert.equal(verifyLedger(started.journey),true)
+ assert.equal(started.journey.events.at(-1).evidence.consentVersion,'VEYFRONT-READONLY-HOMEPAGE-2026-10-31')
+ assert.equal(started.journey.events.at(-1).evidence.kind,'EXPLICIT_SOURCE_AUTHORIZATION')
  assert.equal(visibleP0(started.journey).ledger.stages[1].status,'IN_PROGRESS')
  assert.equal(beginP2Review(started.journey,randomUUID(),new Date('2026-11-01T00:30:10Z')).kind,'busy')
  assert.equal(beginP2Review(started.journey,attemptId,new Date('2026-11-01T00:30:10Z')).kind,'duplicate')
@@ -136,6 +138,9 @@ test('P2 is a consented review in same journey; duplicate, busy and failure are 
  assert.equal(verifyLedger(finished.journey),true)
  assert.equal(visibleP0(finished.journey).ledger.stages[1].status,'REVIEW_REQUIRED')
  assert.equal(visibleP0(finished.journey).p2.sourcePageSha256,'a'.repeat(64))
+ const tampered=structuredClone(finished.journey)
+ tampered.p2.opportunities[0].claim='VERIFIED_DEFICIENCY'
+ assert.equal(verifyLedger(tampered),false)
  assert.equal(beginP2Review(finished.journey,randomUUID()).kind,'invalid')
  assert.equal(finished.journey.events.at(-1).evidence.kind,'BOUNDED_PUBLIC_SNAPSHOT')
  const fail=failP2Review(started.journey,attemptId,'UPSTREAM_FAILED',new Date('2026-11-01T00:30:20Z'))
