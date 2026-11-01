@@ -7,6 +7,8 @@ type Journey={
  id:string;reference:string;service:'launch'|'rebuild';status:Status;expiresAt:string;channel:'email'|'wechat'|'feishu'
  brief:{company:string;website:string;markets:string;desiredAction:string;description:string}
  nextQuestions:string[];notification:string;blockedReason:string
+ launchContext?:null|{version:string;status:string;source:string;cbp2PlannerAuthorized:false;
+  fields?:unknown;facts:{field:string;value:string;provenance:string}[];missing:string[];evidenceSha:string}
  p2:null|{status:'REVIEW_REQUIRED';sourceUrl:string;sourcePageSha256:string;assessmentId:string;planId:string;contract:string;capturedAt:string;opportunities:{stage:string;hypothesis:string;question:string;claim:string}[];commercialEvidence?:{counts:Record<string,number>;observations:{id:string;kind:string;selector:string;excerpt:string;source_page_sha256:string;claim_status:string}[];capabilities:{name:string;status:string}[]}}
  ledger:{eventCount:number;integrity:string;stages:{stage:string;status:string;reason:string}[];events:{sequence:number;code:string;at:string;why:string;to:Status;
   evidence:{kind:string;sha256:string|null;consentVersion:string|null};
@@ -69,6 +71,22 @@ export function JourneyConsole(){
     </form>}
     {j.status==='qualified'&&<div className="rounded-xl border border-ink/20 bg-mist/40 p-6"><h3 className="text-lg font-semibold">Information completed</h3><p className="mt-2 text-sm">P1 is complete. P2 evidence review remains limited to authorized sources. Orders, pricing and generated sites are outside this phase.</p></div>}
     {j.status==='human_review'&&<p className="rounded-xl border border-ink/20 bg-mist/40 p-6">Human exception flagged. No operator SLA or response is claimed.</p>}
+    {j.service==='launch'&&j.status==='qualified'&&<section className="rounded-xl border border-ink/15 bg-white p-6">
+      <p className="font-mono text-xs uppercase text-ink/60">P2 · Launch Context · no old URL</p>
+      <h3 className="mt-2 text-lg font-semibold">Business context from your own brief</h3>
+      <p className="mt-2 text-sm text-ink/70">All fields below are customer-supplied, unverified statements. No old website, AI Planner, price or generated website is involved.</p>
+      {!j.launchContext&&<button type="button" disabled={busy}
+        onClick={()=>void update({type:'prepare_launch_context'})}
+        className="mt-4 min-h-12 rounded-md bg-ink px-5 font-semibold text-ivory disabled:opacity-50">Prepare context for review</button>}
+      {j.launchContext&&<div className="mt-4 space-y-3 text-sm">
+        <p className="font-semibold">REVIEW REQUIRED · AI Planner not authorized</p>
+        {j.launchContext.facts.map(f=><div key={f.field} className="border-t border-ink/15 pt-2">
+          <strong>{f.field.replaceAll('_',' ')}</strong><p className="mt-1">{f.value}</p>
+          <p className="text-xs text-ink/60">{f.provenance}</p></div>)}
+        <p className="text-xs text-ink/70">Still unknown: {j.launchContext.missing.join(', ')}</p>
+        <p className="break-all font-mono text-xs text-ink/60">Source digest: {j.launchContext.evidenceSha}</p>
+      </div>}
+    </section>}
     {j.service==='rebuild'&&j.status==='qualified'&&<section className="rounded-xl border border-ink/15 bg-white p-6">
      <p className="font-mono text-xs uppercase tracking-widest text-ink/60">P2 · Evidence review · controlled QA</p>
      <h3 className="mt-2 text-lg font-semibold">Verify public homepage evidence</h3>
