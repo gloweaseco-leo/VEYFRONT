@@ -1,7 +1,13 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
-import {enabledP0,p0Origin,qaOnly,idempotentIdentity,makeP0,authentic,changeP0,visibleP0,recordDelivery,verifyLedger,beginP2Review,linkP2Review,failP2Review} from '../lib/p0-journey.ts'
+import {registerHooks} from 'node:module'
+registerHooks({resolve(specifier,context,nextResolve){
+ if(context.parentURL?.endsWith('.ts')&&specifier.startsWith('.')&&!/\\.(ts|js|mjs|json)$/.test(specifier))
+  return nextResolve(specifier+'.ts',context)
+ return nextResolve(specifier,context)
+}})
+const {enabledP0,p0Origin,qaOnly,idempotentIdentity,makeP0,authentic,changeP0,visibleP0,recordDelivery,verifyLedger,beginP2Review,linkP2Review,failP2Review}=await import('../lib/p0-journey.ts')
 import {deriveStatus,missingBriefFields} from '../lib/acy-p1.ts'
 
 const SECRET='P0-TEST-SECRET-'+'z'.repeat(50)
