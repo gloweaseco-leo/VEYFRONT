@@ -16,7 +16,7 @@
     "check:p2a": "node --test tests/acy-p2a.test.mjs",
     "check:p2a2": "node --test tests/acy-p2a2.test.mjs",
     "check:p2a3": "node --test tests/acy-p2a3.test.mjs",
-    "check:p0": "node --test tests/p0-journey.test.mjs tests/p0-p2.test.mjs tests/p0-api-integrated.test.mjs"
+    "check:p0": "node --test tests/p0-journey.test.mjs tests/p0-p2.test.mjs tests/p0-api-integrated.test.mjs tests/p2-evidence.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
