@@ -5,18 +5,25 @@ const missingBriefFields=(brief:AcyBrief)=>(['markets','desiredAction'] as const
 const deriveStatus=(brief:AcyBrief):AcyStatus=>missingBriefFields(brief).length?'needs_completion':'qualified'
 
 export type P0EventCode='intake_received'|'missing_information_requested'|'intake_qualified'|
- 'email_provider_accepted'|'email_failed'|'email_disabled'|'brief_completed'|'channel_preference_recorded'|'human_review_requested'
+ 'email_provider_accepted'|'email_failed'|'email_disabled'|'brief_completed'|'channel_preference_recorded'|'human_review_requested'|'p2_evidence_plan_review_drafted'
 export type P0Event={
  sequence:number;eventId:string;actionId:string;code:P0EventCode;at:string;previousHash:string|null;entryHash:string;
  from:AcyStatus|null;to:AcyStatus;why:string;
- evidence:{kind:'CUSTOMER_SELF_REPORTED'|'SYSTEM_RULE'|'PROVIDER_RESPONSE';sha256:string|null;consentVersion:string|null}
+ evidence:{kind:'CUSTOMER_SELF_REPORTED'|'SYSTEM_RULE'|'PROVIDER_RESPONSE'|'BOUNDED_PUBLIC_SNAPSHOT';sha256:string|null;consentVersion:string|null}
  usage:{modelCalls:0;generationCalls:0;billableAmountMinor:null;billing:'NOT_MEASURED'}
+}
+export type P0P2Review={
+ status:'REVIEW_REQUIRED';sourceUrl:'https://veyfront.com/';sourcePageSha256:string;sourceManifestSha256:string;
+ assessmentId:string;planId:string;observedAt:string;capturedAt:string;contract:'l2m.acy.plan/0.1';
+ opportunities:Array<{stage:'discover'|'understand'|'trust'|'convert';hypothesis:string;question:string;claim:'UNVERIFIED_HYPOTHESIS'}>;
+ customerReady:false;modelCalls:0;generationCalls:0;sourceRights:'USER_ASSERTED_NOT_INDEPENDENTLY_VERIFIED'
 }
 export type P0Journey={
  version:2;id:string;reference:string;createdAt:string;updatedAt:string;expiresAt:string;
  accessHash:string;service:'launch'|'rebuild';name:string;email:string;
  brief:AcyBrief;status:AcyStatus;channel:AcyChannel;consent:{accepted:true;version:'VEYFRONT-PRIVACY-2026-10-30';at:string};
  notification:'pending'|'provider_accepted'|'failed'|'disabled';
+ p2?:P0P2Review;
  events:P0Event[];ownerStatus:'unassigned';costs:{currency:null;knownMinorUnits:null;modelCalls:0;generationCalls:0;status:'NOT_RECONCILED'};
 }
 export const P0_PREFIX='acy-p0/preview/journeys/'
@@ -103,6 +110,22 @@ export function recordDelivery(j:P0Journey,result:'sent'|'failed'|'disabled',now
  next.events.push(event(next,code,why,'alert-'+j.id,'PROVIDER_RESPONSE',now.toISOString(),j.status,null))
  return next
 }
+export function linkP2Review(j:P0Journey,review:P0P2Review,actionId:string,now=new Date()):
+ {kind:'updated'|'duplicate';journey:P0Journey}|{kind:'invalid'}{
+ if(j.service!=='rebuild'||j.status!=='qualified'||j.events.length>=50||
+    !/^[0-9a-f-]{36}$/i.test(actionId)||review.customerReady!==false||
+    review.sourceUrl!=='https://veyfront.com/'||!(/^[a-f0-9]{64}$/).test(review.sourcePageSha256)||
+    review.opportunities.length!==4||review.modelCalls!==0||review.generationCalls!==0)return {kind:'invalid'}
+ if(j.events.some(e=>e.actionId===actionId))return {kind:'duplicate',journey:j}
+ if(j.p2)return {kind:'invalid'} // No silent replacement of prior evidence; future updates require explicit versions.
+ const at=now.toISOString()
+ const next:P0Journey={...j,p2:review,events:[...j.events],updatedAt:at}
+ next.events.push(event(next,'p2_evidence_plan_review_drafted',
+  'One whitelisted live homepage observed; four review hypotheses remain unverified. No sale or site generation.',
+  actionId,'BOUNDED_PUBLIC_SNAPSHOT',at,j.status,review.sourcePageSha256))
+ return {kind:'updated',journey:next}
+}
+
 export function changeP0(j:P0Journey,input:Record<string,unknown>,now=new Date()):
  {kind:'updated'|'duplicate';journey:P0Journey}|{kind:'invalid'}{
  if(typeof input.actionId!=='string'||!/^[0-9a-f-]{36}$/i.test(input.actionId))return {kind:'invalid'}
@@ -128,11 +151,12 @@ export function visibleP0(j:P0Journey){
   expiresAt:j.expiresAt,channel:j.channel,brief:j.brief,nextQuestions:missingBriefFields(j.brief),
   notification:j.notification,blockedReason:j.status==='needs_completion'?'Waiting for target markets and/or desired buyer action.':
   j.status==='human_review'?'Awaiting a human operations owner.':'Qualified for subsequent review; P2/P3 not authorized.',
+  p2:j.p2??null,
   ledger:{events:j.events.map(e=>({...e})),eventCount:j.events.length,
    integrity:verifyLedger(j)?'HASH_CHAIN_VALID':'INVALID',
    stages:[
     {stage:'P1',status:j.status,reason:j.status==='needs_completion'?'Customer needs to complete brief fields.':j.status==='human_review'?'Operations owner review pending.':'Brief sufficient for next-stage evaluation.'},
-    {stage:'P2',status:'NOT_STARTED',reason:'No authorized customer URL evidence linked to this journey.'},
+    {stage:'P2',status:j.p2?'REVIEW_REQUIRED':'NOT_STARTED',reason:j.p2?'Bounded homepage evidence and unverified plan require customer review.':'No authorized customer URL evidence linked to this journey.'},
     {stage:'P3',status:'LOCKED',reason:'No confirmed scope, offer or accepted price.'},
     {stage:'P4',status:'LOCKED',reason:'No accepted order, generation authorization or delivery.'}
    ],
