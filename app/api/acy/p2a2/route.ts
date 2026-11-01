@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server'
-import { createHmac, randomBytes } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import { signP2A2, P2A2_APPROVED_URL } from '@/lib/acy-p2a2-signature'
 import { isJsonContentType, readLeadBody } from '@/lib/lead-request'
 import { allowedP2A2Origin } from '@/lib/acy-p2a2-origin'
@@ -52,30 +52,8 @@ export async function POST(request: NextRequest) {
       redirect:'error',
     })
   } catch { return reject(502,'L2M live assessment service is unavailable.') }
-  if (!response.ok) {
-    // Scoped Preview QA: reveal only which of the two known HMAC auth gates
-    // denied the request. Do not reflect arbitrary upstream text.
-    if (response.status === 401) {
-      let diagnostic: unknown
-      try { diagnostic = await response.json() } catch { /* fail closed */ }
-      const message = diagnostic && typeof diagnostic === 'object' && 'message' in diagnostic
-        ? (diagnostic as {message?: unknown}).message : null
-      if (message === 'Request expired.') return reject(502,'P2A2_QA_CLOCK_SKEW')
-      if (message === 'Unauthorized.') {
-        // PREVIEW-ONLY Boolean diagnostic: compare runtime secret against a
-        // non-replayable fixed probe. No secret, digest or raw header is emitted.
-        const localMarker = createHmac('sha256',secret)
-          .update('VEYFRONT-P2A2-QA-ENVELOPE-SECRET-CHECK','utf8').digest('hex')
-        const localOk = localMarker === '7357a1817d3f4de398679fe3396bd3a33d77fbf4e07bd442475323c100f75ad7'
-        const remoteOk = diagnostic && typeof diagnostic === 'object' && 'qa_runtime_secret_matches_rotated' in diagnostic
-          ? (diagnostic as {qa_runtime_secret_matches_rotated?: unknown}).qa_runtime_secret_matches_rotated === true
-          : null
-        return reject(502,`P2A2_QA_SIGNATURE_MISMATCH; local_rotated=${localOk}; upstream_rotated=${remoteOk}`)
-      }
-      return reject(502,'P2A2_QA_UNCLASSIFIED_401')
-    }
-    return reject(502,`L2M live assessment could not proceed (HTTP ${response.status}).`)
-  }
+  if (!response.ok) return reject(502,`L2M live assessment could not proceed (HTTP ${response.status}).`)
+
   let result: unknown
   try { result = await response.json() } catch { return reject(502,'Invalid L2M response.') }
   if (!result || typeof result !== 'object' || !('assessment' in result)
