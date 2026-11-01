@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
-import {enabledP0,p0Origin,qaOnly,idempotentIdentity,makeP0,authentic,changeP0,visibleP0,recordDelivery,verifyLedger} from '../lib/p0-journey.ts'
+import {enabledP0,p0Origin,qaOnly,idempotentIdentity,makeP0,authentic,changeP0,visibleP0,recordDelivery,verifyLedger,beginP2Review,linkP2Review,failP2Review} from '../lib/p0-journey.ts'
 import {deriveStatus,missingBriefFields} from '../lib/acy-p1.ts'
 
 const SECRET='P0-TEST-SECRET-'+'z'.repeat(50)
@@ -58,7 +58,7 @@ test('consecutive P1 steps and state transitions are attributed and recoverable'
  assert.equal(qualified.events.at(-1).from,'needs_completion')
  assert.equal(qualified.events.at(-1).to,'qualified')
  assert.equal(qualified.events.at(-1).evidence.kind,'CUSTOMER_SELF_REPORTED')
- assert.equal(visibleP0(qualified).blockedReason.includes('P2/P3'),true)
+ assert.equal(visibleP0(qualified).blockedReason.includes('P2 needs'),true)
  const duplicate=changeP0(qualified,{actionId,type:'complete_brief',markets:'Different',desiredAction:'Different'},new Date('2026-11-01T00:11:00Z'))
  assert.equal(duplicate.kind,'duplicate')
  assert.equal(duplicate.journey.events.length,3)
@@ -101,8 +101,8 @@ test('tamper-evident event chain rejects changed status/evidence and projects P2
  assert.equal(verifyLedger(journey),true)
  assert.equal(visibleP0(journey).ledger.integrity,'HASH_CHAIN_VALID')
  const stages=visibleP0(journey).ledger.stages
- assert.deepEqual(stages.map(x=>x.stage),['P1','P2','P3','P4'])
- assert.deepEqual(stages.map(x=>x.status),['needs_completion','NOT_STARTED','LOCKED','LOCKED'])
+ assert.deepEqual(stages.map(x=>x.stage),['P1','P2'])
+ assert.deepEqual(stages.map(x=>x.status),['needs_completion','NOT_STARTED'])
  const bad=structuredClone(journey);bad.events[0].why='History rewritten by attacker'
  assert.equal(verifyLedger(bad),false)
  const missing=structuredClone(journey);missing.events.pop()
@@ -110,4 +110,38 @@ test('tamper-evident event chain rejects changed status/evidence and projects P2
  const result=changeP0(journey,{actionId:randomUUID(),type:'complete_brief',markets:'EU',desiredAction:'RFQ'})
  assert.equal(result.kind,'updated')
  assert.equal(verifyLedger(result.journey),true)
+})
+
+test('P2 is a consented review in same journey; duplicate, busy and failure are explicit',()=>{
+ const initial=build().journey
+ const done=changeP0(initial,{type:'complete_brief',markets:'European Union',desiredAction:'Request quotation',actionId:randomUUID()})
+ assert.equal(done.kind,'updated')
+ const qualified=done.journey
+ const attemptId=randomUUID()
+ const started=beginP2Review(qualified,attemptId,new Date('2026-11-01T00:30:00Z'))
+ assert.equal(started.kind,'updated')
+ assert.equal(verifyLedger(started.journey),true)
+ assert.equal(visibleP0(started.journey).ledger.stages[1].status,'IN_PROGRESS')
+ assert.equal(beginP2Review(started.journey,randomUUID(),new Date('2026-11-01T00:30:10Z')).kind,'busy')
+ assert.equal(beginP2Review(started.journey,attemptId,new Date('2026-11-01T00:30:10Z')).kind,'duplicate')
+ const review={
+  status:'REVIEW_REQUIRED',sourceUrl:'https://veyfront.com/',sourcePageSha256:'a'.repeat(64),sourceManifestSha256:'b'.repeat(64),
+  assessmentId:'assessment-'+'c'.repeat(20),planId:'plan-'+'d'.repeat(20),observedAt:'2026-11-01T00:30:12Z',
+  capturedAt:'2026-11-01T00:30:10Z',contract:'l2m.acy.plan/0.1',
+  opportunities:['discover','understand','trust','convert'].map(stage=>({stage,hypothesis:'Unverified',question:'Which authorized evidence?',claim:'UNVERIFIED_HYPOTHESIS'})),
+  customerReady:false,modelCalls:0,generationCalls:0,sourceRights:'USER_ASSERTED_NOT_INDEPENDENTLY_VERIFIED'
+ }
+ const finished=linkP2Review(started.journey,review,attemptId,new Date('2026-11-01T00:30:14Z'))
+ assert.equal(finished.kind,'updated')
+ assert.equal(verifyLedger(finished.journey),true)
+ assert.equal(visibleP0(finished.journey).ledger.stages[1].status,'REVIEW_REQUIRED')
+ assert.equal(visibleP0(finished.journey).p2.sourcePageSha256,'a'.repeat(64))
+ assert.equal(beginP2Review(finished.journey,randomUUID()).kind,'invalid')
+ assert.equal(finished.journey.events.at(-1).evidence.kind,'BOUNDED_PUBLIC_SNAPSHOT')
+ const fail=failP2Review(started.journey,attemptId,'UPSTREAM_FAILED',new Date('2026-11-01T00:30:20Z'))
+ assert.equal(fail.p2Attempt.state,'FAILED')
+ assert.equal(verifyLedger(fail),true)
+ const retry=beginP2Review(fail,randomUUID(),new Date('2026-11-01T00:30:22Z'))
+ assert.equal(retry.kind,'updated')
+ assert.equal(beginP2Review(initial,randomUUID()).kind,'invalid')
 })
