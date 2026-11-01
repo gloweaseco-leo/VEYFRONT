@@ -1,0 +1,112 @@
+import {createHash,createHmac,timingSafeEqual} from 'node:crypto'
+import {deriveStatus,missingBriefFields,type AcyBrief,type AcyChannel,type AcyStatus} from './acy-p1'
+
+export type P0EventCode='intake_received'|'missing_information_requested'|'intake_qualified'|
+ 'email_provider_accepted'|'email_failed'|'email_disabled'|'brief_completed'|'channel_preference_recorded'|'human_review_requested'
+export type P0Event={
+ sequence:number;eventId:string;actionId:string;code:P0EventCode;at:string;
+ from:AcyStatus|null;to:AcyStatus;why:string;
+ evidence:{kind:'CUSTOMER_SELF_REPORTED'|'SYSTEM_RULE'|'PROVIDER_RESPONSE';sha256:string|null;consentVersion:string|null}
+ usage:{modelCalls:0;generationCalls:0;billableAmountMinor:null;billing:'NOT_MEASURED'}
+}
+export type P0Journey={
+ version:2;id:string;reference:string;createdAt:string;updatedAt:string;expiresAt:string;
+ accessHash:string;service:'launch'|'rebuild';name:string;email:string;
+ brief:AcyBrief;status:AcyStatus;channel:AcyChannel;consent:{accepted:true;version:'VEYFRONT-PRIVACY-2026-10-30';at:string};
+ notification:'pending'|'provider_accepted'|'failed'|'disabled';
+ events:P0Event[];ownerStatus:'unassigned';costs:{currency:null;knownMinorUnits:null;modelCalls:0;generationCalls:0;status:'NOT_RECONCILED'};
+}
+export const P0_PREFIX='acy-p0/preview/journeys/'
+export const P0_CONSENT='VEYFRONT-PRIVACY-2026-10-30'
+const allowedStatus=['needs_completion','qualified','human_review']
+export function enabledP0(env?:{VERCEL_ENV?:string;VERCEL_GIT_COMMIT_REF?:string;ACY_P0_ENABLED?:string}):boolean{
+ const e=env??process.env
+ return e.VERCEL_ENV==='preview'&&e.VERCEL_GIT_COMMIT_REF==='feature/p0-unified-journey-ledger'&&e.ACY_P0_ENABLED==='true'
+}
+export function p0Origin(request:Pick<Request,'url'|'headers'>,env?:{VERCEL_ENV?:string;ACY_P0_ALLOWED_ORIGIN?:string}):boolean{
+ const e=env??process.env
+ if(e.VERCEL_ENV!=='preview')return false
+ const allowed=e.ACY_P0_ALLOWED_ORIGIN?.trim()
+ if(!allowed||!/^https:\/\/veyfront-git-feature-p0-unified-journey-[a-z0-9-]+\.vercel\.app$/.test(allowed))return false
+ const origin=request.headers.get('origin')
+ if(origin)return origin===allowed
+ return request.headers.get('sec-fetch-site')==='same-origin'&&request.headers.get('x-vf-preview-p0')==='journey'
+}
+export function qaOnly(email:string):boolean{
+ return email.toLowerCase()==='qa@example.invalid'||email.toLowerCase()==='hello@veyfront.com'
+}
+export function idempotentIdentity(key:string,email:string,secret:string):{id:string;token:string}{
+ if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(key)||secret.length<32)throw Error('Invalid idempotency envelope')
+ const v=createHmac('sha256',secret).update('journey|'+key.toLowerCase()+'|'+email.toLowerCase()).digest('hex')
+ const id=v.slice(0,8)+'-'+v.slice(8,12)+'-4'+v.slice(13,16)+'-a'+v.slice(17,20)+'-'+v.slice(20,32)
+ const token=createHmac('sha256',secret).update('access|'+key.toLowerCase()+'|'+email.toLowerCase()).digest('base64url')
+ return {id,token}
+}
+export const sha=(x:string)=>createHash('sha256').update(x).digest('hex')
+export function authentic(j:P0Journey,token:unknown,now=new Date()):boolean{
+ if(typeof token!=='string'||token.length<32||token.length>128||Date.parse(j.expiresAt)<=now.getTime())return false
+ const x=Buffer.from(sha(token),'hex'),y=Buffer.from(j.accessHash,'hex')
+ return y.length===x.length&&timingSafeEqual(x,y)
+}
+export function event(j:P0Journey,code:P0EventCode,why:string,actionId:string,kind:P0Event['evidence']['kind'],
+ at:string,from:AcyStatus|null,sourceHash:string|null):P0Event{
+ return {sequence:j.events.length+1,eventId:sha(j.id+'|'+actionId+'|'+code).slice(0,32),actionId,code,at,from,to:j.status,
+ why,evidence:{kind,sha256:sourceHash,consentVersion:kind==='CUSTOMER_SELF_REPORTED'?P0_CONSENT:null},
+ usage:{modelCalls:0,generationCalls:0,billableAmountMinor:null,billing:'NOT_MEASURED'}}
+}
+export function makeP0(input:{service:'launch'|'rebuild';name:string;email:string;company:string;website:string;markets:string;details:string},
+ key:string,secret:string,now=new Date()):{journey:P0Journey;token:string}{
+ const {id,token}=idempotentIdentity(key,input.email,secret)
+ const time=now.toISOString(),brief:AcyBrief={company:input.company,website:input.website,markets:input.markets,desiredAction:'',description:input.details}
+ const status=deriveStatus(brief)
+ const j:P0Journey={
+  version:2,id,reference:'VF-'+id.replaceAll('-','').slice(0,8).toUpperCase(),createdAt:time,updatedAt:time,
+  expiresAt:new Date(now.getTime()+48*60*60*1000).toISOString(),accessHash:sha(token),
+  service:input.service,name:input.name,email:input.email.toLowerCase(),brief,status,channel:'email',
+  consent:{accepted:true,version:P0_CONSENT,at:time},notification:'pending',
+  events:[],ownerStatus:'unassigned',
+  costs:{currency:null,knownMinorUnits:null,modelCalls:0,generationCalls:0,status:'NOT_RECONCILED'}
+ }
+ const evidenceHash=sha(JSON.stringify({service:input.service,name:input.name,email:j.email,brief,consent:P0_CONSENT}))
+ j.events.push(event(j,'intake_received','Consent received and private intake persisted.',key,'CUSTOMER_SELF_REPORTED',time,null,evidenceHash))
+ if(status==='needs_completion')j.events.push(event(j,'missing_information_requested','Target markets and/or desired buyer action need confirmation.',key,'SYSTEM_RULE',time,status,null))
+ else j.events.push(event(j,'intake_qualified','Required brief fields completed; not a sales decision.',key,'SYSTEM_RULE',time,status,null))
+ return {journey:j,token}
+}
+export function recordDelivery(j:P0Journey,result:'sent'|'failed'|'disabled',now=new Date()):P0Journey{
+ const next:P0Journey={...j,events:[...j.events],updatedAt:now.toISOString(),
+ notification:result==='sent'?'provider_accepted':result}
+ const code:P0EventCode=result==='sent'?'email_provider_accepted':result==='failed'?'email_failed':'email_disabled'
+ const why=result==='sent'?'Resend API accepted alert; mailbox delivery not independently verified.':
+ result==='failed'?'Notification attempt failed; operator must check private intake.':'Notification not configured; manual inbox review required.'
+ next.events.push(event(next,code,why,'alert-'+j.id,'PROVIDER_RESPONSE',now.toISOString(),j.status,null))
+ return next
+}
+export function changeP0(j:P0Journey,input:Record<string,unknown>,now=new Date()):
+ {kind:'updated'|'duplicate';journey:P0Journey}|{kind:'invalid'}{
+ if(typeof input.actionId!=='string'||!/^[0-9a-f-]{36}$/i.test(input.actionId)||j.events.length>=50)return {kind:'invalid'}
+ if(j.events.some(e=>e.actionId===input.actionId))return {kind:'duplicate',journey:j}
+ let next:P0Journey={...j,brief:{...j.brief},events:[...j.events],updatedAt:now.toISOString()}
+ let code:P0EventCode,why:string,hash:string|null=null,kind:P0Event['evidence']['kind']='SYSTEM_RULE'
+ if(input.type==='complete_brief'&&j.status!=='human_review'){
+  if(typeof input.markets!=='string'||typeof input.desiredAction!=='string'||input.markets.trim().length>240||input.desiredAction.trim().length>240)return {kind:'invalid'}
+  next.brief.markets=input.markets.trim();next.brief.desiredAction=input.desiredAction.trim()
+  next.status=deriveStatus(next.brief);code='brief_completed';why=next.status==='qualified'?'Customer-supplied missing fields complete; ready for next stage, not yet approved.':'More information is needed.'
+  kind='CUSTOMER_SELF_REPORTED';hash=sha(JSON.stringify({markets:next.brief.markets,desiredAction:next.brief.desiredAction}))
+ }else if(input.type==='choose_channel'&&(input.channel==='email'||input.channel==='wechat'||input.channel==='feishu')){
+  next.channel=input.channel;code='channel_preference_recorded';why='Preference saved only; third-party messaging not connected.'
+ }else if(input.type==='request_human'){
+  next.status='human_review';code='human_review_requested';why='Manual review requested, owner assignment pending.'
+ }else return {kind:'invalid'}
+ next.events.push(event(next,code,why,input.actionId,kind,now.toISOString(),j.status,hash))
+ return {kind:'updated',journey:next}
+}
+export function visibleP0(j:P0Journey){
+ return {id:j.id,reference:j.reference,service:j.service,status:j.status,createdAt:j.createdAt,updatedAt:j.updatedAt,
+  expiresAt:j.expiresAt,channel:j.channel,brief:j.brief,nextQuestions:missingBriefFields(j.brief),
+  notification:j.notification,blockedReason:j.status==='needs_completion'?'Waiting for target markets and/or desired buyer action.':
+  j.status==='human_review'?'Awaiting a human operations owner.':'Qualified for subsequent review; P2/P3 not authorized.',
+  ledger:{events:j.events.map(e=>({...e})),eventCount:j.events.length,
+   costs:j.costs,stage:'P1_INTAKE',sourceOfTruth:'PRIVATE_BLOB_VERSION_2',
+   evidenceLabel:'CUSTOMER_SELF_REPORTED_NOT_INDEPENDENTLY_VERIFIED'}}
+}
