@@ -53,7 +53,7 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
     try {
       const response = await fetch('/api/leads', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-vf-intake-key':intakeKey.current,'x-vf-preview-p0':'journey' },
+        headers: { 'Content-Type': 'application/json', 'x-vf-intake-key':intakeKey.current||'','x-vf-preview-p0':'journey' },
         cache: 'no-store',
         body: JSON.stringify({ service, name, email, company, website, markets, details, consent, honeypot }),
       })
