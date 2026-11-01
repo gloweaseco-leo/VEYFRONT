@@ -11,7 +11,7 @@ export type P0EventCode='intake_received'|'missing_information_requested'|'intak
 export type P0Event={
  sequence:number;eventId:string;actionId:string;code:P0EventCode;at:string;previousHash:string|null;entryHash:string;
  from:AcyStatus|null;to:AcyStatus;why:string;
- evidence:{kind:'CUSTOMER_SELF_REPORTED'|'SYSTEM_RULE'|'PROVIDER_RESPONSE'|'BOUNDED_PUBLIC_SNAPSHOT'|'EXPLICIT_SOURCE_AUTHORIZATION';sha256:string|null;consentVersion:string|null}
+ evidence:{kind:'CUSTOMER_SELF_REPORTED'|'SYSTEM_RULE'|'PROVIDER_RESPONSE'|'BOUNDED_PUBLIC_SNAPSHOT'|'EXPLICIT_SOURCE_AUTHORIZATION';sha256:string|null;consentVersion:string|null;commercialEvidenceSha256?:string}
  usage:{modelCalls:0;generationCalls:0;billableAmountMinor:null;billing:'NOT_MEASURED'}
 }
 export type P0P2Review={
@@ -65,11 +65,12 @@ export function authentic(j:P0Journey,token:unknown,now=new Date()):boolean{
  return y.length===x.length&&timingSafeEqual(x,y)
 }
 export function event(j:P0Journey,code:P0EventCode,why:string,actionId:string,kind:P0Event['evidence']['kind'],
- at:string,from:AcyStatus|null,sourceHash:string|null):P0Event{
+ at:string,from:AcyStatus|null,sourceHash:string|null,commercialEvidenceSha256?:string):P0Event{
  const base={
   sequence:j.events.length+1,eventId:sha(j.id+'|'+actionId+'|'+code).slice(0,32),actionId,code,at,
   from,to:j.status,previousHash:j.events.at(-1)?.entryHash??null,why,
-  evidence:{kind,sha256:sourceHash,consentVersion:kind==='EXPLICIT_SOURCE_AUTHORIZATION'?P2_SOURCE_CONSENT:kind==='CUSTOMER_SELF_REPORTED'?P0_CONSENT:null},
+  evidence:{kind,sha256:sourceHash,consentVersion:kind==='EXPLICIT_SOURCE_AUTHORIZATION'?P2_SOURCE_CONSENT:kind==='CUSTOMER_SELF_REPORTED'?P0_CONSENT:null,
+   ...(commercialEvidenceSha256?{commercialEvidenceSha256}:{} )},
   usage:{modelCalls:0 as const,generationCalls:0 as const,billableAmountMinor:null,billing:'NOT_MEASURED' as const}
  }
  return {...base,entryHash:sha(JSON.stringify(base))}
@@ -113,7 +114,8 @@ export function verifyLedger(j:P0Journey):boolean{
     !/^assessment-[a-f0-9]{20}$/.test(p.assessmentId)||!/^plan-[a-f0-9]{20}$/.test(p.planId)||
     p.opportunities.length!==4||p.modelCalls!==0||p.generationCalls!==0)return false
   if(p.commercialEvidence){
-   if(!p.commercialEvidenceSha256||p.commercialEvidence.source.source_page_sha256!==p.sourcePageSha256||
+   if(!p.commercialEvidenceSha256||linked[0].evidence.commercialEvidenceSha256!==p.commercialEvidenceSha256||
+      p.commercialEvidence.source.source_page_sha256!==p.sourcePageSha256||
       sha(JSON.stringify(p.commercialEvidence))!==p.commercialEvidenceSha256)return false
   }
   if(!['discover','understand','trust','convert'].every((stage,i)=>
@@ -186,7 +188,7 @@ export function linkP2Review(j:P0Journey,review:P0P2Review,actionId:string,now=n
  const next:P0Journey={...j,p2:review,p2Attempt:undefined,events:[...j.events],updatedAt:at}
  next.events.push(event(next,'p2_evidence_plan_review_drafted',
   'One whitelisted live homepage observed; four review hypotheses remain unverified. No sale or site generation.',
-  actionId,'BOUNDED_PUBLIC_SNAPSHOT',at,j.status,review.sourcePageSha256))
+  actionId,'BOUNDED_PUBLIC_SNAPSHOT',at,j.status,review.sourcePageSha256,review.commercialEvidenceSha256))
  return {kind:'updated',journey:next}
 }
 
