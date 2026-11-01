@@ -98,6 +98,8 @@ export function verifyLedger(j:P0Journey):boolean{
    description:j.brief.description,desiredAction:j.brief.desiredAction})
   const logged=j.events.filter(e=>e.code==='launch_context_prepared')
   if(j.service!=='launch'||j.p2||j.launch.evidenceSha!==expected.evidenceSha||
+    JSON.stringify(j.launch.facts)!==JSON.stringify(expected.facts)||
+    JSON.stringify(j.launch.missing)!==JSON.stringify(expected.missing)||
     j.launch.status!=='REVIEW_REQUIRED'||j.launch.cbp2PlannerAuthorized!==false||
     logged.length!==1||logged[0].evidence.sha256!==j.launch.evidenceSha)return false
  }
