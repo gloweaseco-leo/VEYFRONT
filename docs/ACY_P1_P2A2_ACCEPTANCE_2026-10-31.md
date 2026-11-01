@@ -29,3 +29,15 @@ Status: **PREVIEW ONLY / DO NOT MERGE / DO NOT PUBLISH**.
 
 ## Release decision
 P1 = partial functional E2E confirmed, not production-ready; P2-A2 = implementation + security tests pass, real browser-to-L2M report E2E unaccepted. P3 pricing isolated. P4 blocked by L2M quality gates. Main production domain remains SHA `527e86bdc9a13754b45c8b3154ff6953bd6a27eb`.
+
+## Follow-up after project-owner credential revocation (Oct 31 PDT)
+
+- The project owner explicitly confirmed deleting the outstanding Vercel automation bypass credential with label `Temporary P2A2 error-category check; revoke automatically`. Do not recreate the bypass.
+- Browser E2E on the protected branch alias now passes VEYFRONT's Origin/Fetch Metadata gate and POSTs to L2M. L2M executes the Python route but returns HTTP **401**: therefore no versioned evidence report is yet accepted.
+- A no-secret HMAC classification confirmed `P2A2_QA_SIGNATURE_MISMATCH` (not `Request expired.`). Both control-plane service environment variables were replaced with the same fresh 64-character cryptographic secret and equal values were confirmed; after forcing both Preview deployments the 401 persisted.
+- One isolated Preview runtime probe showed VEYFRONT's runtime matched the newly rotated credential; L2M did not return the expected probe field (`upstream_rotated=null`). This is **inconclusive about the actual L2M runtime key**. Do not infer that Vercel changed the body or assert a root cause without observing the actual L2M function response at the deployment revision.
+- Cross-language Node/Python static signing vector and Python local handler checks passed; the actual deployed server-to-server HMAC path **did not pass**.
+- Short-lived preview share links generated for browser E2E were revoked after tests. No customer URL expansion or model execution occurred.
+- All temporary error classifiers, embedded probe markers and credential diagnostics have been removed from both source branches.
+
+**NEXT P0:** Reproduce the L2M 401 on an isolated authorized request with direct response status/body/header evidence, validate exactly which deployment serves it and which runtime secret configuration is loaded, then prove a real one-page assessment with matching SHA-256 evidence. Keep everything private, branch-bound and Draft until that proof succeeds. Do not merge or publish `veyfront.com`.
