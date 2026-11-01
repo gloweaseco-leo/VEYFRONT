@@ -7,6 +7,7 @@ type Journey={
  id:string;reference:string;service:'launch'|'rebuild';status:Status;expiresAt:string;channel:'email'|'wechat'|'feishu'
  brief:{company:string;website:string;markets:string;desiredAction:string;description:string}
  nextQuestions:string[];notification:string;blockedReason:string
+ p2:null|{status:'REVIEW_REQUIRED';sourceUrl:string;sourcePageSha256:string;assessmentId:string;planId:string;contract:string;capturedAt:string;opportunities:{stage:string;hypothesis:string;question:string;claim:string}[]}
  ledger:{eventCount:number;integrity:string;stages:{stage:string;status:string;reason:string}[];events:{sequence:number;code:string;at:string;why:string;to:Status;
   evidence:{kind:string;sha256:string|null;consentVersion:string|null};
   usage:{modelCalls:number;generationCalls:number;billableAmountMinor:number|null;billing:string}}[];
@@ -16,6 +17,7 @@ export function JourneyConsole(){
  const [id,setId]=useState(''),[token,setToken]=useState('')
  const [j,setJ]=useState<Journey|null>(null),[markets,setMarkets]=useState(''),[action,setAction]=useState('')
  const [busy,setBusy]=useState(false),[error,setError]=useState('')
+ const [sourceConsent,setSourceConsent]=useState(false)
  async function call(body:Record<string,unknown>){
   const r=await fetch('/api/acy/p0',{method:'POST',headers:{'Content-Type':'application/json',
    'x-vf-preview-p0':'journey'},body:JSON.stringify(body),cache:'no-store'})
@@ -65,8 +67,26 @@ export function JourneyConsole(){
      {j.nextQuestions.includes('desiredAction')&&<label className="block text-sm font-semibold">Desired buyer action<input required minLength={3} maxLength={240} className="mt-2 min-h-12 w-full rounded-md border border-ink/30 px-3" value={action} onChange={e=>setAction(e.target.value)}/></label>}
      <button disabled={busy} className="min-h-12 rounded-md bg-ink px-5 font-semibold text-ivory disabled:opacity-50">Save and continue</button>
     </form>}
-    {j.status==='qualified'&&<div className="rounded-xl border border-ink/20 bg-mist/40 p-6"><h3 className="text-lg font-semibold">Information completed</h3><p className="mt-2 text-sm">P1 is qualified for human/business review; P2 analysis, offer, contract and payment remain separate gated stages.</p></div>}
+    {j.status==='qualified'&&<div className="rounded-xl border border-ink/20 bg-mist/40 p-6"><h3 className="text-lg font-semibold">Information completed</h3><p className="mt-2 text-sm">P1 is complete. P2 evidence review remains limited to authorized sources. Orders, pricing and generated sites are outside this phase.</p></div>}
     {j.status==='human_review'&&<p className="rounded-xl border border-ink/20 bg-mist/40 p-6">Human exception flagged. No operator SLA or response is claimed.</p>}
+    {j.service==='rebuild'&&j.status==='qualified'&&<section className="rounded-xl border border-ink/15 bg-white p-6">
+     <p className="font-mono text-xs uppercase tracking-widest text-ink/60">P2 · Evidence review · controlled QA</p>
+     <h3 className="mt-2 text-lg font-semibold">Verify public homepage evidence</h3>
+     <p className="mt-2 text-sm text-ink/70">Current authorization only covers https://veyfront.com/. Other customer websites cannot be scanned in this Preview. Evidence and hypotheses are not customer-verified diagnoses.</p>
+     {!j.p2&&<><label className="mt-4 flex items-start gap-3 text-sm"><input type="checkbox" className="mt-1 size-4" checked={sourceConsent} onChange={e=>setSourceConsent(e.target.checked)}/>
+       <span>I explicitly authorize read-only observation of the approved VEYFRONT public homepage and understand the returned planning questions require human review.</span></label>
+       <button type="button" disabled={!sourceConsent||busy} onClick={()=>void update({op:'assess_p2',authorization_confirmed:true})}
+        className="mt-4 min-h-12 rounded-lg bg-ink px-5 font-semibold text-ivory disabled:opacity-50">Observe homepage and draft P2 review</button></>}
+     {j.p2&&<div className="mt-4 space-y-3">
+       <p className="text-sm font-semibold">REVIEW REQUIRED · {j.p2.contract}</p>
+       <p className="break-all font-mono text-xs text-ink/60">Source SHA-256: {j.p2.sourcePageSha256}</p>
+       <p className="break-all font-mono text-xs text-ink/60">Assessment: {j.p2.assessmentId} · Plan: {j.p2.planId}</p>
+       <ul className="space-y-3">{j.p2.opportunities.map(x=><li key={x.stage} className="rounded-md border border-ink/15 p-4">
+        <p className="font-mono text-xs uppercase">{x.stage} · UNVERIFIED HYPOTHESIS</p>
+        <p className="mt-2 text-sm">{x.hypothesis}</p><p className="mt-2 text-sm text-ink/70">Confirm with customer: {x.question}</p>
+       </li>)}</ul>
+     </div>}
+    </section>}
     <div className="rounded-xl border border-ink/15 bg-white p-6">
      <h3 className="font-semibold">Preferred communication channel</h3>
      <p className="my-3 text-xs text-ink/60">Preferences only; WeChat and Feishu are not connected.</p>
