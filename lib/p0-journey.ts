@@ -173,7 +173,7 @@ export function visibleP0(j:P0Journey){
  return {id:j.id,reference:j.reference,service:j.service,status:j.status,createdAt:j.createdAt,updatedAt:j.updatedAt,
   expiresAt:j.expiresAt,channel:j.channel,brief:j.brief,nextQuestions:missingBriefFields(j.brief),
   notification:j.notification,blockedReason:j.status==='needs_completion'?'Waiting for target markets and/or desired buyer action.':
-  j.status==='human_review'?'Awaiting a human operations owner.':'Qualified for subsequent review; P2/P3 not authorized.',
+  j.status==='human_review'?'Awaiting a human operations owner.':'P1 qualified; P2 needs separate authorized source evidence.',
   p2:j.p2??null,
   ledger:{events:j.events.map(e=>({...e})),eventCount:j.events.length,
    integrity:verifyLedger(j)?'HASH_CHAIN_VALID':'INVALID',
@@ -184,9 +184,8 @@ export function visibleP0(j:P0Journey){
       j.p2Attempt?.state==='IN_PROGRESS'?'Read-only homepage observation is in progress.':
       j.p2Attempt?.state==='FAILED'?'Previous source review failed: '+j.p2Attempt.reason:
       'No authorized customer URL evidence linked to this journey.'},
-    {stage:'P3',status:'LOCKED',reason:'No confirmed scope, offer or accepted price.'},
-    {stage:'P4',status:'LOCKED',reason:'No accepted order, generation authorization or delivery.'}
    ],
+   excludedPhases:['P3_ORDER_PAYMENT','P4_GENERATION_DELIVERY'],
    costs:j.costs,stage:'P1_INTAKE',sourceOfTruth:'PRIVATE_BLOB_VERSION_2',
    evidenceLabel:'CUSTOMER_SELF_REPORTED_NOT_INDEPENDENTLY_VERIFIED'}}
 }
