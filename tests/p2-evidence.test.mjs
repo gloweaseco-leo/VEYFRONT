@@ -25,7 +25,7 @@ function packet(){
  }
  const counts={CTA:1,OFFERING_CANDIDATE:0,CASE_CANDIDATE:0,CONTACT_LINK:0,FORM_MARKUP:0}
  const excerpt='Request a quotation',selector='main:nth-of-type(1) > a:nth-of-type(1)'
- const observations=[{id:'observed-'+'f'.repeat(20),kind:'CTA',claim_status:'OBSERVED_UNVERIFIED',
+ const observations=[{id:'observed-'+sha(SRC+'|CTA|'+selector+'|'+excerpt+'|https://veyfront.com/contact').slice(0,20),kind:'CTA',claim_status:'OBSERVED_UNVERIFIED',
   route:'/',selector,source_page_sha256:SRC,excerpt,excerpt_sha256:sha(excerpt),
   target_observed:'https://veyfront.com/contact'}]
  const evidence={contract_version:'l2m.acy.commercial-evidence/0.1',
@@ -75,6 +75,8 @@ test('source-bound commercial evidence validation rejects forged observation, ca
  assert.equal(validateEvidence(original.assessment.commercial_evidence,original.assessment),true)
  for(const mutate of [
   p=>p.assessment.commercial_evidence.observations[0].excerpt='Fake case study',
+  p=>p.assessment.commercial_evidence.observations[0].selector='body > iframe',
+  p=>p.assessment.commercial_evidence.observations[0].target_observed='https://attacker.example.com',
   p=>p.assessment.commercial_evidence.source.source_page_sha256='d'.repeat(64),
   p=>p.assessment.commercial_evidence.counts.CTA=99,
   p=>p.assessment.commercial_evidence.observations[0].claim_status='CUSTOMER_VERIFIED',
