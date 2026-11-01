@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
-import {enabledP0,p0Origin,qaOnly,idempotentIdentity,makeP0,authentic,changeP0,visibleP0,recordDelivery} from '../lib/p0-journey.ts'
+import {enabledP0,p0Origin,qaOnly,idempotentIdentity,makeP0,authentic,changeP0,visibleP0,recordDelivery,verifyLedger} from '../lib/p0-journey.ts'
 import {deriveStatus,missingBriefFields} from '../lib/acy-p1.ts'
 
 const SECRET='P0-TEST-SECRET-'+'z'.repeat(50)
@@ -94,4 +94,20 @@ test('P1 qualification and missing-field rules are preserved',()=>{
  const {journey}=build()
  assert.equal(deriveStatus(journey.brief),journey.status)
  assert.deepEqual(missingBriefFields(journey.brief),['markets','desiredAction'])
+})
+
+test('tamper-evident event chain rejects changed status/evidence and projects P2–P4 blockers',()=>{
+ const {journey}=build()
+ assert.equal(verifyLedger(journey),true)
+ assert.equal(visibleP0(journey).ledger.integrity,'HASH_CHAIN_VALID')
+ const stages=visibleP0(journey).ledger.stages
+ assert.deepEqual(stages.map(x=>x.stage),['P1','P2','P3','P4'])
+ assert.deepEqual(stages.map(x=>x.status),['needs_completion','NOT_STARTED','LOCKED','LOCKED'])
+ const bad=structuredClone(journey);bad.events[0].why='History rewritten by attacker'
+ assert.equal(verifyLedger(bad),false)
+ const missing=structuredClone(journey);missing.events.pop()
+ assert.equal(verifyLedger(missing),false)
+ const result=changeP0(journey,{actionId:randomUUID(),type:'complete_brief',markets:'EU',desiredAction:'RFQ'})
+ assert.equal(result.kind,'updated')
+ assert.equal(verifyLedger(result.journey),true)
 })
