@@ -1,0 +1,37 @@
+function isSameOrigin(request: Pick<Request,'url'|'headers'>): boolean {
+  const origin = request.headers.get('origin')
+  if (!origin) return false
+  try { return new URL(origin).origin === new URL(request.url).origin && origin === new URL(origin).origin }
+  catch { return false }
+}
+
+/**
+ * The authenticated Vercel Preview may serve a branch alias while NextRequest.url
+ * identifies its immutable deployment host. Accept only the explicit branch alias
+ * provisioned for this QA branch. Never enable this exception in production.
+ */
+export function allowedP2A2Origin(
+  request: Pick<Request,'url'|'headers'>,
+  env: {VERCEL_ENV?: string; ACY_P2A2_ALLOWED_ORIGIN?: string} = {
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    ACY_P2A2_ALLOWED_ORIGIN: process.env.ACY_P2A2_ALLOWED_ORIGIN,
+  },
+): boolean {
+  if (isSameOrigin(request)) return true
+  if (env.VERCEL_ENV !== 'preview') return false
+  const permitted = env.ACY_P2A2_ALLOWED_ORIGIN?.trim() || ''
+  const origin = request.headers.get('origin')
+  if (!permitted || !/^https:\/\/veyfront-git-feature-acy-p2a2-[a-z0-9-]+\.vercel\.app$/.test(permitted)) {
+    return false
+  }
+  if (!origin) {
+    // Some Vercel protected browser sessions omit Origin on a same-origin POST.
+    // Browser-controlled Fetch Metadata plus a non-simple request marker prevents
+    // other-origin form submissions from being accepted by this QA-only endpoint.
+    return request.headers.get('sec-fetch-site') === 'same-origin'
+      && request.headers.get('x-acy-preview-request') === 'p2a2'
+  }
+  try {
+    return origin === permitted && new URL(origin).origin === permitted
+  } catch { return false }
+}
