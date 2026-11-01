@@ -1,4 +1,4 @@
-import {randomBytes} from 'node:crypto'
+import {createHash,randomBytes} from 'node:crypto'
 import {P2A2_APPROVED_URL,signP2A2} from './acy-p2a2-signature'
 import {isLiveAssessment} from './l2m-p2a2'
 import {isGroundedPlan} from './l2m-p2a3'
@@ -71,6 +71,7 @@ export async function makeP2Review(j:P0Journey,oidc:string|null,opts?:{
     question:x.customer_question,claim:'UNVERIFIED_HYPOTHESIS' as const})),
   customerReady:false,modelCalls:0,generationCalls:0,
   sourceRights:'USER_ASSERTED_NOT_INDEPENDENTLY_VERIFIED',
-  commercialEvidence:evidenceEnabled&&validateEvidence(inventory,a)?inventory:undefined
+  commercialEvidence:evidenceEnabled&&validateEvidence(inventory,a)?inventory:undefined,
+  commercialEvidenceSha256:evidenceEnabled&&validateEvidence(inventory,a)?createHash('sha256').update(JSON.stringify(inventory)).digest('hex'):undefined
  }
 }
