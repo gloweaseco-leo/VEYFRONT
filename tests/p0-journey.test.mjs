@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
 import {registerHooks} from 'node:module'
 registerHooks({resolve(specifier,context,nextResolve){
- if(context.parentURL?.endsWith('.ts')&&specifier.startsWith('.')&&!/\\.(ts|js|mjs|json)$/.test(specifier))
+ if(context.parentURL?.endsWith('.ts')&&specifier.startsWith('.')&&!/\.(ts|js|mjs|json)$/.test(specifier))
   return nextResolve(specifier+'.ts',context)
  return nextResolve(specifier,context)
 }})
