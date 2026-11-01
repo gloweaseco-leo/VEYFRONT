@@ -2,7 +2,7 @@ name: VEYFRONT prototype checks
 on:
   pull_request:
   push:
-    branches: [main, feature/veyfront-intake-security-v1]
+    branches: [main, feature/veyfront-intake-security-v1, feature/p0-unified-journey-ledger]
 permissions:
   contents: read
 jobs:
@@ -21,6 +21,7 @@ jobs:
       - run: pnpm check:brand
       - run: pnpm check:ops
       - run: pnpm check:security
+      - run: pnpm check:p0
       - run: node scripts/check-veyfront-brand.mjs
       - run: pnpm exec tsc --noEmit
       - run: pnpm build
