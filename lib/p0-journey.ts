@@ -1,22 +1,25 @@
 import {createHash,createHmac,timingSafeEqual} from 'node:crypto'
 import type {AcyBrief,AcyChannel,AcyStatus} from './acy-p1'
+import type {EvidenceInventory} from './l2m-p2-evidence'
+import {launchContext} from './p2-launch-context'
 // Mirror frozen P1 rule contract; the parity regression covers both implementations.
 const missingBriefFields=(brief:AcyBrief)=>(['markets','desiredAction'] as const).filter(x=>brief[x].trim().length<3)
 const deriveStatus=(brief:AcyBrief):AcyStatus=>missingBriefFields(brief).length?'needs_completion':'qualified'
 
 export type P0EventCode='intake_received'|'missing_information_requested'|'intake_qualified'|
- 'email_provider_accepted'|'email_failed'|'email_disabled'|'brief_completed'|'channel_preference_recorded'|'human_review_requested'|'p2_evidence_plan_review_drafted'|'p2_review_started'|'p2_review_failed'
+ 'email_provider_accepted'|'email_failed'|'email_disabled'|'brief_completed'|'channel_preference_recorded'|'human_review_requested'|'p2_evidence_plan_review_drafted'|'p2_review_started'|'p2_review_failed'|'launch_context_prepared'
 export type P0Event={
  sequence:number;eventId:string;actionId:string;code:P0EventCode;at:string;previousHash:string|null;entryHash:string;
  from:AcyStatus|null;to:AcyStatus;why:string;
- evidence:{kind:'CUSTOMER_SELF_REPORTED'|'SYSTEM_RULE'|'PROVIDER_RESPONSE'|'BOUNDED_PUBLIC_SNAPSHOT'|'EXPLICIT_SOURCE_AUTHORIZATION';sha256:string|null;consentVersion:string|null}
+ evidence:{kind:'CUSTOMER_SELF_REPORTED'|'SYSTEM_RULE'|'PROVIDER_RESPONSE'|'BOUNDED_PUBLIC_SNAPSHOT'|'EXPLICIT_SOURCE_AUTHORIZATION';sha256:string|null;consentVersion:string|null;commercialEvidenceSha256?:string}
  usage:{modelCalls:0;generationCalls:0;billableAmountMinor:null;billing:'NOT_MEASURED'}
 }
 export type P0P2Review={
  status:'REVIEW_REQUIRED';sourceUrl:'https://veyfront.com/';sourcePageSha256:string;sourceManifestSha256:string;
  assessmentId:string;planId:string;observedAt:string;capturedAt:string;contract:'l2m.acy.plan/0.1';
  opportunities:Array<{stage:'discover'|'understand'|'trust'|'convert';hypothesis:string;question:string;claim:'UNVERIFIED_HYPOTHESIS'}>;
- customerReady:false;modelCalls:0;generationCalls:0;sourceRights:'USER_ASSERTED_NOT_INDEPENDENTLY_VERIFIED'
+ customerReady:false;modelCalls:0;generationCalls:0;sourceRights:'USER_ASSERTED_NOT_INDEPENDENTLY_VERIFIED';
+ commercialEvidence?:EvidenceInventory;commercialEvidenceSha256?:string
 }
 export type P0Journey={
  version:2;id:string;reference:string;createdAt:string;updatedAt:string;expiresAt:string;
@@ -24,6 +27,7 @@ export type P0Journey={
  brief:AcyBrief;status:AcyStatus;channel:AcyChannel;consent:{accepted:true;version:'VEYFRONT-PRIVACY-2026-10-30';at:string};
  notification:'pending'|'provider_accepted'|'failed'|'disabled';
  p2?:P0P2Review;
+ launch?:ReturnType<typeof launchContext>;
  p2Attempt?:{actionId:string;startedAt:string;state:'IN_PROGRESS'|'FAILED';reason:string};
  events:P0Event[];ownerStatus:'unassigned';costs:{currency:null;knownMinorUnits:null;modelCalls:0;generationCalls:0;status:'NOT_RECONCILED'};
 }
@@ -33,13 +37,13 @@ export const P2_SOURCE_CONSENT='VEYFRONT-READONLY-HOMEPAGE-2026-10-31'
 const allowedStatus=['needs_completion','qualified','human_review']
 export function enabledP0(env?:{VERCEL_ENV?:string;VERCEL_GIT_COMMIT_REF?:string;ACY_P0_ENABLED?:string}):boolean{
  const e=env??process.env
- return e.VERCEL_ENV==='preview'&&e.VERCEL_GIT_COMMIT_REF==='feature/p0-unified-journey-ledger'&&e.ACY_P0_ENABLED==='true'
+ return e.VERCEL_ENV==='preview'&&e.ACY_P0_ENABLED==='true'&&(e.VERCEL_GIT_COMMIT_REF==='feature/p0-unified-journey-ledger'||(e.VERCEL_GIT_COMMIT_REF==='feature/p2-evidence-consumer'&&process.env.ACY_P2_FACTS_ENABLED==='true'))
 }
 export function p0Origin(request:Pick<Request,'url'|'headers'>,env?:{VERCEL_ENV?:string;ACY_P0_ALLOWED_ORIGIN?:string}):boolean{
  const e=env??process.env
  if(e.VERCEL_ENV!=='preview')return false
  const allowed=e.ACY_P0_ALLOWED_ORIGIN?.trim()
- if(!allowed||!/^https:\/\/veyfront-git-feature-p0-[a-z0-9-]+\.vercel\.app$/.test(allowed))return false
+ if(!allowed||!/^https:\/\/veyfront-git-feature-(?:p0|p2-eviden)[a-z0-9-]*\.vercel\.app$/.test(allowed))return false
  const origin=request.headers.get('origin')
  if(origin)return origin===allowed
  return request.headers.get('sec-fetch-site')==='same-origin'&&request.headers.get('x-vf-preview-p0')==='journey'
@@ -61,11 +65,12 @@ export function authentic(j:P0Journey,token:unknown,now=new Date()):boolean{
  return y.length===x.length&&timingSafeEqual(x,y)
 }
 export function event(j:P0Journey,code:P0EventCode,why:string,actionId:string,kind:P0Event['evidence']['kind'],
- at:string,from:AcyStatus|null,sourceHash:string|null):P0Event{
+ at:string,from:AcyStatus|null,sourceHash:string|null,commercialEvidenceSha256?:string):P0Event{
  const base={
   sequence:j.events.length+1,eventId:sha(j.id+'|'+actionId+'|'+code).slice(0,32),actionId,code,at,
   from,to:j.status,previousHash:j.events.at(-1)?.entryHash??null,why,
-  evidence:{kind,sha256:sourceHash,consentVersion:kind==='EXPLICIT_SOURCE_AUTHORIZATION'?P2_SOURCE_CONSENT:kind==='CUSTOMER_SELF_REPORTED'?P0_CONSENT:null},
+  evidence:{kind,sha256:sourceHash,consentVersion:kind==='EXPLICIT_SOURCE_AUTHORIZATION'?P2_SOURCE_CONSENT:kind==='CUSTOMER_SELF_REPORTED'?P0_CONSENT:null,
+   ...(commercialEvidenceSha256?{commercialEvidenceSha256}:{} )},
   usage:{modelCalls:0 as const,generationCalls:0 as const,billableAmountMinor:null,billing:'NOT_MEASURED' as const}
  }
  return {...base,entryHash:sha(JSON.stringify(base))}
@@ -89,6 +94,16 @@ export function verifyLedger(j:P0Journey):boolean{
   if(j.p2Attempt.state==='IN_PROGRESS'&&(ended.length!==0||j.p2))return false
   if(j.p2Attempt.state==='FAILED'&&(ended.length!==1||ended[0].why!==j.p2Attempt.reason||j.p2))return false
  }
+ if(j.launch){
+  const expected=launchContext({company:j.brief.company,markets:j.brief.markets,
+   description:j.brief.description,desiredAction:j.brief.desiredAction})
+  const logged=j.events.filter(e=>e.code==='launch_context_prepared')
+  if(j.service!=='launch'||j.p2||j.launch.evidenceSha!==expected.evidenceSha||
+    JSON.stringify(j.launch.facts)!==JSON.stringify(expected.facts)||
+    JSON.stringify(j.launch.missing)!==JSON.stringify(expected.missing)||
+    j.launch.status!=='REVIEW_REQUIRED'||j.launch.cbp2PlannerAuthorized!==false||
+    logged.length!==1||logged[0].evidence.sha256!==j.launch.evidenceSha)return false
+ }
  if(j.p2){
   const p=j.p2
   const linked=j.events.filter(e=>e.code==='p2_evidence_plan_review_drafted')
@@ -98,6 +113,11 @@ export function verifyLedger(j:P0Journey):boolean{
     !/^[a-f0-9]{64}$/.test(p.sourceManifestSha256)||!/^[a-f0-9]{64}$/.test(p.sourcePageSha256)||
     !/^assessment-[a-f0-9]{20}$/.test(p.assessmentId)||!/^plan-[a-f0-9]{20}$/.test(p.planId)||
     p.opportunities.length!==4||p.modelCalls!==0||p.generationCalls!==0)return false
+  if(p.commercialEvidence){
+   if(!p.commercialEvidenceSha256||linked[0].evidence.commercialEvidenceSha256!==p.commercialEvidenceSha256||
+      p.commercialEvidence.source.source_page_sha256!==p.sourcePageSha256||
+      sha(JSON.stringify(p.commercialEvidence))!==p.commercialEvidenceSha256)return false
+  }
   if(!['discover','understand','trust','convert'].every((stage,i)=>
    p.opportunities[i]?.stage===stage&&p.opportunities[i]?.claim==='UNVERIFIED_HYPOTHESIS'))return false
  }
@@ -160,13 +180,15 @@ export function linkP2Review(j:P0Journey,review:P0P2Review,actionId:string,now=n
     j.p2Attempt?.actionId!==actionId||j.p2Attempt.state!=='IN_PROGRESS'||
     !/^[0-9a-f-]{36}$/i.test(actionId)||review.customerReady!==false||
     review.sourceUrl!=='https://veyfront.com/'||!(/^[a-f0-9]{64}$/).test(review.sourcePageSha256)||
-    review.opportunities.length!==4||review.modelCalls!==0||review.generationCalls!==0)return {kind:'invalid'}
+    review.opportunities.length!==4||review.modelCalls!==0||review.generationCalls!==0||
+    (review.commercialEvidence&&(review.commercialEvidence.source.source_page_sha256!==review.sourcePageSha256||
+      sha(JSON.stringify(review.commercialEvidence))!==review.commercialEvidenceSha256)))return {kind:'invalid'}
  if(j.p2)return {kind:'invalid'}
  const at=now.toISOString()
  const next:P0Journey={...j,p2:review,p2Attempt:undefined,events:[...j.events],updatedAt:at}
  next.events.push(event(next,'p2_evidence_plan_review_drafted',
   'One whitelisted live homepage observed; four review hypotheses remain unverified. No sale or site generation.',
-  actionId,'BOUNDED_PUBLIC_SNAPSHOT',at,j.status,review.sourcePageSha256))
+  actionId,'BOUNDED_PUBLIC_SNAPSHOT',at,j.status,review.sourcePageSha256,review.commercialEvidenceSha256))
  return {kind:'updated',journey:next}
 }
 
@@ -182,6 +204,12 @@ export function changeP0(j:P0Journey,input:Record<string,unknown>,now=new Date()
   next.brief.markets=input.markets.trim();next.brief.desiredAction=input.desiredAction.trim()
   next.status=deriveStatus(next.brief);code='brief_completed';why=next.status==='qualified'?'Customer-supplied missing fields complete; ready for next stage, not yet approved.':'More information is needed.'
   kind='CUSTOMER_SELF_REPORTED';hash=sha(JSON.stringify({markets:next.brief.markets,desiredAction:next.brief.desiredAction}))
+ }else if(input.type==='prepare_launch_context'&&j.service==='launch'&&j.status==='qualified'&&!j.launch){
+  next.launch=launchContext({company:j.brief.company,markets:j.brief.markets,
+   description:j.brief.description,desiredAction:j.brief.desiredAction})
+  code='launch_context_prepared'
+  why='Customer-self-reported Launch Context drafted without old URL; industry/buyer/offerings need confirmation. CBP2 not invoked.'
+  hash=next.launch.evidenceSha;kind='CUSTOMER_SELF_REPORTED'
  }else if(input.type==='choose_channel'&&(input.channel==='email'||input.channel==='wechat'||input.channel==='feishu')){
   next.channel=input.channel;code='channel_preference_recorded';why='Preference saved only; third-party messaging not connected.'
  }else if(input.type==='request_human'){
@@ -195,13 +223,13 @@ export function visibleP0(j:P0Journey){
   expiresAt:j.expiresAt,channel:j.channel,brief:j.brief,nextQuestions:missingBriefFields(j.brief),
   notification:j.notification,blockedReason:j.status==='needs_completion'?'Waiting for target markets and/or desired buyer action.':
   j.status==='human_review'?'Awaiting a human operations owner.':'P1 qualified; P2 needs separate authorized source evidence.',
-  p2:j.p2??null,
+  p2:j.p2??null,launchContext:j.launch??null,
   ledger:{events:j.events.map(e=>({...e})),eventCount:j.events.length,
    integrity:verifyLedger(j)?'HASH_CHAIN_VALID':'INVALID',
    stages:[
     {stage:'P1',status:j.status,reason:j.status==='needs_completion'?'Customer needs to complete brief fields.':j.status==='human_review'?'Operations owner review pending.':'Brief sufficient for next-stage evaluation.'},
-    {stage:'P2',status:j.p2?'REVIEW_REQUIRED':j.p2Attempt?.state??'NOT_STARTED',
-     reason:j.p2?'Bounded homepage evidence and unverified plan require customer review.':
+    {stage:'P2',status:j.p2||j.launch?'REVIEW_REQUIRED':j.p2Attempt?.state??'NOT_STARTED',
+     reason:j.launch?'Customer-only Launch Context prepared; buyer/product proof and Planner remain gated.':j.p2?'Bounded homepage evidence and unverified plan require customer review.':
       j.p2Attempt?.state==='IN_PROGRESS'?'Read-only homepage observation is in progress.':
       j.p2Attempt?.state==='FAILED'?'Previous source review failed: '+j.p2Attempt.reason:
       'No authorized customer URL evidence linked to this journey.'},

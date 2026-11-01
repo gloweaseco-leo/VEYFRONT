@@ -7,7 +7,9 @@ type Journey={
  id:string;reference:string;service:'launch'|'rebuild';status:Status;expiresAt:string;channel:'email'|'wechat'|'feishu'
  brief:{company:string;website:string;markets:string;desiredAction:string;description:string}
  nextQuestions:string[];notification:string;blockedReason:string
- p2:null|{status:'REVIEW_REQUIRED';sourceUrl:string;sourcePageSha256:string;assessmentId:string;planId:string;contract:string;capturedAt:string;opportunities:{stage:string;hypothesis:string;question:string;claim:string}[]}
+ launchContext?:null|{version:string;status:string;source:string;cbp2PlannerAuthorized:false;
+  fields?:unknown;facts:{field:string;value:string;provenance:string}[];missing:string[];evidenceSha:string}
+ p2:null|{status:'REVIEW_REQUIRED';sourceUrl:string;sourcePageSha256:string;assessmentId:string;planId:string;contract:string;capturedAt:string;opportunities:{stage:string;hypothesis:string;question:string;claim:string}[];commercialEvidence?:{counts:Record<string,number>;observations:{id:string;kind:string;selector:string;excerpt:string;source_page_sha256:string;claim_status:string}[];capabilities:{name:string;status:string}[]}}
  ledger:{eventCount:number;integrity:string;stages:{stage:string;status:string;reason:string}[];events:{sequence:number;code:string;at:string;why:string;to:Status;
   evidence:{kind:string;sha256:string|null;consentVersion:string|null};
   usage:{modelCalls:number;generationCalls:number;billableAmountMinor:number|null;billing:string}}[];
@@ -69,6 +71,22 @@ export function JourneyConsole(){
     </form>}
     {j.status==='qualified'&&<div className="rounded-xl border border-ink/20 bg-mist/40 p-6"><h3 className="text-lg font-semibold">Information completed</h3><p className="mt-2 text-sm">P1 is complete. P2 evidence review remains limited to authorized sources. Orders, pricing and generated sites are outside this phase.</p></div>}
     {j.status==='human_review'&&<p className="rounded-xl border border-ink/20 bg-mist/40 p-6">Human exception flagged. No operator SLA or response is claimed.</p>}
+    {j.service==='launch'&&j.status==='qualified'&&<section className="rounded-xl border border-ink/15 bg-white p-6">
+      <p className="font-mono text-xs uppercase text-ink/60">P2 · Launch Context · no old URL</p>
+      <h3 className="mt-2 text-lg font-semibold">Business context from your own brief</h3>
+      <p className="mt-2 text-sm text-ink/70">All fields below are customer-supplied, unverified statements. No old website, AI Planner, price or generated website is involved.</p>
+      {!j.launchContext&&<button type="button" disabled={busy}
+        onClick={()=>void update({type:'prepare_launch_context'})}
+        className="mt-4 min-h-12 rounded-md bg-ink px-5 font-semibold text-ivory disabled:opacity-50">Prepare context for review</button>}
+      {j.launchContext&&<div className="mt-4 space-y-3 text-sm">
+        <p className="font-semibold">REVIEW REQUIRED · AI Planner not authorized</p>
+        {j.launchContext.facts.map(f=><div key={f.field} className="border-t border-ink/15 pt-2">
+          <strong>{f.field.replaceAll('_',' ')}</strong><p className="mt-1">{f.value}</p>
+          <p className="text-xs text-ink/60">{f.provenance}</p></div>)}
+        <p className="text-xs text-ink/70">Still unknown: {j.launchContext.missing.join(', ')}</p>
+        <p className="break-all font-mono text-xs text-ink/60">Source digest: {j.launchContext.evidenceSha}</p>
+      </div>}
+    </section>}
     {j.service==='rebuild'&&j.status==='qualified'&&<section className="rounded-xl border border-ink/15 bg-white p-6">
      <p className="font-mono text-xs uppercase tracking-widest text-ink/60">P2 · Evidence review · controlled QA</p>
      <h3 className="mt-2 text-lg font-semibold">Verify public homepage evidence</h3>
@@ -81,7 +99,19 @@ export function JourneyConsole(){
        <p className="text-sm font-semibold">REVIEW REQUIRED · {j.p2.contract}</p>
        <p className="break-all font-mono text-xs text-ink/60">Source SHA-256: {j.p2.sourcePageSha256}</p>
        <p className="break-all font-mono text-xs text-ink/60">Assessment: {j.p2.assessmentId} · Plan: {j.p2.planId}</p>
-       <ul className="space-y-3">{j.p2.opportunities.map(x=><li key={x.stage} className="rounded-md border border-ink/15 p-4">
+       {j.p2.commercialEvidence&&<div className="mt-4 rounded-md border border-ink/20 p-4">
+       <h4 className="font-semibold">Observed homepage facts — not verified business claims</h4>
+       <p className="mt-2 text-xs">Markup only: linked destinations, customer cases and live form functionality have not been independently verified.</p>
+       <p className="mt-2 text-xs">{Object.entries(j.p2.commercialEvidence.counts).map(([kind,n])=>kind+': '+n).join(' · ')}</p>
+       <div className="mt-3 space-y-3">{j.p2.commercialEvidence.observations.map(e=><div key={e.id} className="border-t border-ink/10 pt-2 text-sm">
+        <strong>{e.kind} · {e.claim_status}</strong>
+        <p className="mt-1">{e.excerpt}</p>
+        <p className="mt-1 break-all font-mono text-xs text-ink/60">Locator {e.selector}</p>
+        <p className="break-all font-mono text-xs text-ink/60">Page SHA {e.source_page_sha256}</p>
+       </div>)}</div>
+       <p className="mt-4 text-xs">{j.p2.commercialEvidence.capabilities.map(c=>c.name+': '+c.status).join(' · ')}</p>
+      </div>}
+      <ul className="space-y-3">{j.p2.opportunities.map(x=><li key={x.stage} className="rounded-md border border-ink/15 p-4">
         <p className="font-mono text-xs uppercase">{x.stage} · UNVERIFIED HYPOTHESIS</p>
         <p className="mt-2 text-sm">{x.hypothesis}</p><p className="mt-2 text-sm text-ink/70">Confirm with customer: {x.question}</p>
        </li>)}</ul>

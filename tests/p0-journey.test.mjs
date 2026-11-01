@@ -1,7 +1,13 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {randomUUID} from 'node:crypto'
-import {enabledP0,p0Origin,qaOnly,idempotentIdentity,makeP0,authentic,changeP0,visibleP0,recordDelivery,verifyLedger,beginP2Review,linkP2Review,failP2Review} from '../lib/p0-journey.ts'
+import {registerHooks} from 'node:module'
+registerHooks({resolve(specifier,context,nextResolve){
+ if(context.parentURL?.endsWith('.ts')&&specifier.startsWith('.')&&!/\.(ts|js|mjs|json)$/.test(specifier))
+  return nextResolve(specifier+'.ts',context)
+ return nextResolve(specifier,context)
+}})
+const {enabledP0,p0Origin,qaOnly,idempotentIdentity,makeP0,authentic,changeP0,visibleP0,recordDelivery,verifyLedger,beginP2Review,linkP2Review,failP2Review}=await import('../lib/p0-journey.ts')
 import {deriveStatus,missingBriefFields} from '../lib/acy-p1.ts'
 
 const SECRET='P0-TEST-SECRET-'+'z'.repeat(50)
@@ -160,4 +166,28 @@ test('P2 is a consented review in same journey; duplicate, busy and failure are 
  const retry=beginP2Review(fail,randomUUID(),new Date('2026-11-01T00:30:22Z'))
  assert.equal(retry.kind,'updated')
  assert.equal(beginP2Review(initial,randomUUID()).kind,'invalid')
+})
+
+test('Launch can prepare URL-free Context on the same Journey without inventing industry or invoking CBP2',()=>{
+ const initial=makeP0({service:'launch',name:'Internal QA',email:'qa@example.invalid',
+  company:'Launch Pilot',website:'',markets:'',details:'We want a new overseas business site with inquiry capabilities.'},
+  randomUUID(),SECRET,new Date('2026-11-01T01:00:00Z')).journey
+ assert.equal(initial.status,'needs_completion')
+ const complete=changeP0(initial,{type:'complete_brief',actionId:randomUUID(),
+  markets:'European Union',desiredAction:'Request product details'})
+ assert.equal(complete.kind,'updated')
+ assert.equal(complete.journey.status,'qualified')
+ const prepared=changeP0(complete.journey,{type:'prepare_launch_context',actionId:randomUUID()})
+ assert.equal(prepared.kind,'updated')
+ assert.equal(prepared.journey.launch.source,'CUSTOMER_ONLY_NO_SOURCE_URL')
+ assert.equal(prepared.journey.launch.cbp2PlannerAuthorized,false)
+ assert.equal(prepared.journey.launch.modelCalls,0)
+ assert.equal(prepared.journey.launch.facts.every(f=>f.provenance==='CUSTOMER_SELF_REPORTED_UNVERIFIED'),true)
+ assert.equal(prepared.journey.launch.missing.includes('buyer_roles'),true)
+ assert.equal(verifyLedger(prepared.journey),true)
+ assert.equal(visibleP0(prepared.journey).ledger.stages[1].status,'REVIEW_REQUIRED')
+ assert.equal(changeP0(prepared.journey,{type:'prepare_launch_context',actionId:randomUUID()}).kind,'invalid')
+ const tampered=structuredClone(prepared.journey)
+ tampered.launch.facts[0].value='fabricated approved customer'
+ assert.equal(verifyLedger(tampered),false)
 })
