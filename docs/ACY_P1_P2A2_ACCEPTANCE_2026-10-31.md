@@ -1,3 +1,23 @@
+# Current P2-A2 outcome — LIVE E2E PASS (2026-11-01 00:15 UTC)
+
+The earlier 401 and blocked conclusions below are retained as **historical investigation notes**, not the current release verdict.
+
+**Verified real protected-browser journey:** authorized checkbox -> VEYFRONT POST -> server-side OIDC + HMAC -> L2M Python handler -> real HTTPS homepage fetch -> evidence contract 0.2 -> strict VEYFRONT validator -> rendered report. L2M Vercel runtime log independently records `POST /api/acy_url_assess` **HTTP 200** at `2026-11-01T00:15:21.590Z` on deployment `dpl_EZYFbZbLUXHmSEmZZjKNMnd958Jh`.
+
+Observed report:
+- Canonical homepage: `https://veyfront.com/`; one live page.
+- Contract: `l2m.acy.assessment/0.2`.
+- Homepage title: `VEYFRONT — Building Digital Frontiers for Global Business`.
+- Page SHA-256 evidence: `175c9f7e64a37d1673d7785891296f8b65a346b4e12e323c30e22a51abde1a55`.
+- Model calls: **0**; generation calls not asserted from browser UI.
+- Content rights are user asserted, not independently confirmed; one homepage observation is **not** a customer-ready commercial diagnosis.
+
+**Confirmed root cause of historical 401:** `pyproject.toml` specified the single Vercel Python entrypoint `api.acy_assess:handler`, which routed even `/api/acy_url_assess` to the original P2-A1 synthetic-fixture API with a different bearer credential. The 401 never reached the new HMAC handler. Correction: `api.acy_router:handler` with exact P2-A1/P2-A2 paths; 4 isolated Python routing regression tests passed before the production-like Preview request.
+
+Temporary runtime/auth diagnostic headers and proxy error classifiers were removed after successful proof. The ephemeral Vercel share link was revoked. No production merge, production deploy, customer URL scanning or paid model execution occurred. **P2-A2 only is accepted for one-domain Preview E2E; P2 broader Context/Planner, public access, pricing and generation remain gated.**
+
+---
+
 # VEYFRONT × L2M · P1/P2-A2 Engineering Acceptance — 2026-10-31
 
 Status: **PREVIEW ONLY / DO NOT MERGE / DO NOT PUBLISH**.
