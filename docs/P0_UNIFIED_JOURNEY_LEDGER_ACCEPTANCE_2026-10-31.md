@@ -1,3 +1,27 @@
+# Updated Scope Freeze: P1 + P2 only (after owner direction)
+
+**The next deliverable is a stable P1-to-P2 customer-facing journey, not P3/P4.** All pricing, payment, ordering, AI site generation, delivery workflows and their execution endpoints are excluded. The Journey view now tracks only the active `P1` and `P2` stages; excluded later-phase capabilities are listed as out of scope rather than promised milestones.
+
+## New source-linked P1→P2 integration
+
+- P1 `qualified` + service `rebuild` + explicit new read-only source authorization + current private Journey bearer proof are required.
+- Pilot source is **only** the approved `https://veyfront.com/` homepage. A recorded third-party URL, non-root path, Launch request or unqualified inquiry cannot initiate scanning.
+- The same authenticated `/api/acy/p0` supports `op=assess_p2`. This uses a conditional private-Blob reservation before the bounded external call, with 45-second lease and failure categorization. Duplicate/concurrent action attempts return a conflict rather than silently sending additional scans.
+- Reuses the already-proven L2M private branch `/api/acy_plan` signed envelope, Trusted Sources/OIDC, actual homepage observation and deterministic four-stage evidence-bound review. It does **not** invoke CBP2 generative planning or paid model services.
+- Both L2M contracts are independently checked: `l2m.acy.assessment/0.2` and `l2m.acy.plan/0.1`; version/plan/manifest/page hashes, fixed-stage unverified hypotheses and zero model/generation calls must match. Invalid/rejected source proof fails closed and records an explicit reason.
+- The verified metadata and four **unverified** review prompts are written to the existing Journey v2 record. A new P2 ledger event links to the captured page SHA-256, with an independent `VEYFRONT-READONLY-HOMEPAGE-2026-10-31` source-authorization marker.
+- Recovery rechecks the event hash chain **and** the typed P2 provenance, and displays the P2 report and customer-review questions from that same private record. Never equate an HTML snapshot with site ownership verification or commercial effectiveness.
+
+## New evidence and gate
+
+- **13 isolated Node tests PASS** before final standalone CI, covering P1 parity, P2 authorization/lease/failure, HMAC envelope, bounded domain, forged page SHA, invented verified claims, rejected model usage, and source-bound plan linkage. Post-hardening tests also verify P2 consent marker and typed persistence.
+- The GitHub workflow was updated to run `pnpm check:p0`, `pnpm exec tsc --noEmit` and a full `pnpm build` on branch pushes. An earlier workflow run (41259791252) **completed successfully**. Later patch series is undergoing the same checks; do not claim this final head passed until the corresponding run finishes.
+- Preview branch has server-only `L2M_ACY_P0_SERVICE_TOKEN` and exact `L2M_ACY_P0_UPSTREAM_URL`, copied from the already approved L2M Preview key and allowlisted branch endpoint. Secrets are never committed, reflected to browsers or published in this report.
+- Vercel manually creating a fresh deployment still returns **402 `api-deployments-free-per-day`**. The latest actual P0 Preview deployment predates the integrated source-code changes. Hence **current-head real browser P1→P2 E2E is still blocked, not accepted.**
+- Customer email ownership, durable WAF rate limiting, independently verified provider/inbox delivery, transactional outbox, separate non-production storage and privacy/legal checks still block any real-customer launch. QA-only mail recipients remain enforced.
+
+---
+
 # P0 Unified Intake + Journey Ledger · Development and Acceptance Record
 
 **Review baseline: 2026-10-31 Pacific / 2026-11-01 UTC.**
