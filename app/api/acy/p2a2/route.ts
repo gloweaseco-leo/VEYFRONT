@@ -52,19 +52,7 @@ export async function POST(request: NextRequest) {
       redirect:'error',
     })
   } catch { return reject(502,'L2M live assessment service is unavailable.') }
-  if (!response.ok) {
-    // This diagnostic is only on a protected branch Preview and exposes two
-    // allowlisted proof bits. Never forward untrusted upstream response bodies.
-    if (response.status === 401) {
-      const revision = response.headers.get('x-l2m-acy-build')
-      const keyMatch = response.headers.get('x-l2m-acy-runtime-matches')
-      const codePresent = revision === 'hmac-runtime-audit-1'
-      const status = keyMatch === 'yes' ? 'MATCH' : keyMatch === 'no' ? 'DIFFERENT' : 'NO_MARKER'
-      return reject(502,`L2M_QA401: runtime_code=${codePresent}; runtime_key=${status}`)
-    }
-    return reject(502,`L2M live assessment could not proceed (HTTP ${response.status}).`)
-  }
-
+  if (!response.ok) return reject(502,`L2M live assessment could not proceed (HTTP ${response.status}).`)
   let result: unknown
   try { result = await response.json() } catch { return reject(502,'Invalid L2M response.') }
   if (!result || typeof result !== 'object' || !('assessment' in result)
