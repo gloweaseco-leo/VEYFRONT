@@ -5,8 +5,10 @@ import {isGroundedPlan} from './l2m-p2a3'
 import type {P0Journey,P0P2Review} from './p0-journey'
 
 export class P2ReviewError extends Error {
- constructor(readonly category:'NOT_ELIGIBLE'|'NOT_CONFIGURED'|'IDENTITY_REQUIRED'|'UPSTREAM_FAILED'|'INVALID_EVIDENCE'){
+ readonly category:'NOT_ELIGIBLE'|'NOT_CONFIGURED'|'IDENTITY_REQUIRED'|'UPSTREAM_FAILED'|'INVALID_EVIDENCE'
+ constructor(category:P2ReviewError['category']){
   super(category)
+  this.category=category
  }
 }
 /** Existing L2M P2-A3 service, reused only for the owner's allowlisted homepage. No new crawler. */
