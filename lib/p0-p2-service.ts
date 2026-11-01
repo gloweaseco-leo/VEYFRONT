@@ -2,6 +2,7 @@ import {randomBytes} from 'node:crypto'
 import {P2A2_APPROVED_URL,signP2A2} from './acy-p2a2-signature'
 import {isLiveAssessment} from './l2m-p2a2'
 import {isGroundedPlan} from './l2m-p2a3'
+import {validateEvidence} from './l2m-p2-evidence'
 import type {P0Journey,P0P2Review} from './p0-journey'
 
 export class P2ReviewError extends Error {
@@ -26,6 +27,7 @@ export async function makeP2Review(j:P0Journey,oidc:string|null,opts?:{
   throw new P2ReviewError('NOT_ELIGIBLE')
  if(typeof oidc!=='string'||oidc.split('.').length!==3)
   throw new P2ReviewError('IDENTITY_REQUIRED')
+ const evidenceEnabled=process.env.ACY_P2_FACTS_ENABLED==='true'
  const endpointString=opts?.endpoint??process.env.L2M_ACY_P0_UPSTREAM_URL??''
  const secret=opts?.secret??process.env.L2M_ACY_P0_SERVICE_TOKEN??''
  let endpoint:URL
@@ -33,7 +35,7 @@ export async function makeP2Review(j:P0Journey,oidc:string|null,opts?:{
  // Only the exact dedicated P2-A3 branch alias, not arbitrary Vercel projects.
  if(secret.length<32||endpoint.protocol!=='https:'||
   !/^l2m-acy-p2a-preview-git-featur-[a-z0-9-]+\.vercel\.app$/.test(endpoint.hostname)||
-  endpoint.pathname!=='/api/acy_plan'||endpoint.search||endpoint.hash||
+  endpoint.pathname!==(evidenceEnabled?'/api/acy_evidence':'/api/acy_plan')||endpoint.search||endpoint.hash||
   endpoint.port||endpoint.username||endpoint.password)
   throw new P2ReviewError('NOT_CONFIGURED')
  const now=opts?.now??new Date()
@@ -56,6 +58,8 @@ export async function makeP2Review(j:P0Journey,oidc:string|null,opts?:{
  if(!isLiveAssessment(packet.assessment)||!isGroundedPlan(packet.plan,packet.assessment))
   throw new P2ReviewError('INVALID_EVIDENCE')
  const a=packet.assessment,p=packet.plan
+ const inventory=(a as typeof a & {commercial_evidence?:unknown}).commercial_evidence
+ if(evidenceEnabled&&!validateEvidence(inventory,a))throw new P2ReviewError('INVALID_EVIDENCE')
  // Buyer questions remain explicitly unverified; do not score customers, quote or trigger builds.
  return {
   status:'REVIEW_REQUIRED',sourceUrl:P2A2_APPROVED_URL,
@@ -66,6 +70,7 @@ export async function makeP2Review(j:P0Journey,oidc:string|null,opts?:{
   opportunities:p.opportunities.map(x=>({stage:x.stage,hypothesis:x.hypothesis,
     question:x.customer_question,claim:'UNVERIFIED_HYPOTHESIS' as const})),
   customerReady:false,modelCalls:0,generationCalls:0,
-  sourceRights:'USER_ASSERTED_NOT_INDEPENDENTLY_VERIFIED'
+  sourceRights:'USER_ASSERTED_NOT_INDEPENDENTLY_VERIFIED',
+  commercialEvidence:evidenceEnabled&&validateEvidence(inventory,a)?inventory:undefined
  }
 }
