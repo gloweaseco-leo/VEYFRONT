@@ -35,13 +35,13 @@ export const P2_SOURCE_CONSENT='VEYFRONT-READONLY-HOMEPAGE-2026-10-31'
 const allowedStatus=['needs_completion','qualified','human_review']
 export function enabledP0(env?:{VERCEL_ENV?:string;VERCEL_GIT_COMMIT_REF?:string;ACY_P0_ENABLED?:string}):boolean{
  const e=env??process.env
- return e.VERCEL_ENV==='preview'&&e.VERCEL_GIT_COMMIT_REF==='feature/p0-unified-journey-ledger'&&e.ACY_P0_ENABLED==='true'
+ return e.VERCEL_ENV==='preview'&&e.ACY_P0_ENABLED==='true'&&(e.VERCEL_GIT_COMMIT_REF==='feature/p0-unified-journey-ledger'||(e.VERCEL_GIT_COMMIT_REF==='feature/p2-evidence-consumer'&&process.env.ACY_P2_FACTS_ENABLED==='true'))
 }
 export function p0Origin(request:Pick<Request,'url'|'headers'>,env?:{VERCEL_ENV?:string;ACY_P0_ALLOWED_ORIGIN?:string}):boolean{
  const e=env??process.env
  if(e.VERCEL_ENV!=='preview')return false
  const allowed=e.ACY_P0_ALLOWED_ORIGIN?.trim()
- if(!allowed||!/^https:\/\/veyfront-git-feature-p0-[a-z0-9-]+\.vercel\.app$/.test(allowed))return false
+ if(!allowed||!/^https:\/\/veyfront-git-feature-(?:p0|p2-evidence)-[a-z0-9-]+\.vercel\.app$/.test(allowed))return false
  const origin=request.headers.get('origin')
  if(origin)return origin===allowed
  return request.headers.get('sec-fetch-site')==='same-origin'&&request.headers.get('x-vf-preview-p0')==='journey'
