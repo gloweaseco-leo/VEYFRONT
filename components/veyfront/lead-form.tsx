@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { CheckCircle2, AlertCircle, LoaderCircle, ArrowUpRight } from 'lucide-react'
 import { useLang } from '@/lib/i18n'
 import { checkUrl } from '@/lib/url'
@@ -21,6 +21,8 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
   const [consent, setConsent] = useState(false)
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
   const [reference, setReference] = useState('')
+  const [resumeUrl,setResumeUrl] = useState('')
+  const intakeKey=useRef<string|null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => { if (defaultWebsite) setWebsite(defaultWebsite) }, [defaultWebsite])
@@ -46,17 +48,19 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
       return
     }
     setError('')
+    if(!intakeKey.current)intakeKey.current=crypto.randomUUID()
     setStatus('sending')
     try {
       const response = await fetch('/api/leads', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-vf-intake-key':intakeKey.current,'x-vf-preview-p0':'journey' },
         cache: 'no-store',
         body: JSON.stringify({ service, name, email, company, website, markets, details, consent, honeypot }),
       })
-      const data = await response.json() as { ok?: boolean; reference?: string; message?: string }
+      const data = await response.json() as { ok?: boolean; reference?: string; message?: string; resumeUrl?:string }
       if (!response.ok || !data.ok || !data.reference) throw new Error(data.message || 'Request could not be saved')
       setReference(data.reference)
+      setResumeUrl(data.resumeUrl||'')
       setStatus('success')
     } catch {
       setError(zh ? '提交未完成，需求未确认保存。请稍后重试。' : 'Submission failed; your request was not confirmed saved. Please try again.')
@@ -71,7 +75,12 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
         <h2 className="text-2xl font-semibold">{zh ? '项目需求已收到' : 'Your request has been received'}</h2>
         <p className="mt-3 text-ink/75">{zh ? '你的需求已保存到 VEYFRONT 的私有受理系统。请保存受理编号，方便后续核对；这并不代表项目已被接受、报价或付款。' : 'Your request has been saved to VEYFRONT’s private intake. Keep the reference for follow-up. This is not a project acceptance, quotation or payment.'}</p>
         <p className="mt-5 font-mono text-xl font-semibold">{reference}</p>
-        <button type="button" onClick={() => { setStatus('idle'); setReference('') }} className="mt-6 inline-flex min-h-11 items-center underline underline-offset-4">{zh ? '提交另一个需求' : 'Submit another request'}</button>
+        {resumeUrl && <div className="mt-5 rounded-md border border-ink/25 bg-white p-4 text-sm">
+          <p className="font-semibold">{zh?'内部 Preview：资料补全与状态恢复':'Private Preview: complete and resume your brief'}</p>
+          <p className="mt-2 text-ink/70">{zh?'此链接含限时访问凭证，请勿转发。测试不会产生正式客户订单或商业诊断。':'This short-lived link contains an access secret. Do not share it. No customer order or live commercial diagnosis is created.'}</p>
+          <a className="mt-3 inline-flex min-h-11 items-center font-semibold underline underline-offset-2" href={resumeUrl}>{zh?'继续完善需求 →':'Continue your journey →'}</a>
+        </div>}
+        <button type="button" onClick={() => { setStatus('idle'); setReference('');setResumeUrl('');intakeKey.current=null }} className="mt-6 inline-flex min-h-11 items-center underline underline-offset-4">{zh ? '提交另一个需求' : 'Submit another request'}</button>
       </div>
     )
   }
