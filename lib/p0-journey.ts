@@ -1,5 +1,8 @@
 import {createHash,createHmac,timingSafeEqual} from 'node:crypto'
-import {deriveStatus,missingBriefFields,type AcyBrief,type AcyChannel,type AcyStatus} from './acy-p1'
+import type {AcyBrief,AcyChannel,AcyStatus} from './acy-p1'
+// Mirror frozen P1 rule contract; the parity regression covers both implementations.
+const missingBriefFields=(brief:AcyBrief)=>(['markets','desiredAction'] as const).filter(x=>brief[x].trim().length<3)
+const deriveStatus=(brief:AcyBrief):AcyStatus=>missingBriefFields(brief).length?'needs_completion':'qualified'
 
 export type P0EventCode='intake_received'|'missing_information_requested'|'intake_qualified'|
  'email_provider_accepted'|'email_failed'|'email_disabled'|'brief_completed'|'channel_preference_recorded'|'human_review_requested'
@@ -27,7 +30,7 @@ export function p0Origin(request:Pick<Request,'url'|'headers'>,env?:{VERCEL_ENV?
  const e=env??process.env
  if(e.VERCEL_ENV!=='preview')return false
  const allowed=e.ACY_P0_ALLOWED_ORIGIN?.trim()
- if(!allowed||!/^https:\/\/veyfront-git-feature-p0-unified-journey-[a-z0-9-]+\.vercel\.app$/.test(allowed))return false
+ if(!allowed||!/^https:\/\/veyfront-git-feature-p0-[a-z0-9-]+\.vercel\.app$/.test(allowed))return false
  const origin=request.headers.get('origin')
  if(origin)return origin===allowed
  return request.headers.get('sec-fetch-site')==='same-origin'&&request.headers.get('x-vf-preview-p0')==='journey'
@@ -84,8 +87,9 @@ export function recordDelivery(j:P0Journey,result:'sent'|'failed'|'disabled',now
 }
 export function changeP0(j:P0Journey,input:Record<string,unknown>,now=new Date()):
  {kind:'updated'|'duplicate';journey:P0Journey}|{kind:'invalid'}{
- if(typeof input.actionId!=='string'||!/^[0-9a-f-]{36}$/i.test(input.actionId)||j.events.length>=50)return {kind:'invalid'}
+ if(typeof input.actionId!=='string'||!/^[0-9a-f-]{36}$/i.test(input.actionId))return {kind:'invalid'}
  if(j.events.some(e=>e.actionId===input.actionId))return {kind:'duplicate',journey:j}
+ if(j.events.length>=50)return {kind:'invalid'}
  let next:P0Journey={...j,brief:{...j.brief},events:[...j.events],updatedAt:now.toISOString()}
  let code:P0EventCode,why:string,hash:string|null=null,kind:P0Event['evidence']['kind']='SYSTEM_RULE'
  if(input.type==='complete_brief'&&j.status!=='human_review'){
