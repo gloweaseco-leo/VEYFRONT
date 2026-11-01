@@ -114,5 +114,12 @@ test('P0 signed P2 review accepts new facts only from evidence endpoint, stores 
   const modified=structuredClone(linked.journey)
   modified.p2.commercialEvidence.observations[0].excerpt='altered'
   assert.equal(verifyLedger(modified),false)
+  // A rewritten object plus a freshly computed digest must still fail
+  // because the original digest is anchored to the event's hash chain.
+  const attacker=structuredClone(linked.journey)
+  attacker.p2.commercialEvidence.observations[0].excerpt='Silently modified copy'
+  attacker.p2.commercialEvidenceSha256=sha(JSON.stringify(attacker.p2.commercialEvidence))
+  assert.equal(verifyLedger(attacker),false)
+  assert.equal(linked.journey.events.at(-1).evidence.commercialEvidenceSha256,result.commercialEvidenceSha256)
  }finally{delete process.env.ACY_P2_FACTS_ENABLED}
 })
