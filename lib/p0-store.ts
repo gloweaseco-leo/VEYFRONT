@@ -1,12 +1,12 @@
 import {get,head,put} from '@vercel/blob'
-import {authentic,P0_PREFIX,type P0Journey} from './p0-journey'
+import {authentic,P0_PREFIX,verifyLedger,type P0Journey} from './p0-journey'
 
 export const p0Path=(id:string)=>P0_PREFIX+id+'.json'
 export async function readP0(id:string):Promise<P0Journey|null>{
  const doc=await get(p0Path(id),{access:'private',useCache:false})
  if(!doc)return null
  const j=await new Response(doc.stream).json() as P0Journey
- if(j.version!==2||j.id!==id||!Array.isArray(j.events)||j.events.length>60)throw Error('Invalid journey version')
+ if(j.version!==2||j.id!==id||!verifyLedger(j))throw Error('Invalid journey or event chain')
  return j
 }
 export async function createP0(j:P0Journey,token:string):Promise<'created'|'duplicate'|'conflict'>{
