@@ -81,6 +81,14 @@ export function verifyLedger(j:P0Journey):boolean{
   if(e.usage.modelCalls!==0||e.usage.generationCalls!==0||e.usage.billableAmountMinor!==null)return false
   previous=entryHash
  }
+ if(j.status!==j.events[j.events.length-1]?.to)return false
+ if(j.p2Attempt){
+  const attempts=j.events.filter(e=>e.code==='p2_review_started'&&e.actionId===j.p2Attempt?.actionId)
+  if(attempts.length!==1)return false
+  const ended=j.events.filter(e=>e.code==='p2_review_failed'&&e.actionId===j.p2Attempt?.actionId)
+  if(j.p2Attempt.state==='IN_PROGRESS'&&(ended.length!==0||j.p2))return false
+  if(j.p2Attempt.state==='FAILED'&&(ended.length!==1||ended[0].why!==j.p2Attempt.reason||j.p2))return false
+ }
  if(j.p2){
   const p=j.p2
   const linked=j.events.filter(e=>e.code==='p2_evidence_plan_review_drafted')
@@ -169,7 +177,7 @@ export function changeP0(j:P0Journey,input:Record<string,unknown>,now=new Date()
  if(j.events.length>=50)return {kind:'invalid'}
  let next:P0Journey={...j,brief:{...j.brief},events:[...j.events],updatedAt:now.toISOString()}
  let code:P0EventCode,why:string,hash:string|null=null,kind:P0Event['evidence']['kind']='SYSTEM_RULE'
- if(input.type==='complete_brief'&&j.status!=='human_review'){
+ if(input.type==='complete_brief'&&j.status==='needs_completion'&&!j.p2&&!j.p2Attempt){
   if(typeof input.markets!=='string'||typeof input.desiredAction!=='string'||input.markets.trim().length>240||input.desiredAction.trim().length>240)return {kind:'invalid'}
   next.brief.markets=input.markets.trim();next.brief.desiredAction=input.desiredAction.trim()
   next.status=deriveStatus(next.brief);code='brief_completed';why=next.status==='qualified'?'Customer-supplied missing fields complete; ready for next stage, not yet approved.':'More information is needed.'
