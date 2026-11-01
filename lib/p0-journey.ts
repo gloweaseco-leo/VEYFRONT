@@ -1,5 +1,6 @@
 import {createHash,createHmac,timingSafeEqual} from 'node:crypto'
 import type {AcyBrief,AcyChannel,AcyStatus} from './acy-p1'
+import type {EvidenceInventory} from './l2m-p2-evidence'
 // Mirror frozen P1 rule contract; the parity regression covers both implementations.
 const missingBriefFields=(brief:AcyBrief)=>(['markets','desiredAction'] as const).filter(x=>brief[x].trim().length<3)
 const deriveStatus=(brief:AcyBrief):AcyStatus=>missingBriefFields(brief).length?'needs_completion':'qualified'
@@ -16,7 +17,8 @@ export type P0P2Review={
  status:'REVIEW_REQUIRED';sourceUrl:'https://veyfront.com/';sourcePageSha256:string;sourceManifestSha256:string;
  assessmentId:string;planId:string;observedAt:string;capturedAt:string;contract:'l2m.acy.plan/0.1';
  opportunities:Array<{stage:'discover'|'understand'|'trust'|'convert';hypothesis:string;question:string;claim:'UNVERIFIED_HYPOTHESIS'}>;
- customerReady:false;modelCalls:0;generationCalls:0;sourceRights:'USER_ASSERTED_NOT_INDEPENDENTLY_VERIFIED'
+ customerReady:false;modelCalls:0;generationCalls:0;sourceRights:'USER_ASSERTED_NOT_INDEPENDENTLY_VERIFIED';
+ commercialEvidence?:EvidenceInventory;commercialEvidenceSha256?:string
 }
 export type P0Journey={
  version:2;id:string;reference:string;createdAt:string;updatedAt:string;expiresAt:string;
@@ -98,6 +100,10 @@ export function verifyLedger(j:P0Journey):boolean{
     !/^[a-f0-9]{64}$/.test(p.sourceManifestSha256)||!/^[a-f0-9]{64}$/.test(p.sourcePageSha256)||
     !/^assessment-[a-f0-9]{20}$/.test(p.assessmentId)||!/^plan-[a-f0-9]{20}$/.test(p.planId)||
     p.opportunities.length!==4||p.modelCalls!==0||p.generationCalls!==0)return false
+  if(p.commercialEvidence){
+   if(!p.commercialEvidenceSha256||p.commercialEvidence.source.source_page_sha256!==p.sourcePageSha256||
+      sha(JSON.stringify(p.commercialEvidence))!==p.commercialEvidenceSha256)return false
+  }
   if(!['discover','understand','trust','convert'].every((stage,i)=>
    p.opportunities[i]?.stage===stage&&p.opportunities[i]?.claim==='UNVERIFIED_HYPOTHESIS'))return false
  }
@@ -160,7 +166,9 @@ export function linkP2Review(j:P0Journey,review:P0P2Review,actionId:string,now=n
     j.p2Attempt?.actionId!==actionId||j.p2Attempt.state!=='IN_PROGRESS'||
     !/^[0-9a-f-]{36}$/i.test(actionId)||review.customerReady!==false||
     review.sourceUrl!=='https://veyfront.com/'||!(/^[a-f0-9]{64}$/).test(review.sourcePageSha256)||
-    review.opportunities.length!==4||review.modelCalls!==0||review.generationCalls!==0)return {kind:'invalid'}
+    review.opportunities.length!==4||review.modelCalls!==0||review.generationCalls!==0||
+    (review.commercialEvidence&&(review.commercialEvidence.source.source_page_sha256!==review.sourcePageSha256||
+      sha(JSON.stringify(review.commercialEvidence))!==review.commercialEvidenceSha256)))return {kind:'invalid'}
  if(j.p2)return {kind:'invalid'}
  const at=now.toISOString()
  const next:P0Journey={...j,p2:review,p2Attempt:undefined,events:[...j.events],updatedAt:at}
