@@ -5,7 +5,7 @@ const missingBriefFields=(brief:AcyBrief)=>(['markets','desiredAction'] as const
 const deriveStatus=(brief:AcyBrief):AcyStatus=>missingBriefFields(brief).length?'needs_completion':'qualified'
 
 export type P0EventCode='intake_received'|'missing_information_requested'|'intake_qualified'|
- 'email_provider_accepted'|'email_failed'|'email_disabled'|'brief_completed'|'channel_preference_recorded'|'human_review_requested'|'p2_evidence_plan_review_drafted'
+ 'email_provider_accepted'|'email_failed'|'email_disabled'|'brief_completed'|'channel_preference_recorded'|'human_review_requested'|'p2_evidence_plan_review_drafted'|'p2_review_started'|'p2_review_failed'
 export type P0Event={
  sequence:number;eventId:string;actionId:string;code:P0EventCode;at:string;previousHash:string|null;entryHash:string;
  from:AcyStatus|null;to:AcyStatus;why:string;
@@ -24,6 +24,7 @@ export type P0Journey={
  brief:AcyBrief;status:AcyStatus;channel:AcyChannel;consent:{accepted:true;version:'VEYFRONT-PRIVACY-2026-10-30';at:string};
  notification:'pending'|'provider_accepted'|'failed'|'disabled';
  p2?:P0P2Review;
+ p2Attempt?:{actionId:string;startedAt:string;state:'IN_PROGRESS'|'FAILED';reason:string};
  events:P0Event[];ownerStatus:'unassigned';costs:{currency:null;knownMinorUnits:null;modelCalls:0;generationCalls:0;status:'NOT_RECONCILED'};
 }
 export const P0_PREFIX='acy-p0/preview/journeys/'
@@ -110,16 +111,38 @@ export function recordDelivery(j:P0Journey,result:'sent'|'failed'|'disabled',now
  next.events.push(event(next,code,why,'alert-'+j.id,'PROVIDER_RESPONSE',now.toISOString(),j.status,null))
  return next
 }
+export function beginP2Review(j:P0Journey,actionId:string,now=new Date()):
+ {kind:'updated';journey:P0Journey}|{kind:'duplicate'|'busy'|'invalid'}{
+ if(!/^[0-9a-f-]{36}$/i.test(actionId))return {kind:'invalid'}
+ if(j.events.some(e=>e.actionId===actionId))return {kind:'duplicate'}
+ if(j.service!=='rebuild'||j.status!=='qualified'||j.p2||j.events.length>=48)return {kind:'invalid'}
+ if(j.p2Attempt?.state==='IN_PROGRESS'&&now.getTime()-Date.parse(j.p2Attempt.startedAt)<45_000)return {kind:'busy'}
+ const at=now.toISOString()
+ const next:P0Journey={...j,events:[...j.events],updatedAt:at,
+  p2Attempt:{actionId,startedAt:at,state:'IN_PROGRESS',reason:'Source evidence request running.'}}
+ next.events.push(event(next,'p2_review_started','Authorized source review started; not a verified customer claim.',
+  actionId,'SYSTEM_RULE',at,j.status,null))
+ return {kind:'updated',journey:next}
+}
+export function failP2Review(j:P0Journey,actionId:string,category:string,now=new Date()):P0Journey|null{
+ if(j.p2Attempt?.actionId!==actionId||j.p2Attempt.state!=='IN_PROGRESS'||j.events.length>=50)return null
+ const reason=['UPSTREAM_FAILED','INVALID_EVIDENCE','IDENTITY_REQUIRED','NOT_CONFIGURED','NOT_ELIGIBLE'].includes(category)?category:'UNKNOWN_FAILURE'
+ const at=now.toISOString()
+ const next:P0Journey={...j,events:[...j.events],updatedAt:at,
+  p2Attempt:{actionId,startedAt:j.p2Attempt.startedAt,state:'FAILED',reason}}
+ next.events.push(event(next,'p2_review_failed',reason,actionId,'SYSTEM_RULE',at,j.status,null))
+ return next
+}
 export function linkP2Review(j:P0Journey,review:P0P2Review,actionId:string,now=new Date()):
- {kind:'updated'|'duplicate';journey:P0Journey}|{kind:'invalid'}{
+ {kind:'updated';journey:P0Journey}|{kind:'invalid'}{
  if(j.service!=='rebuild'||j.status!=='qualified'||j.events.length>=50||
+    j.p2Attempt?.actionId!==actionId||j.p2Attempt.state!=='IN_PROGRESS'||
     !/^[0-9a-f-]{36}$/i.test(actionId)||review.customerReady!==false||
     review.sourceUrl!=='https://veyfront.com/'||!(/^[a-f0-9]{64}$/).test(review.sourcePageSha256)||
     review.opportunities.length!==4||review.modelCalls!==0||review.generationCalls!==0)return {kind:'invalid'}
- if(j.events.some(e=>e.actionId===actionId))return {kind:'duplicate',journey:j}
- if(j.p2)return {kind:'invalid'} // No silent replacement of prior evidence; future updates require explicit versions.
+ if(j.p2)return {kind:'invalid'}
  const at=now.toISOString()
- const next:P0Journey={...j,p2:review,events:[...j.events],updatedAt:at}
+ const next:P0Journey={...j,p2:review,p2Attempt:undefined,events:[...j.events],updatedAt:at}
  next.events.push(event(next,'p2_evidence_plan_review_drafted',
   'One whitelisted live homepage observed; four review hypotheses remain unverified. No sale or site generation.',
   actionId,'BOUNDED_PUBLIC_SNAPSHOT',at,j.status,review.sourcePageSha256))
@@ -156,7 +179,11 @@ export function visibleP0(j:P0Journey){
    integrity:verifyLedger(j)?'HASH_CHAIN_VALID':'INVALID',
    stages:[
     {stage:'P1',status:j.status,reason:j.status==='needs_completion'?'Customer needs to complete brief fields.':j.status==='human_review'?'Operations owner review pending.':'Brief sufficient for next-stage evaluation.'},
-    {stage:'P2',status:j.p2?'REVIEW_REQUIRED':'NOT_STARTED',reason:j.p2?'Bounded homepage evidence and unverified plan require customer review.':'No authorized customer URL evidence linked to this journey.'},
+    {stage:'P2',status:j.p2?'REVIEW_REQUIRED':j.p2Attempt?.state??'NOT_STARTED',
+     reason:j.p2?'Bounded homepage evidence and unverified plan require customer review.':
+      j.p2Attempt?.state==='IN_PROGRESS'?'Read-only homepage observation is in progress.':
+      j.p2Attempt?.state==='FAILED'?'Previous source review failed: '+j.p2Attempt.reason:
+      'No authorized customer URL evidence linked to this journey.'},
     {stage:'P3',status:'LOCKED',reason:'No confirmed scope, offer or accepted price.'},
     {stage:'P4',status:'LOCKED',reason:'No accepted order, generation authorization or delivery.'}
    ],
