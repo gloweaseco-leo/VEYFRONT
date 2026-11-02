@@ -80,8 +80,8 @@ const en = {
     showOnSite: 'Show on page',
     beforeHint: 'You are viewing the original. Switch to After to see the marked changes.',
     legacyMobileNote: 'The original layout isn\u2019t responsive — the desktop page is shrunk to fit the phone.',
-    placeholder: 'DEMO PLACEHOLDER',
-    fictional: 'FICTIONAL DEMO',
+    placeholder: 'Design preview',
+    fictional: 'Design concept',
     placeholderNote:
       'Fictional sample company, hand-built to illustrate the format. Not a customer case and not L2M generator output.',
     evidenceHeading: 'Source & evidence',
@@ -196,8 +196,8 @@ const zh: Dict = {
     showOnSite: '在页面中定位',
     beforeHint: '当前为原网站。切换到「改造后」查看标记的变化。',
     legacyMobileNote: '原网站不支持响应式 — 桌面页面被缩小显示在手机上。',
-    placeholder: 'DEMO PLACEHOLDER',
-    fictional: '虚构演示 DEMO',
+    placeholder: 'Design preview',
+    fictional: '设计对比',
     placeholderNote: '虚构示例企业，仅用于说明展示形式。不是客户案例，也不是 L2M 生成结果。',
     evidenceHeading: '来源与证据',
     evidence: [

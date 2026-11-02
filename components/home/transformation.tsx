@@ -52,7 +52,7 @@ export function Transformation() {
               view={view}
               device={device}
               bodyHeight="h-[440px] md:h-[620px]"
-              badgeLabel={t.flagship.fictional}
+              badgeLabel=""
               hotspots={{
                 showHotspots: true,
                 activeHotspot: active,

@@ -19,7 +19,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 HOST = "http://127.0.0.1:3100"
 VIEWPORTS = [1440, 768, 390, 360]
 PATHS = ["/", "/pricing", "/services", "/how-it-works", "/start/launch", "/start/rebuild"]
-PRICES = ("¥26,800", "¥36,800", "¥6,800")
+PRICES = ("¥26,800", "¥6,800")
 findings = []
 errors = []
 
@@ -88,7 +88,7 @@ def run():
                         body = page.locator("#commercial-offers").inner_text()
                         for amount in PRICES:
                             check(amount in body, prefix + " price " + amount)
-                        check("pending" in body.lower(), prefix + " nonbinding offer disclaimer")
+                        check("written quote" in body.lower() or "indicative" in body.lower(), prefix + " price disclaimer")
                         if path == "/":
                             check(page.locator('a[href="/pricing"]').count() > 0, prefix + " pricing CTA")
                         else:
@@ -111,7 +111,7 @@ def run():
                         body = page.locator("#commercial-offers").inner_text()
                         for amount in PRICES:
                             check(amount in body, prefix + " ZH price " + amount)
-                        check("待" in body and "报价" in body, prefix + " Chinese proposal disclaimer")
+                        check("报价" in body and "参考" in body, prefix + " Chinese price disclosure")
                         screenshot(page, prefix + "_zh")
                     if path == "/how-it-works":
                         t = page.locator("main").inner_text()

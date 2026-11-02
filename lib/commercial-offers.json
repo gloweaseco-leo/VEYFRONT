@@ -1,5 +1,5 @@
 {
-  "version": "W1.0-proposal-2026-11-02",
+  "version": "W1.1-proposal-2026-11-02",
   "status": "PENDING_COMMERCIAL_LEGAL_TAX_COST_APPROVAL",
   "currency": "CNY",
   "build": [
@@ -23,7 +23,7 @@
     {
       "id": "rebuild",
       "name": "Frontier Rebuild",
-      "price": 36800,
+      "price": 26800,
       "url": "/start/rebuild",
       "pages": 8,
       "records": 30,
@@ -32,10 +32,10 @@
       "revisions": 2,
       "warrantyDays": 30,
       "deliveryDays": [
-        25,
-        35
+        20,
+        30
       ],
-      "redirects": 20
+      "redirects": 5
     }
   ],
   "run": {
@@ -60,6 +60,10 @@
     {
       "id": "revision",
       "price": 2000
+    },
+    {
+      "id": "continuity",
+      "price": 6800
     }
   ],
   "payments": [
