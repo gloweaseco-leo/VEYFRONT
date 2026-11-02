@@ -15,7 +15,7 @@ export type HotspotCopy = {
 const en = {
   nav: {
     services: 'Services',
-    transformations: 'Transformations',
+    transformations: 'Website upgrades',
     howItWorks: 'How It Works',
     pricing: 'Pricing',
     contact: 'Contact',
@@ -41,9 +41,9 @@ const en = {
     unavailable:
       'This address can\u2019t be analyzed. Local, private and IP addresses aren\u2019t supported — try your public website domain.',
     recognized: 'Address format looks valid',
-    continueTitle: 'Address format accepted',
+    continueTitle: 'Continue with your website',
     continueBody:
-      'Only the address format was checked, not the website. Use the live Rebuild inquiry form to request a human-reviewed proposal. No site content was fetched or modified.',
+      'Continue to the Rebuild inquiry to share your goals. We will review the website and agree an upgrade plan and written quote with you.',
     continueCta: 'What happens next',
     edit: 'Edit address',
     demo: 'We confirm site details before proposing work.',
@@ -134,7 +134,7 @@ export type Dict = typeof en
 const zh: Dict = {
   nav: {
     services: '服务',
-    transformations: '改造作品',
+    transformations: '升级效果',
     howItWorks: '工作方式',
     pricing: '价格与交付',
     contact: '联系我们',

@@ -33,7 +33,7 @@ const en = {
   },
   tr: {
     eyebrow: 'Transformations',
-    title: 'Every transformation, shown with the evidence behind it.',
+    title: 'See how a website upgrade changes the buying experience.',
     lede: 'Compare the original and the upgraded website page by page and on mobile, see what changed for buyers, and check the source, authorization and verification behind each case.',
     status: 'See how the design of a business website can make product evaluation and inquiries easier. This is a concept, not a delivered customer project.',
     stageEyebrow: 'Design comparison',
@@ -284,7 +284,7 @@ const zh: PagesCopy = {
   },
   tr: {
     eyebrow: '改造作品',
-    title: '每一次改造，都附带背后的证据。',
+    title: '看见升级如何改善海外买家的体验。',
     lede: '逐页、分设备对比原网站与升级后的网站，看清买家体验发生了哪些变化，并核对每个案例的来源、授权与验证状态。',
     status: '通过设计前后对比，了解产品信息与客户询盘体验如何改善。本展示为设计示意，不代表已交付客户项目。',
     stageEyebrow: '设计升级对比',

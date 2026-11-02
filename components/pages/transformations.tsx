@@ -39,8 +39,6 @@ export function TransformationsPage() {
       <PageHero eyebrow={p.tr.eyebrow} title={p.tr.title} lede={p.tr.lede} />
       <Stage view={view} setView={setView} page={page} setPage={setPage} device={device} setDevice={setDevice} active={active} setActive={setActive} />
       <Changes onShow={showChange} active={active} />
-      <Evidence />
-      <Library />
       <PageCta title={p.tr.ctaTitle} body={p.tr.ctaBody} secondary={{ label: p.tr.ctaSecondary, href: '/how-it-works' }} />
     </PageShell>
   )

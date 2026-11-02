@@ -74,7 +74,7 @@ export function CommercialOffers({ detail = false }: { detail?: boolean }) {
           </div>
           <div className="space-y-2 border-t border-ink/15 pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
             <h3 className="text-lg font-semibold">{zh ? '复杂迁移单独报价' : 'Extended migration is optional'}</h3>
-            <p className="text-sm leading-relaxed text-ink/75">{zh ? '需要更多旧 URL 对应关系、关键内容迁移、统计追踪衔接与上线切换方案时，参考 ¥6,800 起；先评估风险再确认范围，不保证搜索排名保持不变。' : 'For additional URL mapping, content migration, analytics continuity and cutover planning, guide pricing starts from ¥6,800. We confirm scope after review; search rankings cannot be guaranteed.'}</p>
+            <p className="text-sm leading-relaxed text-ink/75">{zh ? '需要更多旧 URL 对应关系、关键内容迁移、统计追踪衔接与上线切换方案时，一次性参考 ¥6,800 起；先评估风险再确认范围，不保证搜索排名保持不变。' : 'For additional URL mapping, content migration, analytics continuity and cutover planning, one-time guide pricing starts from ¥6,800. We confirm scope after review; search rankings cannot be guaranteed.'}</p>
           </div>
         </div>
         <div className="flex flex-col gap-4 rounded-xl border border-ink/15 bg-ivory p-6 lg:flex-row lg:items-center lg:justify-between">
