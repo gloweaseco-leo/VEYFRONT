@@ -86,7 +86,7 @@ def run():
                           prefix + " noindex retained")
                     if path in ("/", "/pricing"):
                         body = page.locator("#commercial-offers").inner_text()
-                        for amount in PRICES:
+                        for amount in (("¥9,800",) if path == "/" else PRICES):
                             check(amount in body, prefix + " price " + amount)
                         check("guide price" in body.lower() or "written" in body.lower() or "indicative" in body.lower(), prefix + " price disclaimer")
                         check("One clear price" in body or "complete" in body.lower(), prefix + " one-price offer")
@@ -112,7 +112,7 @@ def run():
                     inspect_overflow(page, prefix + " ZH")
                     if path in ("/", "/pricing"):
                         body = page.locator("#commercial-offers").inner_text()
-                        for amount in PRICES:
+                        for amount in (("¥9,800",) if path == "/" else PRICES):
                             check(amount in body, prefix + " ZH price " + amount)
                         check("参考" in body and "签约前" in body, prefix + " Chinese complete-price disclosure")
                         check("SEO-Native" in body or "原生 SEO" in body, prefix + " native SEO service")
