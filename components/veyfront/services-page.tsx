@@ -44,8 +44,8 @@ export function ServicesPage() {
     </section>
     <section className="border-y border-ink/15 bg-mist/35">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-5 px-5 py-12 md:flex-row md:items-center md:justify-between md:px-10">
-        <div className="flex items-center gap-4"><TrendingUp className="size-6" /><div><h2 className="text-xl font-semibold">Grow <span className="font-mono text-xs font-medium text-ink/55">/ LATER</span></h2><p className="mt-1 text-sm text-ink/70">{zh ? '持续内容与客户体验升级，后续按明确范围推出。不是强制托管。' : 'Scoped content and buyer-experience improvements, planned for later. Not mandatory hosting.'}</p></div></div>
-        <span className="w-fit rounded-full border border-ink/25 px-4 py-2 font-mono text-xs uppercase">{zh ? '尚未开放' : 'Not yet available'}</span>
+        <div className="flex items-center gap-4"><TrendingUp className="size-6" /><div><h2 className="text-xl font-semibold">Run <span className="font-mono text-xs font-medium text-ink/55">/ PROPOSAL</span></h2><p className="mt-1 text-sm text-ink/70">{zh ? '可选年度运行维护，参考服务内容和价格待正式签发；托管不强制。' : 'Optional annual site care; reference scope and price await formal approval. Hosting is not compulsory.'}</p></div></div>
+        <span className="w-fit rounded-full border border-ink/25 px-4 py-2 font-mono text-xs uppercase">{zh ? '待签发方案' : 'Proposed package'}</span>
       </div>
     </section>
     <section className="mx-auto flex max-w-[1440px] flex-col gap-4 px-5 py-16 md:px-10">

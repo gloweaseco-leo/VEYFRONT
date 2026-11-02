@@ -9,6 +9,7 @@ import { Journey } from '@/components/home/journey'
 import { Report } from '@/components/home/report'
 import { DeliveryPath } from '@/components/home/delivery-path'
 import { WhatYouGet } from '@/components/home/what-you-get'
+import { CommercialOffers } from '@/components/veyfront/commercial-offers'
 import { Proof } from '@/components/home/proof'
 import { Invitation, SiteFooter } from '@/components/home/invitation'
 
@@ -32,6 +33,7 @@ export default function HomePage() {
           <Report />
           <DeliveryPath />
           <WhatYouGet />
+          <CommercialOffers />
           <Proof />
           <Invitation />
         </main>

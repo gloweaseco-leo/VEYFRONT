@@ -1,0 +1,70 @@
+{
+  "version": "W1.0-proposal-2026-11-02",
+  "status": "PENDING_COMMERCIAL_LEGAL_TAX_COST_APPROVAL",
+  "currency": "CNY",
+  "build": [
+    {
+      "id": "launch",
+      "name": "Frontier Launch",
+      "price": 26800,
+      "url": "/start/launch",
+      "pages": 8,
+      "records": 30,
+      "cases": 2,
+      "languages": 1,
+      "revisions": 2,
+      "warrantyDays": 30,
+      "deliveryDays": [
+        20,
+        30
+      ],
+      "redirects": 0
+    },
+    {
+      "id": "rebuild",
+      "name": "Frontier Rebuild",
+      "price": 36800,
+      "url": "/start/rebuild",
+      "pages": 8,
+      "records": 30,
+      "cases": 2,
+      "languages": 1,
+      "revisions": 2,
+      "warrantyDays": 30,
+      "deliveryDays": [
+        25,
+        35
+      ],
+      "redirects": 20
+    }
+  ],
+  "run": {
+    "priceYear": 6800,
+    "contentHoursPerMonth": 1,
+    "criticalFirstResponseWorkHours": 4,
+    "standardFirstResponseWorkDays": 1
+  },
+  "addons": [
+    {
+      "id": "page",
+      "price": 1800
+    },
+    {
+      "id": "records10",
+      "price": 1200
+    },
+    {
+      "id": "language",
+      "price": 6800
+    },
+    {
+      "id": "revision",
+      "price": 2000
+    }
+  ],
+  "payments": [
+    50,
+    40,
+    10
+  ]
+}

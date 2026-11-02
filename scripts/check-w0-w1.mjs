@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict'
+import { readFileSync, existsSync } from 'node:fs'
+const read = p => readFileSync(p, 'utf8')
+const c = JSON.parse(read('lib/commercial-offers.json'))
+assert.equal(c.status, 'PENDING_COMMERCIAL_LEGAL_TAX_COST_APPROVAL')
+assert.deepEqual(c.build.map(x => x.id), ['launch','rebuild'])
+assert.deepEqual(c.build.map(x => x.price), [26800,36800])
+assert.equal(c.run.priceYear,6800)
+assert.deepEqual(c.payments,[50,40,10])
+assert.equal(c.payments.reduce((a,b)=>a+b,0),100)
+for (const x of c.build) {
+  assert.equal(x.pages,8)
+  assert.equal(x.records,30)
+  assert.equal(x.cases,2)
+  assert.equal(x.languages,1)
+  assert.equal(x.revisions,2)
+  assert.equal(x.warrantyDays,30)
+}
+for (const path of ['docs/W0_PRODUCTION_BASELINE_V1.md','docs/W1_PRODUCT_PRICE_SCOPE_V1.md','docs/W1_QUOTE_ACCEPTANCE_TEMPLATE_V1.md','components/veyfront/commercial-offers.tsx']) assert.ok(existsSync(path))
+assert.match(read('app/layout.tsx'),/robots: \{ index: false, follow: false \}/)
+assert.match(read('app/page.tsx'),/<CommercialOffers \/>/)
+assert.match(read('app/pricing/page.tsx'),/<CommercialOffers detail \/>/)
+assert.doesNotMatch(read('app/pricing/page.tsx'),/SAMPLE PRICE|design prototype/i)
+assert.match(read('components/veyfront/commercial-offers.tsx'),/pending business, tax and delivery-cost approval/)
+assert.match(read('components/veyfront/commercial-offers.tsx'),/No guaranteed ranking, inquiry volume or sales/)
+assert.doesNotMatch(read('lib/home-copy.ts'),/Account required before analysis|注册后开始诊断|After payment, the new website is generated/)
+assert.match(read('app/api/leads/route.ts'),/access: 'private'/)
+console.log('W0/W1 catalog and truth guard PASS; no live business acceptance claimed')
