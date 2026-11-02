@@ -29,9 +29,9 @@ const en = {
     headline: 'Building Digital Frontiers for Global Business.',
     subtitle:
       'Launch a credible new B2B website or transform the one you already have. Help global buyers understand, trust and contact your business.',
-    ctaPrimary: 'Analyze My Website',
+    ctaPrimary: 'Check URL format',
     ctaSecondary: 'See a Transformation',
-    boundary: ['Diagnosis starts after sign-up', 'Your current website is never modified'],
+    boundary: ['URL check is a demo, not automatic diagnosis', 'Your current website is never modified'],
   },
   url: {
     label: 'Your current website',
@@ -43,12 +43,12 @@ const en = {
     recognized: 'Address format looks valid',
     continueTitle: 'Address format accepted',
     continueBody:
-      'Only the address format was checked — the website has not been fetched or analyzed. In the product, you would create an account next and then the diagnosis begins. Your current website is never modified.',
+      'Only the address format was checked, not the website. Use the live Rebuild inquiry form to request a human-reviewed proposal. No site content was fetched or modified.',
     continueCta: 'Continue (demo)',
     edit: 'Edit address',
     demo: 'DEMO STATE — sign-up and analysis are not connected in this prototype.',
     nextBadge: 'DEMO · Next step preview',
-    nextTitle: 'Create your account to start the diagnosis',
+    nextTitle: 'Illustrative future process only',
     nextKept: 'Address kept for this step',
     nextSteps: [
       ['Create an account', 'Not connected in this prototype'],
@@ -147,9 +147,9 @@ const zh: Dict = {
     brandLine: 'VEYFRONT / BEYOND REDESIGN',
     headline: '让企业网站，成为连接全球客户的可信商业入口。',
     subtitle: '从零建立专业 B2B 网站，或重构已有网站。让全球买家更容易理解、信任并联系你的企业。',
-    ctaPrimary: '分析我的网站',
+    ctaPrimary: '检查网址格式',
     ctaSecondary: '查看改造演示',
-    boundary: ['注册后开始诊断', '不会修改现有网站'],
+    boundary: ['网址检查为演示，不会自动诊断', '不会修改现有网站'],
   },
   url: {
     label: '你现在的网站',
@@ -159,12 +159,12 @@ const zh: Dict = {
     unavailable: '该地址暂不能分析。不支持本地、内网或 IP 地址，请输入公开的网站域名。',
     recognized: '网址格式有效',
     continueTitle: '网址格式已通过',
-    continueBody: '目前只检查了网址格式，尚未访问或分析该网站。在正式产品中，下一步是创建账户，然后开始诊断。你现有的网站不会被修改。',
+    continueBody: '目前仅检查网址格式，没有抓取或分析网站。真实改造请提交项目咨询，由团队审核，不会修改原站。',
     continueCta: '继续（演示）',
     edit: '修改网址',
     demo: '演示状态 — 本原型未接入注册与分析。',
     nextBadge: 'DEMO · 下一步预览',
-    nextTitle: '创建账户，开始诊断',
+    nextTitle: '未来流程示意，尚未开放',
     nextKept: '网址已保留到这一步',
     nextSteps: [
       ['创建账户', '本原型未接入'],

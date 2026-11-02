@@ -243,7 +243,7 @@ const en = {
   invite: {
     eyebrow: 'Your next website starts here.',
     title: 'A stronger website starts here.',
-    boundary: ['Diagnosis starts after sign-up', 'Your current website is never modified', 'No consultation call needed'],
+    boundary: ['Submit a project inquiry first', 'Your current website is never modified', 'No consultation call needed'],
   },
   footer: {
     note: 'VEYFRONT accepts project inquiries. Interactive diagnosis, payment and the Hartwell showcase are demonstrations, not live customer services.',
