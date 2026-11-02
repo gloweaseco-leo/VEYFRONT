@@ -31,10 +31,9 @@ export function ReviewBar({ direction }: { direction: 'A' | 'B' }) {
 export function useSiteLinks() {
   const { t } = useLang()
   return [
-    { label: t.nav.services, href: '/services' },
+    { label: t.nav.pricing, href: '/pricing' },
     { label: t.nav.transformations, href: '/transformations' },
     { label: t.nav.howItWorks, href: '/how-it-works' },
-    { label: t.nav.pricing, href: '/pricing' },
     { label: t.nav.contact, href: '/contact' },
   ]
 }

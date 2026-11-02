@@ -15,9 +15,9 @@ export type HotspotCopy = {
 const en = {
   nav: {
     services: 'Services',
-    transformations: 'Website upgrades',
+    transformations: 'Design example',
     howItWorks: 'How It Works',
-    pricing: 'Pricing',
+    pricing: 'Services & Pricing',
     contact: 'Contact',
     signIn: 'Sign In',
     analyze: 'Contact Us',
@@ -134,9 +134,9 @@ export type Dict = typeof en
 const zh: Dict = {
   nav: {
     services: '服务',
-    transformations: '升级效果',
+    transformations: '改造示例',
     howItWorks: '工作方式',
-    pricing: '价格与交付',
+    pricing: '服务与价格',
     contact: '联系我们',
     signIn: '登录',
     analyze: '联系咨询',
