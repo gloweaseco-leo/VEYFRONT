@@ -1,3 +1,3 @@
-# Superseded commercial scope
+# Superseded proposals
 
-W1.1 proposal is replaced for the protected preview by [W1.5 proposed product, scope and acceptance contract](W1_5_PRODUCT_SCOPE_AND_ACCEPTANCE.md). No contract or price is signed. Do not use W1.1 package counts and prices in customer offers.
+Prior W1.1 and W1.5 fee-per-scope price models are retired for current protected Preview. Current unapproved indicative one-price product and acceptance proposal: [VEYFRONT W1.6](W1_6_ONE_PRICE_PRODUCT_AND_ACCEPTANCE.md). Commercial, tax, operator, hosting and actual cost acceptance are pending.

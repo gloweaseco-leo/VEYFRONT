@@ -19,7 +19,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 HOST = "http://127.0.0.1:3100"
 VIEWPORTS = [1440, 768, 390, 360]
 PATHS = ["/", "/pricing", "/services", "/how-it-works", "/start/launch", "/start/rebuild"]
-PRICES = ("¥9,800", "¥12,800", "¥6,800")
+PRICES = ("¥9,800", "¥6,800")
 findings = []
 errors = []
 
@@ -89,7 +89,9 @@ def run():
                         for amount in PRICES:
                             check(amount in body, prefix + " price " + amount)
                         check("written" in body.lower() or "indicative" in body.lower(), prefix + " price disclaimer")
-                        check("+¥5,000" in body, prefix + " buyer-content optional enhancement")
+                        check("One clear price" in body or "complete" in body.lower(), prefix + " one-price offer")
+                        check("12,800" not in body and "+¥5,000" not in body, prefix + " no microaddon price")
+                        check("first-year" in body.lower(), prefix + " first year included")
                         if path == "/":
                             check(page.locator('a[href="/pricing"]').count() > 0, prefix + " pricing CTA")
                         else:
@@ -114,7 +116,9 @@ def run():
                             check(amount in body, prefix + " ZH price " + amount)
                         check("报价" in body and "参考" in body, prefix + " Chinese price disclosure")
                         check("SEO-Native" in body, prefix + " native SEO service")
-                        check("+¥5,000" in body, prefix + " buyer-content scope shown")
+                        check("完整" in body and "首年" in body, prefix + " full-site and year-one hosting")
+                        check("标准增项" not in body, prefix + " no microcharge list")
+                        check("12,800" not in body, prefix + " no migration surcharge")
                         screenshot(page, prefix + "_zh")
                     if path == "/how-it-works":
                         t = page.locator("main").inner_text()
