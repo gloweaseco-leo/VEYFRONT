@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils'
 import { SectionIntro, useHomeCopy, useHomeDemo } from './home-state'
 
 export function Transformation() {
-  const { h, t } = useHomeCopy()
+  const { h, t, lang } = useHomeCopy()
   const { view, setView } = useHomeDemo()
   const { device, setDevice } = useFlagship(0)
   const [active, setActive] = useState(0)
@@ -125,7 +125,7 @@ export function Transformation() {
               {t.flagship.explore} <ArrowRight className="size-4 text-lime" aria-hidden="true" />
             </Link>
             <Link href="/start/rebuild" className="inline-flex min-h-12 items-center justify-center rounded-md border border-ink/25 px-5 font-semibold text-ink">
-              {h.transformation.exploreNote}
+              {lang === 'zh' ? '咨询旧站升级' : 'Discuss my rebuild'}
             </Link>
           </div>
         </div>

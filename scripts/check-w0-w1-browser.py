@@ -18,7 +18,7 @@ OUT = Path("qa-evidence/w0-w1-browser")
 OUT.mkdir(parents=True, exist_ok=True)
 HOST = "http://127.0.0.1:3100"
 VIEWPORTS = [1440, 768, 390, 360]
-PATHS = ["/", "/pricing", "/services", "/how-it-works", "/start/launch", "/start/rebuild"]
+PATHS = ["/", "/pricing", "/transformations", "/how-it-works", "/start/launch", "/start/rebuild", "/contact"]
 PRICES = ("¥9,800", "¥6,800")
 findings = []
 errors = []
@@ -88,7 +88,7 @@ def run():
                         body = page.locator("#commercial-offers").inner_text()
                         for amount in PRICES:
                             check(amount in body, prefix + " price " + amount)
-                        check("written" in body.lower() or "indicative" in body.lower(), prefix + " price disclaimer")
+                        check("guide price" in body.lower() or "written" in body.lower() or "indicative" in body.lower(), prefix + " price disclaimer")
                         check("One clear price" in body or "complete" in body.lower(), prefix + " one-price offer")
                         check("12,800" not in body and "+¥5,000" not in body, prefix + " no microaddon price")
                         check("first-year" in body.lower(), prefix + " first year included")
@@ -115,14 +115,22 @@ def run():
                         for amount in PRICES:
                             check(amount in body, prefix + " ZH price " + amount)
                         check("参考" in body and "签约前" in body, prefix + " Chinese complete-price disclosure")
-                        check("SEO-Native" in body, prefix + " native SEO service")
+                        check("SEO-Native" in body or "原生 SEO" in body, prefix + " native SEO service")
                         check("完整" in body and "首年" in body, prefix + " full-site and year-one hosting")
                         check("标准增项" not in body, prefix + " no microcharge list")
                         check("12,800" not in body, prefix + " no migration surcharge")
                         screenshot(page, prefix + "_zh")
+                    if path == "/":
+                        check(page.locator("#buyer-capabilities").count() == 1, prefix + " capability section")
+                        check(page.locator("#transformation").count() == 1, prefix + " single transformation preview")
+                        check(page.locator("#delivery-steps").count() == 1, prefix + " delivery summary")
+                        check(page.locator("#report").count() == 0, prefix + " duplicate report removed")
+                        check(page.locator("main input[type=url]").count() == 0, prefix + " no competing homepage URL entry")
                     if path == "/how-it-works":
                         t = page.locator("main").inner_text()
                         check("书面报价" in t and "确认" in t, prefix + " verified engagement boundary")
+                    if path == "/contact":
+                        check(page.locator('input[name="email"]').count() == 1, prefix + " contact intake exists")
                     # Reset initial language to EN for next route; provider state is per page context.
                     page.locator('[role="group"][aria-label="Language / 语言"] button').filter(has_text="EN").first.click()
                     page.wait_for_function("document.documentElement.lang === 'en'", timeout=7000)
