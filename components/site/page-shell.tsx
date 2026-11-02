@@ -76,7 +76,7 @@ export function SectionHead({ id, eyebrow, title, lede, className }: { id: strin
 }
 
 export function PageCta({ title, body, secondary }: { title: string; body: string; secondary: { label: string; href: string } }) {
-  const { p } = usePagesCopy()
+  const { lang } = usePagesCopy()
   return (
     <section aria-labelledby="page-cta" className="bg-ink text-ivory">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-8 px-5 py-16 md:px-10 lg:flex-row lg:items-end lg:justify-between lg:py-24">
@@ -91,7 +91,7 @@ export function PageCta({ title, body, secondary }: { title: string; body: strin
             href="/contact"
             className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-lime px-6 font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lime"
           >
-            {p.common.analyze}
+            {lang === 'zh' ? '提交项目咨询' : 'Send a project inquiry'}
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
           <Link

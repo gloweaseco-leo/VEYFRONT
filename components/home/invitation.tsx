@@ -32,7 +32,7 @@ export function Invitation() {
           </Link>
         </div>
         <div className="w-full border-t border-ivory/20 pt-5">
-          <p className="mb-3 text-left text-sm text-ivory/75">{lang === 'zh' ? '输入现有网址，查看 Rebuild 的模拟下一步。' : 'Enter an existing URL to preview the Rebuild journey.'}</p>
+          <p className="mb-3 text-left text-sm text-ivory/75">{lang === 'zh' ? '输入现有网址，说明你的改造目标。' : 'Enter your current website URL to discuss an upgrade.'}</p>
           <UrlAnalyzer tone="dark" inputId={INVITE_INPUT_ID} size="lg" className="w-full text-left" sampleReportHref="#report" />
         </div>
         <ul className="flex flex-col gap-1 text-sm text-ivory/65 sm:flex-row sm:gap-6">

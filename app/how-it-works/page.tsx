@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { HowItWorksPage } from '@/components/pages/how-it-works'
 
 export const metadata: Metadata = {
-  title: 'How It Works — VEYFRONT (design prototype)',
-  description: 'Analyze, Plan, Upgrade, Deliver: how L2M upgrades an existing website, with a decision point at every phase.',
+  title: 'How Engagements Work — VEYFRONT',
+  description: 'Real inquiry, written scope and quote, supervised production, acceptance and handover. Demo artifacts are illustrative.',
 }
 
 export default function Page() {

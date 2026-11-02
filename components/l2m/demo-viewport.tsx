@@ -65,7 +65,7 @@ export function DemoViewport({
               </div>
             )}
           </div>
-          <DemoBadge label={badgeLabel} className="absolute top-14 -left-3" />
+          {badgeLabel && <DemoBadge label={badgeLabel} className="absolute top-14 -left-3" />}
         </div>
         {footerSlot}
       </figure>
@@ -84,7 +84,7 @@ export function DemoViewport({
           <Lock className="size-3 shrink-0" aria-hidden="true" />
           <span className="truncate">{address}</span>
         </div>
-        <DemoBadge label={badgeLabel} className="hidden sm:inline-flex" />
+        {badgeLabel && <DemoBadge label={badgeLabel} className="hidden sm:inline-flex" />}
         {chromeSlot}
       </div>
       <div className={cn('overflow-y-auto overscroll-contain', bodyHeight)} tabIndex={0} aria-label={label}>

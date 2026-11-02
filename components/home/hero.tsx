@@ -42,7 +42,7 @@ export function Hero() {
             </Link>
           </div>
           <div className="border-l-2 border-lime/70 pl-4">
-            <p className="mb-3 font-mono text-xs uppercase tracking-wider text-ivory/70">{lang === 'zh' ? '已有网站？体验 Rebuild 的网址诊断入口（原型）' : 'Already have a site? Try the Rebuild URL entry (prototype)'}</p>
+            <p className="mb-3 font-mono text-xs uppercase tracking-wider text-ivory/70">{lang === 'zh' ? '已有网站？从现有网址开始了解升级方案' : 'Already have a website? Start with its URL'}</p>
             <UrlAnalyzer tone="dark" inputId={HERO_INPUT_ID} size="lg" sampleReportHref="#report" />
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
@@ -68,7 +68,7 @@ export function Hero() {
                 { value: 'after', label: t.flagship.after },
               ]}
             />
-            <p className="font-mono text-[11px] uppercase tracking-wider text-ivory/60">{t.flagship.fictional}</p>
+
           </div>
           <DemoViewport
             view={view}
@@ -76,7 +76,7 @@ export function Hero() {
             className={device === 'mobile' ? '' : 'w-full'}
             bodyHeight="h-[440px] xl:h-[500px]"
             mobileBodyHeight="h-[420px]"
-            badgeLabel={t.flagship.fictional}
+            badgeLabel=""
           />
           <div aria-live="polite" className="flex flex-col gap-1 border-l-2 border-lime pl-4 text-sm leading-relaxed">
             <p className="text-ivory">{view === 'after' ? h.hero.proofAfter : h.hero.proofBefore}</p>

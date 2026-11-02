@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { AfterDesktop, AfterMobile } from '@/components/l2m/demo-sites'
 import { DemoBadge } from '@/components/l2m/brand'
 import { FitWidth } from '@/components/l2m/fit-width'
@@ -88,12 +89,7 @@ export function WhatYouGet() {
             ))}
           </dl>
           <div className="flex flex-col gap-1.5 lg:items-end">
-            <span
-              aria-disabled="true"
-              className="inline-flex min-h-12 w-fit cursor-not-allowed items-center justify-center rounded-md border border-ink/25 px-6 font-semibold text-ink/55"
-            >
-              {g.cta}
-            </span>
+            <Link href="/pricing" className="inline-flex min-h-12 w-fit items-center justify-center rounded-md border border-ink/25 px-6 font-semibold text-ink hover:border-ink">{g.cta}</Link>
             <p className="text-xs text-ink/60">{g.ctaNote}</p>
           </div>
         </div>

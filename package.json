@@ -11,7 +11,8 @@
     "check:commercial": "node scripts/check-commercial-intake.mjs",
     "check:brand": "node scripts/check-brand-assets.mjs",
     "check:ops": "node scripts/check-lead-ops.mjs",
-    "check:security": "node --test tests/lead-request.test.mjs tests/lead-alert.test.mjs"
+    "check:security": "node --test tests/lead-request.test.mjs tests/lead-alert.test.mjs",
+    "check:w0w1": "node scripts/check-w0-w1.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

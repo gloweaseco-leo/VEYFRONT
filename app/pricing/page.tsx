@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
-import { PricingPage } from '@/components/pages/pricing'
+import { PageShell } from '@/components/site/page-shell'
+import { CommercialOffers } from '@/components/veyfront/commercial-offers'
 
 export const metadata: Metadata = {
-  title: 'Pricing & Delivery — VEYFRONT (design prototype)',
-  description: 'VEYFRONT Rebuild: scope and total price confirmed before payment, independent source-code delivery. SAMPLE PRICE only.',
+  title: 'Service Scope & Reference Pricing — VEYFRONT',
+  description: 'Launch, Rebuild, optional Run: reference service scope, exclusions and proposed prices. Confirm written quote before commitment.',
+  robots: { index: false, follow: false },
 }
 
-export default function Page() {
-  return <PricingPage />
+export default function PricingPage() {
+  return <PageShell><CommercialOffers detail /></PageShell>
 }

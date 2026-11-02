@@ -36,11 +36,9 @@ export function TransformationsPage() {
 
   return (
     <PageShell>
-      <PageHero eyebrow={p.tr.eyebrow} title={p.tr.title} lede={p.tr.lede} status={p.tr.status} />
+      <PageHero eyebrow={p.tr.eyebrow} title={p.tr.title} lede={p.tr.lede} />
       <Stage view={view} setView={setView} page={page} setPage={setPage} device={device} setDevice={setDevice} active={active} setActive={setActive} />
       <Changes onShow={showChange} active={active} />
-      <Evidence />
-      <Library />
       <PageCta title={p.tr.ctaTitle} body={p.tr.ctaBody} secondary={{ label: p.tr.ctaSecondary, href: '/how-it-works' }} />
     </PageShell>
   )
@@ -82,7 +80,7 @@ function Stage({
             <h2 id="stage-title" className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
               {DEMO_COMPANY.name}
             </h2>
-            <DemoBadge label={p.common.fictional} className="w-fit" />
+
           </div>
           <p className="text-sm text-ink/65">{p.tr.stageMeta}</p>
         </div>
@@ -351,7 +349,7 @@ function Library() {
               </FitWidth>
             </div>
             <div className="flex flex-1 flex-col gap-3 p-5">
-              <DemoBadge label={p.common.fictional} className="w-fit" />
+  
               <h3 className="text-lg font-semibold">{DEMO_COMPANY.name}</h3>
               <p className="text-sm text-ink/65">{p.tr.flagshipCard}</p>
               <a

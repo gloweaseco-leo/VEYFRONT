@@ -1,0 +1,79 @@
+{
+  "version": "W1.6-one-price-preview-2026-11-02",
+  "status": "PENDING_COMMERCIAL_LEGAL_TAX_COST_HOSTING_APPROVAL",
+  "currency": "CNY",
+  "build": [
+    {
+      "id": "launch",
+      "name": "Frontier Launch",
+      "price": 9800,
+      "url": "/start/launch",
+      "internalDesignPatterns": 6,
+      "standardProductRecords": 50,
+      "verifiedCaseOrEvidenceModules": 1,
+      "baselineLanguages": [
+        "en",
+        "zh-CN"
+      ],
+      "conditionalThirdLanguage": true,
+      "revisionPolicy": "IN_SCOPE_UNTIL_ACCEPTANCE",
+      "warrantyDays": 30,
+      "redirects": 0
+    },
+    {
+      "id": "rebuild",
+      "name": "Frontier Rebuild",
+      "price": 9800,
+      "url": "/start/rebuild",
+      "internalDesignPatterns": 6,
+      "standardProductRecords": 50,
+      "verifiedCaseOrEvidenceModules": 1,
+      "baselineLanguages": [
+        "en",
+        "zh-CN"
+      ],
+      "conditionalThirdLanguage": true,
+      "revisionPolicy": "IN_SCOPE_UNTIL_ACCEPTANCE",
+      "warrantyDays": 30,
+      "redirects": 10
+    }
+  ],
+  "standard": {
+    "normalBusinessSiteIncluded": true,
+    "marketFocus": 1,
+    "applicationTopics": 2,
+    "verifiedSourceMaterialRequired": true,
+    "SEO_Native": true,
+    "realLeadPersistenceAndReceipt": true,
+    "leadNotificationVerification": true,
+    "analyticsAndInquiryEvents": true,
+    "mobileAcceptance": true,
+    "sourceHandover": true,
+    "firstYearBasicHostingIncluded": true,
+    "hostingMonths": 12,
+    "domainYearOneRegistrationBudgetCNY": 150,
+    "clientControlsDomain": true,
+    "standardProductRecords": 50,
+    "thirdLanguageRequiresSameStructureAndCapabilityReview": true,
+    "revisionsWithinApprovedScopeIncluded": true,
+    "changeOrderOnlyForDifferentProjectScope": true
+  },
+  "specialProjects": "BESPOKE_PRE_AGREED_ONLY_NO_MICRO_ADDONS",
+  "run": {
+    "priceYear": 6800,
+    "optional": true,
+    "contentHoursPerMonth": 1,
+    "quarterlyReviewCount": 4,
+    "criticalFirstResponseWorkHours": 4,
+    "standardFirstResponseWorkDays": 1
+  },
+  "hostingRenewal": {
+    "targetAnnualPriceCNY": 980,
+    "status": "COST_VALIDATION_REQUIRED_NOT_CUSTOMER_OFFER"
+  },
+  "payments": [
+    50,
+    40,
+    10
+  ]
+}
