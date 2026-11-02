@@ -29,6 +29,16 @@ jobs:
         run: python3 -m pip install --disable-pip-version-check playwright==1.55.0
       - name: Verify W0/W1 in real Chrome (EN/ZH, desktop/mobile)
         run: python3 scripts/check-w0-w1-browser.py
+      - name: W1-C synthetic sales process rehearsal (no IO)
+        run: node scripts/w1-c-sales-rehearsal.mjs
+      - name: Upload W1-C synthetic rehearsal evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: w1-c-synthetic-commercial-rehearsal
+          path: qa-evidence/w1-c-synthetic/
+          retention-days: 14
+          if-no-files-found: warn
       - name: Upload W0/W1 browser evidence
         if: always()
         uses: actions/upload-artifact@v4
