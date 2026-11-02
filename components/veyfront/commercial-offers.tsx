@@ -13,10 +13,11 @@ export function CommercialOffers({ detail = false }: { detail?: boolean }) {
     records10: ['增加10条同模板产品记录', 'Ten extra templated product records'],
     language: ['增加一种完整语言版本（起）', 'Additional language version (from)'],
     revision: ['增加一轮集中修改', 'One extra consolidated revision round'],
+    continuity: ['旧站迁移与流量连续性增强（起）', 'Extended migration and continuity support (from)'],
   }
   const exclusions = zh
-    ? ['不保证搜索排名、流量、询盘或销售额', '不含广告投放、持续SEO内容代运营、专业摄影及独立Logo设计', '不含在线支付、会员、完整订单管理或定制CRM/ERP', '不含AI自动报价、未经授权的商业承诺与复杂Agent功能', '域名、云资源、软件订阅及模型API费用单独确认']
-    : ['No guaranteed search ranking, traffic, inquiries or sales', 'No advertising, ongoing SEO production, specialist photography or standalone brand identity', 'No checkout, memberships, full order management or custom CRM/ERP', 'No autonomous AI quotes, unapproved promises or complex agent functionality', 'Domains, infrastructure, subscriptions and model/API fees are separate']
+    ? ['不保证搜索排名、流量、询盘或销售额', '不含广告投放、持续SEO内容代运营、专业摄影及独立Logo设计', '不含在线支付、会员、完整订单管理或定制CRM/ERP', '不含复杂智能交互、自动报价及定制业务应用', '域名、云资源、软件订阅及模型API费用单独确认']
+    : ['No guaranteed search ranking, traffic, inquiries or sales', 'No advertising, ongoing SEO production, specialist photography or standalone brand identity', 'No checkout, memberships, full order management or custom CRM/ERP', 'No custom AI workflows, autonomous quotes or enterprise applications', 'Domains, infrastructure, subscriptions and model/API fees are separate']
   const format = (n: number) => '¥' + n.toLocaleString('en-US')
   return (
     <section id="commercial-offers" aria-labelledby="commercial-offers-title" className="scroll-mt-8 border-t border-ink/15 bg-mist/30 text-ink">
@@ -24,10 +25,10 @@ export function CommercialOffers({ detail = false }: { detail?: boolean }) {
         <div className="flex max-w-4xl flex-col gap-3">
           <p className="font-mono text-xs uppercase tracking-wider text-ink/60">VEYFRONT / BUILD & RUN</p>
           <h2 id="commercial-offers-title" className="text-balance text-3xl font-semibold leading-tight sm:text-4xl">
-            {zh ? '明确交付内容，再确认书面报价。' : 'Clear delivery scope. Written quotation before commitment.'}
+            {zh ? '新建，还是升级？从业务目标选择。' : 'Launch new, or improve what you have.'}
           </h2>
           <p className="leading-relaxed text-ink/75">
-            {zh ? 'W1 标准服务与参考价格，待经营主体、税务、交付成本最终签发。真实项目可以提交咨询，以下并非已生效报价或在线下单。' : 'W1 reference packages pending business, tax and delivery-cost approval. Inquiries are real, but amounts below are neither binding offers nor online checkout.'}
+            {zh ? '两种建设路径，同一标准起价。旧站有价值的内容和历史页面值得保留时，选择升级；复杂迁移按实际范围另行报价。' : 'Two ways to improve your global presence, with the same standard starting price. Preserve useful existing assets when you rebuild; complex migration is quoted separately.'}
           </p>
         </div>
         <div className="grid gap-5 lg:grid-cols-2">
@@ -37,23 +38,25 @@ export function CommercialOffers({ detail = false }: { detail?: boolean }) {
                 <p className="font-mono text-xs uppercase tracking-widest text-ink/60">{item.id === 'launch' ? '01 / Launch' : '02 / Rebuild'}</p>
                 <h3 className="text-2xl font-semibold">{item.name}</h3>
                 <p className="text-sm leading-relaxed text-ink/75">
-                  {zh ? (item.id === 'launch' ? '为企业建立面向海外买家的专业数字商业网站。' : '从旧站出发，升级视觉、内容和买家询盘路径。') : (item.id === 'launch' ? 'Launch an international B2B website built around buyer tasks.' : 'Upgrade an existing site’s visual, content and inquiry journeys.')}
+                  {zh ? (item.id === 'launch' ? '适合首次建立海外网站或进入新市场：从零规划品牌、产品展示与询盘入口。' : '适合已有客户和历史页面的企业：保留可用资产，改善产品查找、内容信任与询盘体验。') : (item.id === 'launch' ? 'For a new market or first international website: plan messaging, product pages and inquiry paths from the start.' : 'For established sites with content and links worth keeping: improve discovery, credibility and inquiries without needless disruption.')}
                 </p>
-                <p className="mt-2 text-3xl font-semibold tabular-nums">{format(item.price)}<span className="ml-2 text-xs font-normal text-ink/55">{zh ? '参考标准范围价' : 'indicative CNY'}</span></p>
+                <p className="mt-2 text-3xl font-semibold tabular-nums">{format(item.price)}<span className="ml-2 text-xs font-normal text-ink/55">{zh ? '起 · 参考价' : 'starting guide · CNY'}</span></p>
               </div>
               <ul className="flex flex-1 flex-col gap-3 border-t border-ink/15 pt-5">
                 {(zh ? [
+                  item.id === 'rebuild' ? '旧站内容、页面结构及询盘路径梳理' : '目标市场、品牌表达和网站信息架构规划',
                   '最多 ' + item.pages + ' 个独立业务页面或模板',
                   '最多 ' + item.records + ' 条产品资料、' + item.cases + ' 个经确认案例',
                   item.languages + ' 种语言、' + item.revisions + ' 轮集中修改',
-                  item.id === 'rebuild' ? '旧站审查与最多 ' + item.redirects + ' 条 URL 映射' : '目标买家与内容、视觉、商业动作规划',
+                  item.id === 'rebuild' ? '升级产品查找与询盘，最多 ' + item.redirects + ' 条重要旧网址映射（原站可配置时）' : '从零设计客户信任路径、产品分类与基础 SEO 配置',
                   '真实询盘路径验证、一次上线协助与源码移交',
                   item.warrantyDays + ' 天约定范围内交付缺陷保障'
                 ] : [
+                  item.id === 'rebuild' ? 'Review existing pages, content and inquiry journeys' : 'Plan buyer markets, positioning and new site structure',
                   'Up to ' + item.pages + ' distinct pages or templates',
                   'Up to ' + item.records + ' product records and ' + item.cases + ' verified case studies',
                   item.languages + ' language, ' + item.revisions + ' consolidated revision rounds',
-                  item.id === 'rebuild' ? 'Existing-site review and up to ' + item.redirects + ' URL mappings' : 'Buyer, content, visual and inquiry journey planning',
+                  item.id === 'rebuild' ? 'Improve product navigation and map up to ' + item.redirects + ' legacy URLs (where supported)' : 'Create buyer trust journey, product categories and baseline technical SEO',
                   'Working inquiry route, one launch-assist and source handover',
                   item.warrantyDays + '-day in-scope delivery defect coverage'
                 ]).map(text => <li key={text} className="flex items-start gap-2 text-sm leading-relaxed text-ink/80"><Check className="mt-0.5 size-4 shrink-0"/><span>{text}</span></li>)}
@@ -63,6 +66,16 @@ export function CommercialOffers({ detail = false }: { detail?: boolean }) {
               </Link>
             </article>
           ))}
+        </div>
+        <div className="grid gap-6 rounded-xl border border-ink/20 bg-ivory p-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <h3 className="text-lg font-semibold">{zh ? '为什么选择 Rebuild？' : 'Why choose Rebuild?'}</h3>
+            <p className="text-sm leading-relaxed text-ink/75">{zh ? '旧站可能已经积累了重要产品页面、客户熟悉的网址和外部链接。升级的意义，是在改善商业体验的同时尽可能保留这些资产，而不是简单推倒重来。没有值得保留的内容，就不必强行选择 Rebuild。' : 'An established site may have valuable product pages, familiar URLs and inbound links. Rebuild aims to improve the experience while preserving those assets where practical. If there is little worth retaining, a fresh Launch may be the better fit.'}</p>
+          </div>
+          <div className="space-y-2 border-t border-ink/15 pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0">
+            <h3 className="text-lg font-semibold">{zh ? '复杂迁移单独报价' : 'Extended migration is optional'}</h3>
+            <p className="text-sm leading-relaxed text-ink/75">{zh ? '需要更多旧 URL 对应关系、关键内容迁移、统计追踪衔接与上线切换方案时，参考 ¥6,800 起；先评估风险再确认范围，不保证搜索排名保持不变。' : 'For additional URL mapping, content migration, analytics continuity and cutover planning, guide pricing starts from ¥6,800. We confirm scope after review; search rankings cannot be guaranteed.'}</p>
+          </div>
         </div>
         <div className="flex flex-col gap-4 rounded-xl border border-ink/15 bg-ivory p-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
@@ -76,16 +89,16 @@ export function CommercialOffers({ detail = false }: { detail?: boolean }) {
           </Link>
         </div>
         <p className="max-w-4xl text-xs leading-relaxed text-ink/65">
-          {zh ? '参考价不是在线支付或自动诊断/自动建站承诺。实际项目以签署的范围、税务与书面报价为准。建议付款节点50% / 40% / 10%。不承诺搜索排名、询盘数量或成交额。超范围功能需单独确认。' : 'Reference pricing is not checkout or an automatic analysis/generation promise. Signed scope, tax treatment and written quotation govern. Proposed milestones: 50% / 40% / 10%. No guaranteed ranking, inquiry volume or sales. Extras are quoted separately.'}
+          {zh ? '以上为标准服务参考起价。具体交付内容、税费与增项由双方书面确认；不保证搜索排名、询盘数量或成交额。' : 'Starting prices are indicative. Scope, taxes and extras are confirmed in a written quote. No guaranteed search rankings, inquiry volume or sales.'}
         </p>
         {detail ? (
           <div className="grid gap-8 border-t border-ink/15 pt-8 lg:grid-cols-2">
             <div>
               <h3 className="text-xl font-semibold">{zh ? '标准增项参考' : 'Reference add-ons'}</h3>
               <ul className="mt-4 divide-y divide-ink/15 border-y border-ink/15">
-                {offers.addons.map(item => <li key={item.id} className="flex justify-between gap-4 py-3 text-sm"><span>{addOnNames[item.id][zh ? 0 : 1]}</span><span className="shrink-0 font-mono">{format(item.price)}</span></li>)}
+                {offers.addons.map(item => <li key={item.id} className="flex justify-between gap-4 py-3 text-sm"><span>{addOnNames[item.id][zh ? 0 : 1]}</span><span className="shrink-0 font-mono">{format(item.price)}{item.id === 'continuity' ? ' +' : ''}</span></li>)}
               </ul>
-              <p className="mt-3 text-xs text-ink/60">{zh ? '所有增项须在执行前书面确认；语言专业校审与复杂集成单独评估。' : 'Extras require written preapproval. Specialist language review and integrations are assessed separately.'}</p>
+              <p className="mt-3 text-xs text-ink/60">{zh ? '增项在执行前书面确认；复杂迁移、语言校审和系统集成按实际范围另行核价。' : 'Add-ons require written approval; complex migration, language review and integrations are scoped separately.'}</p>
             </div>
             <div>
               <h3 className="text-xl font-semibold">{zh ? '标准范围不包含' : 'Not in standard scope'}</h3>

@@ -1,4 +1,4 @@
-# VEYFRONT W1 — Product, Price and Scope V1.0
+# VEYFRONT W1 — Product, Price and Scope V1.1
 
 2026-11-02. Status: PROPOSAL, NOT SIGNED. Public Preview catalog is lib/commercial-offers.json.
 This is a decision-ready scope, not a binding customer quote or permission to automatically activate P3/P4.
@@ -7,7 +7,7 @@ This is a decision-ready scope, not a binding customer quote or permission to au
 
 Frontier Launch: proposed CNY 26,800. New international B2B website, buyer/content/visual planning, up to eight distinct business pages or templates, thirty templated product records, two verified case studies, one default English language, one visual direction, two consolidated revision rounds, functional inquiry path, one launch assist, agreed rebuildable source/assets/deploy dependencies, thirty-day in-scope defect coverage. Proposed duration 20–30 business days from complete inputs and deposit.
 
-Frontier Rebuild: proposed CNY 36,800. Same standard scope plus authorization-backed source review, business/visual/interaction upgrade plan, before/after validation, and up to twenty old-URL redirect mappings. Proposed duration 25–35 business days. Source URL submission alone is never automatic analysis or modification.
+Frontier Rebuild: proposed starting CNY 26,800. Same standard scope plus authorization-backed source review, business/visual/interaction upgrade plan, before/after validation, and up to five important old-URL redirect mappings where technically supported. Proposed duration 20–30 business days for the standard bounded scope; extended migration is separately quoted. Source URL submission alone is never automatic analysis or modification.
 
 A distinct designed page or template counts toward eight; product records using a shared page template are not billed as unique designs. Customer must confirm all material business facts and publication permissions. No unverified performance, certification, products or case claims.
 
@@ -21,6 +21,7 @@ Proposed CNY 6,800 / year with agreed domain access. Includes availability check
 - Ten extra templated product records CNY 1,200
 - Additional full language version from CNY 6,800; specialist terminology/accuracy review requires separately agreed scope
 - Additional consolidated revision round CNY 2,000
+- Extended legacy migration/continuity support from CNY 6,800: additional URL mapping, authorized content migration, analytics continuity and agreed cutover/rollback checklist; scoped separately, no ranking guarantee
 - Complex CMS, CRM/ERP connection, custom RFQ, buyer portal, payment or AI agent: separate quote only
 
 ## Exclusions
@@ -31,7 +32,7 @@ No guaranteed search rankings/traffic/leads/sales; no media spend, perpetual SEO
 
 - Proposed payment split: 50% on signed kickoff, 40% on accepted preview, 10% on accepted delivery/source handover; written quote, tax and invoice rules prevail.
 - Actual scope and price become binding only in contract or signed order. Do not treat inquiry receipt as contract.
-- Proposed budget assumptions, not actual costs: Launch 60 hours at CNY 180/h + CNY 1,200 vendor reserve + CNY 1,400 risk = CNY 13,400 direct cost; Rebuild 80 hours at same rate + CNY 1,600 vendor + CNY 2,400 risk = CNY 18,400 direct cost. Target direct contribution margin 50%; overhead, sales CAC and tax to be reviewed. These assumptions require T-RAS time and vendor cost calibration before signoff.
+- Proposed budget assumptions, not actual costs: Launch 60 hours at CNY 180/h + CNY 1,200 vendor reserve + CNY 1,400 risk = CNY 13,400 direct cost; Rebuild base scope requires a new 60-hour delivery target (CNY 10,800 labor + CNY 1,200 vendor + CNY 1,400 risk = CNY 13,400 direct cost ceiling); this is a proposed budget, not validated. Migration services are NOT included in that budget. Target direct contribution margin 50%; overhead, sales CAC and tax to be reviewed. These assumptions require T-RAS time and vendor cost calibration before signoff.
 - When the workload estimate breaches cost cap, adjust scope or quote before signing, not after.
 - Signed written change orders before any added language, page, data migration or integration. In-scope defects do not consume revision rounds.
 - Customer gets agreed website source/assets and deployment instructions, subject to applicable third-party licenses. VEYFRONT retains its pre-existing L2M engine, tools and shared production infrastructure; hosting optional.

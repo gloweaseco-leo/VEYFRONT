@@ -6,6 +6,8 @@ assert.equal(c.status, 'PENDING_COMMERCIAL_LEGAL_TAX_COST_APPROVAL')
 assert.deepEqual(c.build.map(x => x.id), ['launch','rebuild'])
 assert.deepEqual(c.build.map(x => x.price), [26800,26800])
 assert.equal(c.run.priceYear,6800)
+assert.equal(c.build[1].redirects,5)
+assert.ok(c.addons.some(a=>a.id==='continuity' && a.price===6800))
 assert.deepEqual(c.payments,[50,40,10])
 assert.equal(c.payments.reduce((a,b)=>a+b,0),100)
 for (const x of c.build) {

@@ -123,7 +123,7 @@ export function UrlAnalyzer({
               {t.url.edit}
             </button>
           </div>
-          <p className="font-mono text-xs uppercase tracking-wide opacity-70">{t.url.demo}</p>
+          <p className="font-mono text-xs uppercase tracking-wide opacity-70">{lang === 'zh' ? '升级方案根据实际网站情况确认。' : 'Your upgrade scope is confirmed after a site review.'}</p>
         </div>
       )
     }
@@ -165,7 +165,7 @@ export function UrlAnalyzer({
           </button>
         </div>
         <p id={`${id}-demo`} className="font-mono text-xs uppercase tracking-wide opacity-70">
-          {t.url.demo}
+          {lang === 'zh' ? '升级方案根据实际网站情况确认。' : 'Your upgrade scope is confirmed after a site review.'}
         </p>
       </div>
     )

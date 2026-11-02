@@ -118,14 +118,7 @@ export function Transformation() {
         </div>
 
         <div className="flex flex-col gap-6 border-t border-ink/15 pt-6 lg:flex-row lg:items-start lg:justify-between">
-          <dl className="grid grid-cols-1 gap-x-8 gap-y-2 text-[13px] sm:grid-cols-2 lg:grid-cols-5">
-            {t.flagship.evidence.map(([k, v]) => (
-              <div key={k} className="flex flex-col">
-                <dt className="font-mono text-[10px] uppercase tracking-wider text-ink/55">{k}</dt>
-                <dd className="text-ink/80">{v}</dd>
-              </div>
-            ))}
-          </dl>
+          <p className="max-w-2xl text-sm leading-relaxed text-ink/65">{h.hero.caption}</p>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
             <button
               type="button"
