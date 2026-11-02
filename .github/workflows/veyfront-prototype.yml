@@ -25,3 +25,15 @@ jobs:
       - run: node scripts/check-veyfront-brand.mjs
       - run: pnpm exec tsc --noEmit
       - run: pnpm build
+      - name: Install headless browser test driver
+        run: python3 -m pip install --disable-pip-version-check playwright==1.55.0
+      - name: Verify W0/W1 in real Chrome (EN/ZH, desktop/mobile)
+        run: python3 scripts/check-w0-w1-browser.py
+      - name: Upload W0/W1 browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: w0-w1-browser-evidence
+          path: qa-evidence/w0-w1-browser/
+          retention-days: 7
+          if-no-files-found: warn
