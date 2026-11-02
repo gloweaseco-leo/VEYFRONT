@@ -27,7 +27,7 @@ assert.match(read('components/veyfront/commercial-offers.tsx'),/Starting prices 
 assert.match(read('components/veyfront/commercial-offers.tsx'),/No guaranteed search rankings, inquiry volume or sales/)
 assert.doesNotMatch(read('lib/home-copy.ts'),/Account required before analysis|注册后开始诊断|Diagnosis starts after sign-up|After payment, the new website is generated/)
 assert.doesNotMatch(read('lib/pages-copy.ts'),/After you create an account, L2M reviews|L2M generates the new website|创建账户后，L2M 会审阅|L2M 使用 AI 生成新网站/)
-assert.match(read('lib/i18n.tsx'),/Check URL format/)
+assert.match(read('lib/i18n.tsx'),/Continue with this website/)
 assert.match(read('app/api/leads/route.ts'),/access: 'private'/)
 
 assert.doesNotMatch(read('lib/home-copy.ts'),/VEYFRONT accepts project inquiries\. Interactive diagnosis, payment/)
