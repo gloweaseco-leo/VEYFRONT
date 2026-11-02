@@ -1,46 +1,76 @@
 {
-  "version": "W1.1-proposal-2026-11-02",
+  "version": "W1.5-preview-2026-11-02",
   "status": "PENDING_COMMERCIAL_LEGAL_TAX_COST_APPROVAL",
   "currency": "CNY",
   "build": [
     {
       "id": "launch",
       "name": "Frontier Launch",
-      "price": 26800,
+      "price": 9800,
       "url": "/start/launch",
-      "pages": 8,
-      "records": 30,
-      "cases": 2,
-      "languages": 1,
+      "pages": 6,
+      "records": 15,
+      "cases": 1,
+      "languages": 2,
       "revisions": 2,
       "warrantyDays": 30,
       "deliveryDays": [
-        20,
-        30
+        15,
+        25
       ],
       "redirects": 0
     },
     {
       "id": "rebuild",
       "name": "Frontier Rebuild",
-      "price": 26800,
+      "price": 9800,
       "url": "/start/rebuild",
-      "pages": 8,
-      "records": 30,
-      "cases": 2,
-      "languages": 1,
+      "pages": 6,
+      "records": 15,
+      "cases": 1,
+      "languages": 2,
       "revisions": 2,
       "warrantyDays": 30,
       "deliveryDays": [
-        20,
-        30
+        15,
+        25
       ],
-      "redirects": 5
+      "redirects": 0
     }
   ],
+  "migration": {
+    "name": "Rebuild Asset Continuity",
+    "additionalPrice": 3000,
+    "combinedPrice": 12800,
+    "maxRedirects": 10,
+    "siteScope": "One authorized public website; accessible route control; no complex CMS migration"
+  },
+  "contentEnhancement": {
+    "name": "B2B Buyer Content",
+    "startingPrice": 5000,
+    "extraApplicationPages": 2,
+    "focusSeries": 1,
+    "selectionGuide": 1
+  },
+  "standard": {
+    "marketFocus": 1,
+    "applicationPages": 1,
+    "languageCodes": [
+      "en",
+      "zh-CN"
+    ],
+    "buyerIntentOutline": 1,
+    "technicalSeo": true,
+    "searchConsoleAuthorization": true,
+    "sourceVerifiedFacts": true,
+    "measuredInquiry": true,
+    "analyticsSetup": true,
+    "sourceHandover": true
+  },
   "run": {
     "priceYear": 6800,
     "contentHoursPerMonth": 1,
+    "quarterlyReviewCount": 4,
     "criticalFirstResponseWorkHours": 4,
     "standardFirstResponseWorkDays": 1
   },
@@ -54,15 +84,19 @@
       "price": 1200
     },
     {
-      "id": "language",
-      "price": 6800
-    },
-    {
       "id": "revision",
       "price": 2000
     },
     {
       "id": "continuity",
+      "price": 3000
+    },
+    {
+      "id": "buyerContent",
+      "price": 5000
+    },
+    {
+      "id": "language",
       "price": 6800
     }
   ],

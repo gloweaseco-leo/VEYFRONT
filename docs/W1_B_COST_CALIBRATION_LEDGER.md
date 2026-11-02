@@ -1,32 +1,18 @@
-# W1-B price and cost calibration ledger (proposal only)
+# W1.5 cost calibration — proposal, no actual-margin claim
 
-## Approved vs proposed
+Published preview reference prices: Launch ¥9,800; simple Rebuild ¥9,800; Rebuild+up-to-10-URL continuity ¥12,800; buyer content +¥5,000; optional Run ¥6,800/year. All business, tax and scope approvals pending.
 
-Current customer-facing candidate figures (not legally binding): Launch ¥26,800, Rebuild ¥26,800, optional Run ¥6,800/year. Assumed target direct contribution margin 50%. Final tax/invoicing and contracts require approved seller identity and authorized signatures.
+| Variant | Price | Hypothetical direct cost | Hypothetical direct contribution | Notes |
+|---|---:|---:|---:|---|
+| Launch | ¥9,800 | ¥5,000 | ¥4,800 (49.0%) | Owner's current cost estimate; real hours missing |
+| Rebuild, simple | ¥9,800 | ¥5,000 | ¥4,800 (49.0%) | Only if no real legacy migration complexity |
+| Rebuild + continuity | ¥12,800 | ¥6,500 | ¥6,300 (49.2%) | +¥3,000 / +¥1,500 direct budget; 10 priority URLs maximum |
+| Buyer content add-on | +¥5,000 | +¥2,500 | +¥2,500 (50%) | One product family; scoped inputs |
+| Run (annual) | ¥6,800 | ¥3,400 | ¥3,400 (50%) | Monitoring and bounded changes |
 
-| Cost driver | Launch estimate | Rebuild estimate | Verification |
-|---|---:|---:|---|
-| Human hours | 60 | 60 | **assumed**, not real project timesheet |
-| Blended labor / hour | ¥180 | ¥180 | **assumed**, not payroll invoice |
-| Labor budget | ¥10,800 | ¥10,800 | calculated |
-| External tools/vendor reserve | ¥1,200 | ¥1,200 | **not actual T-RAS spend** |
-| Risk reserve | ¥1,400 | ¥1,400 | internal contingency |
-| Direct cost ceiling | ¥13,400 | ¥13,400 | target, not historical achieved |
-| Base price | ¥26,800 | ¥26,800 | W1 reference amount |
-| Direct contribution target | 50% | 50% | excludes acquisition/overheads/tax |
+This is **not** net profit: lead acquisition, business operations, taxes, platform subscriptions, warranties and rework must be measured separately. Do not use the former 60h × ¥180/h assumption to claim ¥5,000 direct cost is proven; recalibrate actual labor rate and scope. The owner estimates ¥5,000 with AI tools but has not supplied a timesheet or vendor invoice in this review.
 
-### Missing sources for signing W1-B
+### Required measurements
+Project intake time; authorized content fact checking; design; bilingual revisions; SEO URL work; inquiry storage + email delivery; analytics; responsive testing; handover; client communication; AI usage; vendor expenses; warranty reserve; CAC. Three independent delivery trials before normal-price freeze; if predicted direct cost >¥6,000, require scoped proposal rather than silently overselling fixed package.
 
-- T-RAS real labor hours by research/fact-check, design, content, coding, revisions, production QA, client coordination and deployment.
-- Vendor/API/hosting/AI/stock asset **actual expense**, excluding customer-paid costs.
-- Refund, warranty/support hours and customer acquisition expenses.
-- Authorized tax and invoice treatment, corporate counterparty, quote expiry and signatory.
-
-**Decision rule:** contract commitment must not be issued based solely on 50%-margin assumed estimates. Validate actual project cost, scope and change order model; revise price or scope before business owner approval.
-
-### Price boundary
-
-One extra designed page CNY 1,800; ten extra templated records CNY 1,200; one extra language from CNY 6,800; one more consolidated revision round CNY 2,000. Complexity and client data quality may require bespoke quotes. Do not silently sell AI agents, guaranteed SEO outcomes or hosting as included.
-
-## V1.1 pricing decision
-Launch and Rebuild start at the same proposed price because the starting condition alone does not justify a surcharge. Standard Rebuild covers authorized content assessment and up to 5 essential URL mappings only. Migration or preservation of extra valuable assets is scoped as an optional continuity service from ¥6,800. The revised 60-hour Rebuild target requires real project validation; if an existing site cannot fit the bounded scope, quote the additional migration separately or recommend Launch. No historical SEO ranking preservation guarantee.
+KINET owner-reported one-off ¥15,000 has unknown 3D/original asset, license, hosting, support and data terms. TurnkeyRAS public web contact currently prepares WhatsApp/email messages; a click is **not** verified durable receipt. These baselines help define buyer-facing value but do not prove project profit.
