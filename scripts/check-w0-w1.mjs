@@ -29,4 +29,9 @@ assert.doesNotMatch(read('lib/home-copy.ts'),/Account required before analysis|�
 assert.doesNotMatch(read('lib/pages-copy.ts'),/After you create an account, L2M reviews|L2M generates the new website|创建账户后，L2M 会审阅|L2M 使用 AI 生成新网站/)
 assert.match(read('lib/i18n.tsx'),/Check URL format/)
 assert.match(read('app/api/leads/route.ts'),/access: 'private'/)
+
+assert.doesNotMatch(read('lib/home-copy.ts'),/VEYFRONT accepts project inquiries\. Interactive diagnosis, payment/)
+assert.doesNotMatch(read('lib/home-copy.ts'),/改造后：买家从应用场景开始/)
+assert.match(read('components/veyfront/commercial-offers.tsx'),/为什么选择 Rebuild？/)
+assert.match(read('components/veyfront/commercial-offers.tsx'),/Extended migration is optional|复杂迁移单独报价/)
 console.log('W0/W1 catalog and truth guard PASS; no live business acceptance claimed')

@@ -147,26 +147,12 @@ export function UrlAnalyzer({
             {lang === 'zh' ? '提交真实改造需求' : 'Send a real project inquiry'}
             <ArrowRight className="size-4" aria-hidden="true"/>
           </Link>
-          <button
-            type="button"
-            onClick={() => goTo('next', statusId)}
-            aria-describedby={`${id}-demo`}
-            className={cn(
-              'inline-flex min-h-11 items-center gap-2 rounded-md bg-lime px-4 font-semibold text-ink outline-offset-2 focus-visible:outline-2',
-              dark ? 'focus-visible:outline-lime' : 'focus-visible:outline-ink',
-            )}
-          >
-            {t.url.continueCta}
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </button>
           <button type="button" onClick={() => goTo('input', id)} className={ghostBtn}>
             <Pencil className="size-3.5" aria-hidden="true" />
             {t.url.edit}
           </button>
         </div>
-        <p id={`${id}-demo`} className="font-mono text-xs uppercase tracking-wide opacity-70">
-          {lang === 'zh' ? '升级方案根据实际网站情况确认。' : 'Your upgrade scope is confirmed after a site review.'}
-        </p>
+
       </div>
     )
   }

@@ -115,7 +115,7 @@ def run():
                         screenshot(page, prefix + "_zh")
                     if path == "/how-it-works":
                         t = page.locator("main").inner_text()
-                        check("自动诊断和在线支付暂未开放" in t, prefix + " supervised-delivery boundary")
+                        check("书面报价" in t and "确认" in t, prefix + " verified engagement boundary")
                     # Reset initial language to EN for next route; provider state is per page context.
                     page.locator('[role="group"][aria-label="Language / 语言"] button').filter(has_text="EN").first.click()
                     page.wait_for_function("document.documentElement.lang === 'en'", timeout=7000)

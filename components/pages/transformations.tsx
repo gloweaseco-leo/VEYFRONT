@@ -36,7 +36,7 @@ export function TransformationsPage() {
 
   return (
     <PageShell>
-      <PageHero eyebrow={p.tr.eyebrow} title={p.tr.title} lede={p.tr.lede} status={p.tr.status} />
+      <PageHero eyebrow={p.tr.eyebrow} title={p.tr.title} lede={p.tr.lede} />
       <Stage view={view} setView={setView} page={page} setPage={setPage} device={device} setDevice={setDevice} active={active} setActive={setActive} />
       <Changes onShow={showChange} active={active} />
       <Evidence />

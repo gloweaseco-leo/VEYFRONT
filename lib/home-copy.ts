@@ -38,7 +38,7 @@ const en = {
   },
   transformation: {
     notesHeading: 'Three changes that affect what a buyer does',
-    synced: 'Same preview as the hero — switching versions here also switches it above.',
+    synced: 'Compare the current experience with a clearer way for buyers to find and evaluate products.',
     exploreNote: 'Explore the difference, then discuss your own site.',
     fromTo: 'Before → After',
   },
@@ -268,7 +268,7 @@ const zh: HomeCopy = {
   },
   transformation: {
     notesHeading: '影响买家行动的三处变化',
-    synced: '与首屏是同一个预览 — 在这里切换版本，上方也会同步切换。',
+    synced: '对比旧站与升级后的体验，看看买家如何更高效地查找和评估产品。',
     exploreNote: '了解设计变化，欢迎讨论你的网站升级方向。',
     fromTo: '改造前 → 改造后',
   },
