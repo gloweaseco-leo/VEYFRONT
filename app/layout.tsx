@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono, Noto_Sans_SC } from 'next/font/google'
 import { LangProvider } from '@/lib/i18n'
 import './globals.css'
+import { releaseRobots } from '@/lib/seo-release'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
@@ -18,7 +19,7 @@ const notoSC = Noto_Sans_SC({
 export const metadata: Metadata = {
   title: 'VEYFRONT — Building Digital Frontiers for Global Business',
   description:
-    'VEYFRONT designs and rebuilds B2B websites for global business. Submit a Launch or Rebuild project inquiry. Automated diagnosis and online checkout are not yet available.',
+    'VEYFRONT builds international B2B websites with SEO-Native foundations, buyer-ready product content, verified inquiries and optional ongoing improvements.',
   applicationName: 'VEYFRONT',
   manifest: '/site.webmanifest',
   icons: {
@@ -30,7 +31,8 @@ export const metadata: Metadata = {
     shortcut: '/favicon.svg',
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
-  robots: { index: false, follow: false },
+  metadataBase: new URL('https://veyfront.com'),
+  robots: releaseRobots,
 }
 
 export const viewport: Viewport = {

@@ -3,7 +3,7 @@ import { HowItWorksPage } from '@/components/pages/how-it-works'
 
 export const metadata: Metadata = {
   title: 'How Engagements Work — VEYFRONT',
-  description: 'Real inquiry, written scope and quote, supervised production, acceptance and handover. Demo artifacts are illustrative.',
+  description: "Explore VEYFRONT’s B2B website delivery process: discuss your business, agree a complete scope, review the website, then launch and receive source handover.",
 }
 
 export default function Page() {

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { releaseRobots } from '@/lib/seo-release'
 import { SiteHeader } from '@/components/l2m/site-header'
 import { UrlFlowProvider } from '@/components/l2m/url-flow'
 import { HERO_INPUT_ID, HomeDemoProvider } from '@/components/home/home-state'
@@ -17,7 +18,8 @@ export const metadata: Metadata = {
   title: 'VEYFRONT — Building Digital Frontiers for Global Business',
   description:
     'Build or rebuild a B2B website that helps global buyers discover, evaluate and contact your business. Submit a Launch or Rebuild inquiry.',
-  robots: { index: false, follow: false },
+  robots: releaseRobots,
+  alternates: { canonical: 'https://veyfront.com' },
 }
 
 export default function HomePage() {
