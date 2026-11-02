@@ -1,49 +1,41 @@
 #!/usr/bin/env node
-/** W1-C OFFLINE synthetic sale journey; NEVER contact a real customer or initiate payment. */
+/** W1.6 offline fixed-price rehearsal: NO real customers, charges, site builds or emails. */
 import assert from 'node:assert/strict'
 import {mkdirSync,readFileSync,writeFileSync} from 'node:fs'
 const c=JSON.parse(readFileSync('lib/commercial-offers.json','utf8'))
-const dir='qa-evidence/w1-c-synthetic'
-mkdirSync(dir,{recursive:true})
-assert.equal(c.status,'PENDING_COMMERCIAL_LEGAL_TAX_COST_APPROVAL')
-const chosen=(id)=>{const p=c.build.find(x=>x.id===id);assert.ok(p);return p}
-function price(id,{migrate=false,buyerContent=false,extraPage=false}={}) {
-  const p=chosen(id)
-  if(migrate)assert.equal(id,'rebuild','Legacy continuity only applies to Rebuild')
-  const total=p.price+(migrate?c.migration.additionalPrice:0)+(buyerContent?c.contentEnhancement.startingPrice:0)+(extraPage?c.addons.find(a=>a.id==='page').price:0)
-  assert.equal(c.payments.reduce((x,y)=>x+y,0),100)
-  const milestones=c.payments.map((percentage,index)=>({stage:['signed_kickoff','accepted_preview','final_handover'][index],percentage,amount:Math.round(total*percentage/100),status:'NOT_PAID_OFFLINE_SIMULATION'}))
-  assert.equal(milestones.reduce((a,b)=>a+b.amount,0),total)
-  return {service:id,scope:{pages:p.pages,productRecords:p.records,languages:p.languages,caseEvidence:p.cases,standardRedirects:p.redirects,migrationMaxRedirects:migrate?c.migration.maxRedirects:0,buyerContentSeries:buyerContent?1:0},total,milestones,actualLead:false,realCustomerSignature:false,realWebsiteDelivered:false,priceLegallyBinding:false}
+const out='qa-evidence/w1-c-synthetic'
+mkdirSync(out,{recursive:true})
+assert.equal(c.status,'PENDING_COMMERCIAL_LEGAL_TAX_COST_HOSTING_APPROVAL')
+const quote=(service,scope)=>{
+ const p=c.build.find(x=>x.id===service);assert.ok(p)
+ if(service==='rebuild' && scope.oldUrls>p.redirects) throw new Error('PRECONTRACT_SPECIAL_MIGRATION_SCOPE_REQUIRED')
+ if(scope.productRecords>p.standardProductRecords) throw new Error('PRECONTRACT_COMPLEX_CATALOG_SCOPE_REQUIRED')
+ if(scope.thirdLocale && !scope.thirdLocaleFeasible) throw new Error('THIRD_LANGUAGE_PRECONTRACT_REVIEW_REQUIRED')
+ if(scope.unrelatedCustomFeature) throw new Error('DIFFERENT_BESPOKE_PROJECT_REQUIRES_PRIOR_SCOPE')
+ const total=p.price
+ const milestones=c.payments.map((percentage,i)=>({stage:['contract_signed','preview_acceptance','handover'][i],percentage,amount:total*percentage/100,paid:false}))
+ return {service,price:total,scope,firstYearBasicHostingIncluded:true,domainAllowanceCNY:150,durableInquiryReceiptRequired:true,clientSignoff:false,realSiteDelivered:false,milestones}
 }
 const cases=[
-  price('launch'),
-  price('rebuild'),
-  price('rebuild',{migrate:true}),
-  price('launch',{buyerContent:true}),
-  price('rebuild',{migrate:true,buyerContent:true})
+ quote('launch',{productRecords:20,oldUrls:0,ordinaryExtraPages:true,inScopeCorrections:true}),
+ quote('launch',{productRecords:50,oldUrls:0,thirdLocale:true,thirdLocaleFeasible:true}),
+ quote('rebuild',{productRecords:15,oldUrls:8}),
+ quote('rebuild',{productRecords:50,oldUrls:10,inScopeCorrections:true})
 ]
-assert.deepEqual(cases.map(a=>a.total),[9800,9800,12800,14800,17800])
+assert.deepEqual(cases.map(x=>x.price),[9800,9800,9800,9800])
 assert.deepEqual(cases[0].milestones.map(m=>m.amount),[4900,3920,980])
-assert.deepEqual(cases[2].milestones.map(m=>m.amount),[6400,5120,1280])
-const negatives=[
-  ['unverified-business-facts','BLOCKED: must verify against client sources'],
-  ['missing-consent','BLOCKED: must acquire explicit data consent'],
-  ['complex-legacy-migration-without-quote','BLOCKED: <=10 redirects only when add-on selected, no custom CMS'],
-  ['auto-checkout','BLOCKED: P3 is frozen'],
-  ['fake-signed-contract','BLOCKED: no verified client or seller signature'],
-  ['mark-website-delivered','BLOCKED: simulation has no actual website'],
-  ['WhatsApp-click-as-confirmed-lead','BLOCKED: external click does not prove receipt'],
+const negativeAttempts=[
+ ['11th legacy URL',()=>quote('rebuild',{productRecords:20,oldUrls:11})],
+ ['51st record',()=>quote('launch',{productRecords:51,oldUrls:0})],
+ ['unapproved third-language layout',()=>quote('launch',{productRecords:15,oldUrls:0,thirdLocale:true,thirdLocaleFeasible:false})],
+ ['unrelated custom feature',()=>quote('launch',{productRecords:15,oldUrls:0,unrelatedCustomFeature:true})]
 ]
-const report={status:'OFFLINE_REHEARSAL_PASS__BUSINESS_GATES_PENDING',version:c.version,simulatedScenarios:cases.length,negativeControls:negatives.length,scenarios:cases,blocked:negatives,realLeads:0,realPayments:0,actualSiteDeliveries:0,formalCostApproval:'PENDING',taxLegalOwnerApproval:'PENDING'}
-writeFileSync(dir+'/result.json',JSON.stringify(report,null,2)+'\n')
-writeFileSync(dir+'/summary.md',[
-  '# W1.5 synthetic sales scope / quote QA — no customer data or payments',
-  '',
-  '| Scenario | Indicative total | 50/40/10 milestones |',
-  '|---|---:|---|',
-  ...cases.map((v,i)=>'| '+v.service+(v.scope.migrationMaxRedirects?' + continuity':'')+(v.scope.buyerContentSeries?' + content':'')+' | ¥'+v.total+' | '+v.milestones.map(m=>'¥'+m.amount).join(' / ')+' |'),
-  '',
-  'All invoices, contracts, deliveries, notified leads and payments are NOT REAL. Seven prohibited cases remain blocked by commercial policy.'
-].join('\n')+'\n')
-console.log(JSON.stringify({status:report.status,scenarios:cases.length,negativeControls:negatives.length,prices:cases.map(x=>x.total),realPayments:0}))
+negativeAttempts.forEach(([name,fn])=>assert.throws(fn,undefined,name))
+const negatives=[
+ ...negativeAttempts.map(([name])=>({name,status:'BLOCKED_PRECONTRACT_REVIEW_REQUIRED'})),
+ ...['unverified-business-facts','missing-privacy-consent','WhatsApp-click-is-not-an-accepted-inquiry','automatic-checkout-P3-frozen','imaginary-signed-contract','imaginary-delivered-website','unapproved-hosting-renewal-fee'].map(name=>({name,status:'BLOCKED'}))
+]
+const result={status:'OFFLINE_REHEARSAL_PASS__CLIENT_HOSTING_COST_GATES_PENDING',version:c.version,scenarios:cases,negativeGuards:negatives,realPayments:0,realLeads:0,realDeliveredSites:0}
+writeFileSync(out+'/result.json',JSON.stringify(result,null,2)+'\n')
+writeFileSync(out+'/summary.md',['# W1.6 one-price offline simulation','', 'Four standard scenarios priced at ¥9,800, including ordinary pages, sourced products, in-scope corrections, eligible 3rd language and 10 legacy URLs.','',String(negatives.length)+' negative controls blocked.','', 'No real customers, payments, signed contracts, hosting allocations or delivered sites.'].join('\n')+'\n')
+console.log(JSON.stringify({status:result.status,scenarios:cases.length,negativeGuards:negatives.length,prices:cases.map(x=>x.price),realPayments:0}))
