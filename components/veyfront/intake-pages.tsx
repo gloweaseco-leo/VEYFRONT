@@ -19,15 +19,15 @@ export function IntakePage({ service }: { service: Service }) {
       <div className="mx-auto max-w-[1200px] px-5 py-14 md:px-10 lg:py-20">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-lime">VEYFRONT / {service.toUpperCase()}</p>
         <h1 className="mt-5 max-w-4xl text-balance text-4xl font-semibold leading-tight sm:text-6xl">{titles[service]}</h1>
-        <p className="mt-5 max-w-2xl text-base leading-relaxed text-ivory/75">{zh ? '告诉我们你的企业、目标和现状。通过安全表单保存需求；项目范围、报价和交付方式会在后续沟通中另行确认。' : 'Tell us about your business, goals and current situation. Your request is saved securely; scope, pricing and delivery are confirmed separately.'}</p>
+        <p className="mt-5 max-w-2xl text-base leading-relaxed text-ivory/75">{zh ? '告诉我们你的业务与目标。我们先确认标准建设范围，提供一次完整报价；未经你同意，不增加收费。' : 'Tell us what your business needs. We confirm the complete site scope and price upfront; no unexpected charges without your approval.'}</p>
       </div>
     </section>
     <section className="mx-auto grid max-w-[1200px] gap-10 px-5 py-14 md:px-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)] lg:py-20">
       <div><LeadForm service={service}/></div>
       <aside className="h-fit rounded-lg border border-ink/15 bg-mist/40 p-6">
-        <p className="font-mono text-xs uppercase tracking-widest text-ink/60">{zh ? '受理说明' : 'How it works'}</p>
-        <h2 className="mt-3 text-xl font-semibold">{zh ? '先了解业务，再确认范围。' : 'Business first. Scope before commitment.'}</h2>
-        <p className="mt-4 text-sm leading-relaxed text-ink/75">{zh ? '这是可以真实提交的业务联系入口。我们不会把表单当作自动诊断、在线订单、已确认报价或付款。' : 'This is a live inquiry channel — not an automatic diagnosis, online order, accepted quote or payment.'}</p>
+        <p className="font-mono text-xs uppercase tracking-widest text-ink/60">{zh ? '项目如何开始' : 'Your next steps'}</p>
+        <h2 className="mt-3 text-xl font-semibold">{zh ? '先了解业务，再确认完整交付范围。' : 'Agree on the full scope before work begins.'}</h2>
+        <p className="mt-4 text-sm leading-relaxed text-ink/75">{zh ? '提交后我们会了解你的项目，核对资料，并与你确认完整建设内容与书面报价；不会因为咨询而收费。' : 'We review your business goals and source materials, then agree a complete written scope and price with you before any work or payment.'}</p>
         {isRebuild && <p className="mt-3 text-sm text-ink/75">{zh ? '旧网站继续正常运行，不会因为提交需求而被更改。' : 'Your existing website is not modified when you inquire.'}</p>}
         <Link href="/services" className="mt-7 inline-block font-semibold underline underline-offset-4">{zh ? '查看服务范围' : 'Review services'}</Link>
       </aside>

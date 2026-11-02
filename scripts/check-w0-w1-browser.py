@@ -114,7 +114,7 @@ def run():
                         body = page.locator("#commercial-offers").inner_text()
                         for amount in PRICES:
                             check(amount in body, prefix + " ZH price " + amount)
-                        check("报价" in body and "参考" in body, prefix + " Chinese price disclosure")
+                        check("参考" in body and "签约前" in body, prefix + " Chinese complete-price disclosure")
                         check("SEO-Native" in body, prefix + " native SEO service")
                         check("完整" in body and "首年" in body, prefix + " full-site and year-one hosting")
                         check("标准增项" not in body, prefix + " no microcharge list")
