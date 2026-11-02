@@ -1,18 +1,20 @@
-# W1.5 cost calibration — proposal, no actual-margin claim
+# VEYFRONT W1.6 — internal cost and business validation (NOT SIGNED)
 
-Published preview reference prices: Launch ¥9,800; simple Rebuild ¥9,800; Rebuild+up-to-10-URL continuity ¥12,800; buyer content +¥5,000; optional Run ¥6,800/year. All business, tax and scope approvals pending.
+Product promise: a complete standard Launch or regular Rebuild for indicative **¥9,800** inclusive of first-year basic commercial hosting, baseline SEO, bilingual site, reasonable in-scope changes, batch product catalogue, actual inquiry receipt and analytics. No line-item micro-addons. Optional **Frontier Run ¥6,800/year** is continuous work beyond the basic included hosting.
 
-| Variant | Price | Hypothetical direct cost | Hypothetical direct contribution | Notes |
-|---|---:|---:|---:|---|
-| Launch | ¥9,800 | ¥5,000 | ¥4,800 (49.0%) | Owner's current cost estimate; real hours missing |
-| Rebuild, simple | ¥9,800 | ¥5,000 | ¥4,800 (49.0%) | Only if no real legacy migration complexity |
-| Rebuild + continuity | ¥12,800 | ¥6,500 | ¥6,300 (49.2%) | +¥3,000 / +¥1,500 direct budget; 10 priority URLs maximum |
-| Buyer content add-on | +¥5,000 | +¥2,500 | +¥2,500 (50%) | One product family; scoped inputs |
-| Run (annual) | ¥6,800 | ¥3,400 | ¥3,400 (50%) | Monitoring and bounded changes |
+| Cost bucket | Target ¥ | Evidence |
+|---|---:|---|
+| Intake/client facts | 500 | Unverified target |
+| Commercial IA + design/build | 1,200 | Unverified target |
+| Product and language organization | 900 | Unverified target; up to 50 provided structured records |
+| SEO, actual inquiry and data | 700 | Unverified target |
+| QA, in-scope changes, launch | 650 | Unverified target |
+| First-year hosting and domain allowance | 450 | **NOT commercially verified**; domain allowance max ¥150 |
+| Warranty/rework risk | 600 | Unverified target |
+| **Total** | **5,000** | Owner-reported AI-assisted direct-cost aspiration, not measured actuals |
 
-This is **not** net profit: lead acquisition, business operations, taxes, platform subscriptions, warranties and rework must be measured separately. Do not use the former 60h × ¥180/h assumption to claim ¥5,000 direct cost is proven; recalibrate actual labor rate and scope. The owner estimates ¥5,000 with AI tools but has not supplied a timesheet or vendor invoice in this review.
+¥9,800 - ¥5,000 = ¥4,800 / 49.0% planned direct contribution, before CAC, admin, taxes and exceptional vendor fees. If true direct cost grows to ¥6,000, contribution shrinks to ¥3,800 / 38.8%. Do not claim profit validated.
 
-### Required measurements
-Project intake time; authorized content fact checking; design; bilingual revisions; SEO URL work; inquiry storage + email delivery; analytics; responsive testing; handover; client communication; AI usage; vendor expenses; warranty reserve; CAC. Three independent delivery trials before normal-price freeze; if predicted direct cost >¥6,000, require scoped proposal rather than silently overselling fixed package.
+**Operational gates**: legally licensed commercial hosting capacity, storage/traffic risk cap, domain registration in customer account, renewal economics (¥980/year is a cost-research candidate ONLY, not published), human time tracking, standard 50-product import costs, bilingual + conditional third-language formatting, authorized source checking, in-scope edits, lead data storage/email QA, vendor recurring expenses.
 
-KINET owner-reported one-off ¥15,000 has unknown 3D/original asset, license, hosting, support and data terms. TurnkeyRAS public web contact currently prepares WhatsApp/email messages; a click is **not** verified durable receipt. These baselines help define buyer-facing value but do not prove project profit.
+Bounded normal Rebuild includes up to 10 important old URLs when routing access exists; complex migration is a different project and signed *before* work. No page count or language surcharge table. 3 independent normal projects to establish cost repeatability; Run target annual direct cost ≤¥3,400 remains hypothetical and is not part of mandatory hosting renewal.

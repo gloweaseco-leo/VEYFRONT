@@ -1,6 +1,6 @@
 {
-  "version": "W1.5-preview-2026-11-02",
-  "status": "PENDING_COMMERCIAL_LEGAL_TAX_COST_APPROVAL",
+  "version": "W1.6-one-price-preview-2026-11-02",
+  "status": "PENDING_COMMERCIAL_LEGAL_TAX_COST_HOSTING_APPROVAL",
   "currency": "CNY",
   "build": [
     {
@@ -8,16 +8,16 @@
       "name": "Frontier Launch",
       "price": 9800,
       "url": "/start/launch",
-      "pages": 6,
-      "records": 15,
-      "cases": 1,
-      "languages": 2,
-      "revisions": 2,
-      "warrantyDays": 30,
-      "deliveryDays": [
-        15,
-        25
+      "internalDesignPatterns": 6,
+      "standardProductRecords": 50,
+      "verifiedCaseOrEvidenceModules": 1,
+      "baselineLanguages": [
+        "en",
+        "zh-CN"
       ],
+      "conditionalThirdLanguage": true,
+      "revisionPolicy": "IN_SCOPE_UNTIL_ACCEPTANCE",
+      "warrantyDays": 30,
       "redirects": 0
     },
     {
@@ -25,81 +25,52 @@
       "name": "Frontier Rebuild",
       "price": 9800,
       "url": "/start/rebuild",
-      "pages": 6,
-      "records": 15,
-      "cases": 1,
-      "languages": 2,
-      "revisions": 2,
-      "warrantyDays": 30,
-      "deliveryDays": [
-        15,
-        25
+      "internalDesignPatterns": 6,
+      "standardProductRecords": 50,
+      "verifiedCaseOrEvidenceModules": 1,
+      "baselineLanguages": [
+        "en",
+        "zh-CN"
       ],
-      "redirects": 0
+      "conditionalThirdLanguage": true,
+      "revisionPolicy": "IN_SCOPE_UNTIL_ACCEPTANCE",
+      "warrantyDays": 30,
+      "redirects": 10
     }
   ],
-  "migration": {
-    "name": "Rebuild Asset Continuity",
-    "additionalPrice": 3000,
-    "combinedPrice": 12800,
-    "maxRedirects": 10,
-    "siteScope": "One authorized public website; accessible route control; no complex CMS migration"
-  },
-  "contentEnhancement": {
-    "name": "B2B Buyer Content",
-    "startingPrice": 5000,
-    "extraApplicationPages": 2,
-    "focusSeries": 1,
-    "selectionGuide": 1
-  },
   "standard": {
+    "normalBusinessSiteIncluded": true,
     "marketFocus": 1,
-    "applicationPages": 1,
-    "languageCodes": [
-      "en",
-      "zh-CN"
-    ],
-    "buyerIntentOutline": 1,
-    "technicalSeo": true,
-    "searchConsoleAuthorization": true,
-    "sourceVerifiedFacts": true,
-    "measuredInquiry": true,
-    "analyticsSetup": true,
-    "sourceHandover": true
+    "applicationTopics": 2,
+    "verifiedSourceMaterialRequired": true,
+    "SEO_Native": true,
+    "realLeadPersistenceAndReceipt": true,
+    "leadNotificationVerification": true,
+    "analyticsAndInquiryEvents": true,
+    "mobileAcceptance": true,
+    "sourceHandover": true,
+    "firstYearBasicHostingIncluded": true,
+    "hostingMonths": 12,
+    "domainYearOneRegistrationBudgetCNY": 150,
+    "clientControlsDomain": true,
+    "standardProductRecords": 50,
+    "thirdLanguageRequiresSameStructureAndCapabilityReview": true,
+    "revisionsWithinApprovedScopeIncluded": true,
+    "changeOrderOnlyForDifferentProjectScope": true
   },
+  "specialProjects": "BESPOKE_PRE_AGREED_ONLY_NO_MICRO_ADDONS",
   "run": {
     "priceYear": 6800,
+    "optional": true,
     "contentHoursPerMonth": 1,
     "quarterlyReviewCount": 4,
     "criticalFirstResponseWorkHours": 4,
     "standardFirstResponseWorkDays": 1
   },
-  "addons": [
-    {
-      "id": "page",
-      "price": 1800
-    },
-    {
-      "id": "records10",
-      "price": 1200
-    },
-    {
-      "id": "revision",
-      "price": 2000
-    },
-    {
-      "id": "continuity",
-      "price": 3000
-    },
-    {
-      "id": "buyerContent",
-      "price": 5000
-    },
-    {
-      "id": "language",
-      "price": 6800
-    }
-  ],
+  "hostingRenewal": {
+    "targetAnnualPriceCNY": 980,
+    "status": "COST_VALIDATION_REQUIRED_NOT_CUSTOMER_OFFER"
+  },
   "payments": [
     50,
     40,
