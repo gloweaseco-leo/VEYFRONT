@@ -126,6 +126,13 @@ def run():
                         check(page.locator("#delivery-steps").count() == 1, prefix + " delivery summary")
                         check(page.locator("#report").count() == 0, prefix + " duplicate report removed")
                         check(page.locator("main input[type=url]").count() == 0, prefix + " no competing homepage URL entry")
+                        check(page.locator('[data-testid="hero-hybrid-panel"]').count() == 1, prefix + " single hybrid hero panel")
+                        check(page.locator('[data-testid="hero-hybrid-signal"]').count() == 4, prefix + " four signal nodes")
+                        check(page.locator('[data-testid="hero-site-before"]').count() == 1, prefix + " before visual")
+                        check(page.locator('[data-testid="hero-site-after"]').count() == 1, prefix + " after visual")
+                        check(page.locator('[data-testid="hero-hybrid-panel"] a[href="/pricing"]').count() == 1, prefix + " right panel pricing CTA")
+                        check("设计示意" in page.locator('[data-testid="hero-hybrid-panel"]').inner_text(), prefix + " honest demo disclosure")
+                        check(page.locator('[data-testid="hero-hybrid-panel"]').is_visible(), prefix + " hero illustration visible")
                     if path == "/how-it-works":
                         t = page.locator("main").inner_text()
                         check("书面报价" in t and "确认" in t, prefix + " verified engagement boundary")
