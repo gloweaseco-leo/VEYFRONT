@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono, Noto_Sans_SC } from 'next/font/google'
 import { LangProvider } from '@/lib/i18n'
+import { headers } from 'next/headers'
 import './globals.css'
 import { releaseRobots } from '@/lib/seo-release'
 
@@ -40,19 +41,20 @@ export const viewport: Viewport = {
   themeColor: '#17262D',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const initialLang = (await headers()).get('x-vf-page-locale') === 'zh' ? 'zh' : 'en'
   return (
     <html
-      lang="en"
+      lang={initialLang === "zh" ? "zh-CN" : "en"}
       className={`${geist.variable} ${geistMono.variable} ${notoSC.variable} bg-background`}
       suppressHydrationWarning
     >
       <body className="font-sans antialiased">
-        <LangProvider>{children}</LangProvider>
+        <LangProvider initialLang={initialLang}>{children}</LangProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

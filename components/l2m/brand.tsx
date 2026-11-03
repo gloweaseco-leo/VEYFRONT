@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { usePathname, useRouter } from 'next/navigation'
 import { useLang, type Lang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
@@ -22,6 +23,8 @@ export function Logo({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
 
 export function LangToggle({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
   const { lang, setLang } = useLang()
+  const pathname = usePathname()
+  const router = useRouter()
   const options: { value: Lang; label: string }[] = [
     { value: 'en', label: 'EN' },
     { value: 'zh', label: '中文' },
@@ -40,7 +43,13 @@ export function LangToggle({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
           key={o.value}
           type="button"
           aria-pressed={lang === o.value}
-          onClick={() => setLang(o.value)}
+          onClick={() => {
+            if (o.value === lang) return
+            setLang(o.value)
+            const cleanPath = pathname.startsWith('/zh/') ? pathname.slice(3) : pathname === '/zh' ? '/' : pathname
+            const publicPaths = new Set(['/', '/pricing', '/transformations', '/how-it-works', '/contact', '/start/launch', '/start/rebuild', '/privacy', '/terms', '/contact/privacy'])
+            if (publicPaths.has(cleanPath)) router.replace(o.value === 'zh' ? '/zh' + (cleanPath === '/' ? '' : cleanPath) : cleanPath, { scroll: false })
+          }
           className={cn(
             'min-h-8 min-w-10 rounded-full px-2.5 focus-visible:outline-2 focus-visible:outline-offset-1',
             lang === o.value

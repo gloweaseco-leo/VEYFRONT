@@ -250,8 +250,8 @@ type LangContextValue = { lang: Lang; setLang: (lang: Lang) => void; t: Dict }
 
 const LangContext = createContext<LangContextValue | null>(null)
 
-export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>('en')
+export function LangProvider({ children, initialLang = 'en' }: { children: ReactNode; initialLang?: Lang }) {
+  const [lang, setLang] = useState<Lang>(initialLang)
 
   useEffect(() => {
     document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en'
