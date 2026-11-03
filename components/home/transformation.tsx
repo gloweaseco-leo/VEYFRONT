@@ -1,15 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { ArrowRight, Monitor, Smartphone } from 'lucide-react'
 import { DemoViewport, PageTabs } from '@/components/l2m/demo-viewport'
 import { Segmented } from '@/components/l2m/brand'
-import { focusHeroInput, useFlagship } from '@/components/l2m/use-flagship'
+import { useFlagship } from '@/components/l2m/use-flagship'
 import { cn } from '@/lib/utils'
-import { HERO_INPUT_ID, SectionIntro, useHomeCopy, useHomeDemo } from './home-state'
+import { SectionIntro, useHomeCopy, useHomeDemo } from './home-state'
 
 export function Transformation() {
-  const { h, t } = useHomeCopy()
+  const { h, t, lang } = useHomeCopy()
   const { view, setView } = useHomeDemo()
   const { device, setDevice } = useFlagship(0)
   const [active, setActive] = useState(0)
@@ -120,25 +121,14 @@ export function Transformation() {
         <div className="flex flex-col gap-6 border-t border-ink/15 pt-6 lg:flex-row lg:items-start lg:justify-between">
           <p className="max-w-2xl text-sm leading-relaxed text-ink/65">{h.hero.caption}</p>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
-            <button
-              type="button"
-              onClick={() => focusHeroInput(HERO_INPUT_ID)}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-ink px-5 font-semibold text-ivory focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-            >
-              {t.hero.ctaPrimary}
-              <ArrowRight className="size-4 text-lime" aria-hidden="true" />
-            </button>
-            <span className="flex flex-col">
-              <span
-                aria-disabled="true"
-                className="inline-flex min-h-12 cursor-not-allowed items-center justify-center rounded-md border border-ink/25 px-5 font-semibold text-ink/55"
-              >
-                {t.flagship.explore}
-              </span>
-            </span>
+            <Link href="/transformations" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-ink px-5 font-semibold text-ivory">
+              {t.flagship.explore} <ArrowRight className="size-4 text-lime" aria-hidden="true" />
+            </Link>
+            <Link href="/start/rebuild" className="inline-flex min-h-12 items-center justify-center rounded-md border border-ink/25 px-5 font-semibold text-ink">
+              {lang === 'zh' ? '咨询旧站升级' : 'Discuss my rebuild'}
+            </Link>
           </div>
         </div>
-        <p className="-mt-6 text-right text-xs text-ink/55">{h.transformation.exploreNote}</p>
       </div>
     </section>
   )

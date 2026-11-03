@@ -111,3 +111,90 @@
 .vf-open-frame::after { content:''; pointer-events:none; position:absolute; inset:13px; border:1px solid rgba(23,38,45,.16); clip-path:polygon(0 0,30% 0,30% 5px,70% 5px,70% 0,100% 0,100% 100%,0 100%); border-radius:4px }
 .vf-evidence { border-top:2px solid var(--ink); display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; padding-block:1rem }
 @media(prefers-reduced-motion:reduce){ .vf-lines::after { transition:none; animation:none } }
+
+
+/* W1.7 Motion V1.0: scoped to the Hero RIGHT panel. Static illustration is always the baseline. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"] .vf-motion-before {
+    animation: vf-hybrid-before-in .95s cubic-bezier(.18,.68,.25,1) 0s both;
+  }
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"] .vf-motion-after {
+    animation: vf-hybrid-after-in 1.25s cubic-bezier(.2,.75,.2,1) .65s both;
+  }
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"] .vf-motion-upgrade-arrow {
+    animation: vf-hybrid-arrow-in 1.1s ease-out 1.6s both;
+  }
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"] .vf-motion-orbit-ring {
+    animation: vf-hybrid-orbit-reveal 1.8s ease-out 2.1s both;
+  }
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"] .vf-motion-node {
+    animation: vf-hybrid-node-signal .75s ease-out both;
+  }
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"] .vf-motion-node-1 { animation-delay:2.25s; }
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"] .vf-motion-node-2 { animation-delay:2.82s; }
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"] .vf-motion-node-3 { animation-delay:3.39s; }
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"] .vf-motion-node-4 { animation-delay:3.96s; }
+  /* W1.7.1: understated, out-of-phase breathing on the OUTER frame, without moving the box. */
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"][data-vf-visible="yes"].vf-motion-frame {
+    animation: vf-hybrid-frame-breathe 9.6s ease-in-out 5.7s infinite alternate;
+  }
+  /* Low-frequency ambient motion only while visible, after the opening narrative. */
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"][data-vf-visible="yes"] .vf-motion-ambient {
+    animation: vf-hybrid-ambient-pulse 10s ease-in-out 5.3s infinite alternate;
+  }
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"][data-vf-visible="yes"] .vf-motion-orbit-pulse {
+    animation: vf-hybrid-signal-travel 12s linear 5.5s infinite;
+  }
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"][data-vf-visible="yes"] .vf-motion-orbit-reverse {
+    animation-duration: 15s;
+    animation-direction: reverse;
+  }
+  @media (hover:hover) and (pointer:fine) {
+    [data-testid="hero-hybrid-panel"] .vf-motion-node { transition:border-color .2s ease,background-color .2s ease; }
+    [data-testid="hero-hybrid-panel"] .vf-motion-node:hover { border-color:rgba(184,240,107,.85);background-color:rgba(31,67,71,.97); }
+    [data-testid="hero-hybrid-panel"] .vf-motion-after { transition:filter .2s ease; }
+    [data-testid="hero-hybrid-panel"] .vf-motion-after:hover { filter:brightness(1.04); }
+  }
+}
+@keyframes vf-hybrid-before-in {
+  from { opacity:.58;transform:translate3d(-12px,10px,0) rotate(-7deg) scale(.96);filter:grayscale(.3); }
+  to { opacity:1;transform:translate3d(0,0,0) rotate(-4deg) scale(1);filter:grayscale(0); }
+}
+@keyframes vf-hybrid-after-in {
+  from { opacity:.28;transform:translate3d(16px,16px,0) rotate(4deg) scale(.91);filter:brightness(.75); }
+  65% { opacity:1;filter:brightness(1.1); }
+  to { opacity:1;transform:translate3d(0,0,0) rotate(1.4deg) scale(1);filter:brightness(1); }
+}
+@keyframes vf-hybrid-arrow-in {
+  from { opacity:.25;filter:brightness(.7); }
+  50% { opacity:1;filter:brightness(1.4); }
+  to { opacity:1;filter:brightness(1); }
+}
+@keyframes vf-hybrid-orbit-reveal { from { opacity:.38; } to { opacity:1; } }
+@keyframes vf-hybrid-node-signal {
+  0% { border-color:rgba(184,240,107,.30);background-color:rgba(16,38,44,.95); }
+  40% { border-color:rgba(184,240,107,.95);background-color:rgba(42,83,69,.98);box-shadow:0 0 20px rgba(184,240,107,.2); }
+  100% { border-color:rgba(184,240,107,.35);background-color:rgba(16,38,44,.95);box-shadow:0 4px 14px rgba(0,0,0,.17); }
+}
+@keyframes vf-hybrid-signal-travel {
+  from { stroke-dashoffset:480;opacity:.3; }
+  50% { opacity:.7; }
+  to { stroke-dashoffset:0;opacity:.3; }
+}
+@keyframes vf-hybrid-ambient-pulse { from { opacity:.75; } to { opacity:1; } }
+@keyframes vf-hybrid-frame-breathe {
+  from {
+    border-color: rgba(184,240,107,.24);
+    box-shadow: 0 20px 44px rgba(0,0,0,.20), 0 0 0 1px rgba(184,240,107,.025), 0 0 10px rgba(184,240,107,.035);
+  }
+  to {
+    border-color: rgba(184,240,107,.58);
+    box-shadow: 0 20px 44px rgba(0,0,0,.20), 0 0 0 1px rgba(184,240,107,.13), 0 0 26px rgba(184,240,107,.14);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-testid="hero-hybrid-panel"],
+  [data-testid="hero-hybrid-panel"] *,
+  [data-testid="hero-hybrid-panel"] *::before,
+  [data-testid="hero-hybrid-panel"] *::after { animation:none!important;transition:none!important; }
+}

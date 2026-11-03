@@ -1,69 +1,39 @@
 'use client'
-
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { Logo } from '@/components/l2m/brand'
 import { useSiteLinks } from '@/components/l2m/site-header'
-import { UrlAnalyzer } from '@/components/l2m/url-analyzer'
-import { cn } from '@/lib/utils'
-import { INVITE_INPUT_ID, useHomeCopy } from './home-state'
-
-export function Invitation() {
-  const { h, lang } = useHomeCopy()
-  return (
-    <section aria-labelledby="invite-title" className="bg-ink text-ivory">
-      <div className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-5 py-20 text-center md:px-10 lg:py-28">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-lime">{h.invite.eyebrow}</p>
-        <h2
-          id="invite-title"
-          className={cn(
-            'text-balance font-semibold',
-            lang === 'zh' ? 'text-3xl leading-tight sm:text-5xl' : 'text-[36px] leading-[1.05] tracking-[-0.03em] sm:text-[56px]',
-          )}
-        >
-          {h.invite.title}
-        </h2>
-        <div className="grid w-full gap-3 text-left sm:grid-cols-2">
-          <Link href="/start/launch" className="flex min-h-24 items-center justify-between rounded-lg bg-lime p-5 font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-lime">
-            <span>{lang === 'zh' ? 'Launch · 建立新网站' : 'Launch · Build a new website'}</span><ArrowUpRight className="size-5" />
-          </Link>
-          <Link href="/start/rebuild" className="flex min-h-24 items-center justify-between rounded-lg border border-ivory/35 p-5 font-semibold text-ivory focus-visible:outline-2 focus-visible:outline-lime">
-            <span>{lang === 'zh' ? 'Rebuild · 升级现有网站' : 'Rebuild · Transform your site'}</span><ArrowUpRight className="size-5" />
-          </Link>
-        </div>
-        <div className="w-full border-t border-ivory/20 pt-5">
-          <p className="mb-3 text-left text-sm text-ivory/75">{lang === 'zh' ? '输入现有网址，说明你的改造目标。' : 'Enter your current website URL to discuss an upgrade.'}</p>
-          <UrlAnalyzer tone="dark" inputId={INVITE_INPUT_ID} size="lg" className="w-full text-left" sampleReportHref="#report" />
-        </div>
-        <ul className="flex flex-col gap-1 text-sm text-ivory/65 sm:flex-row sm:gap-6">
-          {h.invite.boundary.map((b) => (
-            <li key={b}>{b}</li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  )
+import { useLang } from '@/lib/i18n'
+export function Invitation(){
+ const {lang}=useLang(),zh=lang==='zh'
+ return <section className="bg-ink text-ivory" aria-labelledby="invite-title">
+ <div className="mx-auto max-w-4xl px-5 py-16 text-center md:px-10 lg:py-24">
+  <p className="font-mono text-xs uppercase tracking-widest text-lime">YOUR NEXT DIGITAL FRONTIER</p>
+  <h2 id="invite-title" className="mt-3 text-balance text-3xl font-semibold sm:text-5xl">{zh?'让你的下一个网站，从这里开始。':'Your next website starts here.'}</h2>
+  <p className="mx-auto mt-4 max-w-xl leading-relaxed text-ivory/70">{zh?'告诉我们你的业务目标，我们先确认完整服务范围与价格。提交咨询无需付款。':'Tell us your goals. We agree the full scope and price before any work or payment.'}</p>
+  <div className="mt-8 grid gap-3 text-left sm:grid-cols-2">
+   <Link href="/start/launch" className="flex min-h-20 items-center justify-between gap-3 rounded-lg bg-lime p-5 font-semibold text-ink">{zh?'我要建新网站':'Build a new site'} <ArrowUpRight className="size-5"/></Link>
+   <Link href="/start/rebuild" className="flex min-h-20 items-center justify-between gap-3 rounded-lg border border-ivory/35 p-5 font-semibold text-ivory">{zh?'我要升级网站':'Rebuild my site'} <ArrowUpRight className="size-5"/></Link>
+  </div>
+ </div>
+ </section>
 }
-
-export function SiteFooter() {
-  const { h, lang } = useHomeCopy()
-  const links = useSiteLinks()
-  return (
-    <footer className="border-t border-ivory/10 bg-ink text-ivory">
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-6 px-5 py-10 md:px-10">
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div className="flex flex-col gap-3">
-            <Link href="/" aria-label="VEYFRONT — Home" className="w-fit focus-visible:outline-2 focus-visible:outline-lime"><Logo tone="dark" /></Link>
-            <p className="max-w-lg text-sm leading-relaxed text-ivory/65">{h.footer.note}</p>
-          </div>
-          <Link href="/contact" className="inline-flex min-h-12 items-center rounded-md bg-lime px-5 font-semibold text-ink">{lang === 'zh' ? '联系 VEYFRONT' : 'Contact VEYFRONT'}</Link>
-        </div>
-        <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-7 gap-y-2 border-t border-ivory/15 pt-5 text-sm">
-          {links.map(l=><Link key={l.href} href={l.href} className="inline-flex min-h-11 items-center text-ivory/85 hover:text-lime">{l.label}</Link>)}
-          <Link href="/privacy" className="inline-flex min-h-11 items-center text-ivory/80 hover:text-lime">{lang === 'zh' ? '隐私说明' : 'Privacy'}</Link>
-          <Link href="/terms" className="inline-flex min-h-11 items-center text-ivory/80 hover:text-lime">{lang === 'zh' ? '使用条款' : 'Terms'}</Link>
-        </nav>
-      </div>
-    </footer>
-  )
+export function SiteFooter(){
+ const {lang}=useLang(),zh=lang==='zh'
+ const links=useSiteLinks()
+ return <footer className="border-t border-ivory/10 bg-ink text-ivory">
+  <div className="mx-auto max-w-[1440px] space-y-6 px-5 py-10 md:px-10">
+   <div className="flex flex-wrap items-start justify-between gap-5">
+    <div className="space-y-3"><Link href="/" aria-label="VEYFRONT — Home" className="inline-flex"><Logo tone="dark"/></Link>
+    <p className="max-w-lg text-sm leading-relaxed text-ivory/65">{zh?'帮助企业建立、升级与改善面向海外买家的数字商业界面。':'Building and improving digital business websites for global B2B buyers.'}</p>
+    </div>
+    <a href="mailto:hello@veyfront.com" className="inline-flex min-h-11 items-center text-sm font-semibold text-lime underline underline-offset-4">hello@veyfront.com</a>
+   </div>
+   <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-7 gap-y-2 border-t border-ivory/15 pt-5 text-sm">
+    {links.map(l=><Link key={l.href} href={l.href} className="inline-flex min-h-11 items-center text-ivory/85 hover:text-lime">{l.label}</Link>)}
+    <Link href="/privacy" className="inline-flex min-h-11 items-center text-ivory/80 hover:text-lime">{zh?'隐私说明':'Privacy'}</Link>
+    <Link href="/terms" className="inline-flex min-h-11 items-center text-ivory/80 hover:text-lime">{zh?'网站条款':'Terms'}</Link>
+   </nav>
+  </div>
+ </footer>
 }

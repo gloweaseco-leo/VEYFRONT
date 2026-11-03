@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import { HowItWorksPage } from '@/components/pages/how-it-works'
-
-export const metadata: Metadata = {
-  title: 'How Engagements Work — VEYFRONT',
-  description: "Explore VEYFRONT’s B2B website delivery process: discuss your business, agree a complete scope, review the website, then launch and receive source handover.",
+import { PageShell } from '@/components/site/page-shell'
+import { JourneySteps } from '@/components/veyfront/journey-steps'
+import { releaseRobots } from '@/lib/seo-release'
+export const metadata:Metadata={
+ title:'How Website Delivery Works — VEYFRONT',
+ description:'From inquiry and a written quote to supervised build, preview, acceptance and handover for B2B Launch or Rebuild websites.',
+ robots:releaseRobots,
+ alternates:{canonical:'https://veyfront.com/how-it-works'},
 }
-
-export default function Page() {
-  return <HowItWorksPage />
-}
+export default function Page(){return <PageShell><JourneySteps detail/></PageShell>}

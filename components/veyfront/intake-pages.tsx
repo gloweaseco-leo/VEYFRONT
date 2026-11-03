@@ -29,7 +29,8 @@ export function IntakePage({ service }: { service: Service }) {
         <h2 className="mt-3 text-xl font-semibold">{zh ? '先了解业务，再确认完整交付范围。' : 'Agree on the full scope before work begins.'}</h2>
         <p className="mt-4 text-sm leading-relaxed text-ink/75">{zh ? '提交后我们会了解你的项目，核对资料，并与你确认完整建设内容与书面报价；不会因为咨询而收费。' : 'We review your business goals and source materials, then agree a complete written scope and price with you before any work or payment.'}</p>
         {isRebuild && <p className="mt-3 text-sm text-ink/75">{zh ? '旧网站继续正常运行，不会因为提交需求而被更改。' : 'Your existing website is not modified when you inquire.'}</p>}
-        <Link href="/services" className="mt-7 inline-block font-semibold underline underline-offset-4">{zh ? '查看服务范围' : 'Review services'}</Link>
+        <p className="mt-5 text-sm text-ink/75">{zh ? '也可以发送邮件：' : 'Prefer email? '}<a href="mailto:hello@veyfront.com" className="font-semibold underline underline-offset-4">hello@veyfront.com</a></p>
+        <Link href="/pricing" className="mt-4 inline-block font-semibold underline underline-offset-4">{zh ? '查看完整服务与价格' : 'Review full scope and pricing'}</Link>
       </aside>
     </section>
   </PageShell>
@@ -49,7 +50,7 @@ export function ContactPage() {
        <Link href="/start/launch" className="inline-flex min-h-12 items-center rounded-md bg-ink px-5 font-semibold text-ivory">Launch</Link>
        <Link href="/start/rebuild" className="inline-flex min-h-12 items-center rounded-md border border-ink/25 px-5 font-semibold">Rebuild</Link>
      </div>
-     <div className="max-w-2xl"><LeadForm service="general"/></div>
+     <div className="max-w-2xl"><p className="mb-6 text-sm leading-relaxed text-ink/75">{zh ? '也可直接邮件联系：' : 'Or email us directly: '}<a className="font-semibold underline underline-offset-4" href="mailto:hello@veyfront.com">hello@veyfront.com</a></p><LeadForm service="general"/></div>
    </section>
  </PageShell>
 }

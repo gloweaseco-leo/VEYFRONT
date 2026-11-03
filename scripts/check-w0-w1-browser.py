@@ -18,7 +18,7 @@ OUT = Path("qa-evidence/w0-w1-browser")
 OUT.mkdir(parents=True, exist_ok=True)
 HOST = "http://127.0.0.1:3100"
 VIEWPORTS = [1440, 768, 390, 360]
-PATHS = ["/", "/pricing", "/services", "/how-it-works", "/start/launch", "/start/rebuild"]
+PATHS = ["/", "/pricing", "/transformations", "/how-it-works", "/start/launch", "/start/rebuild", "/contact"]
 PRICES = ("¥9,800", "¥6,800")
 findings = []
 errors = []
@@ -86,9 +86,9 @@ def run():
                           prefix + " noindex retained")
                     if path in ("/", "/pricing"):
                         body = page.locator("#commercial-offers").inner_text()
-                        for amount in PRICES:
+                        for amount in (("¥9,800",) if path == "/" else PRICES):
                             check(amount in body, prefix + " price " + amount)
-                        check("written" in body.lower() or "indicative" in body.lower(), prefix + " price disclaimer")
+                        check("guide price" in body.lower() or "written" in body.lower() or "indicative" in body.lower(), prefix + " price disclaimer")
                         check("One clear price" in body or "complete" in body.lower(), prefix + " one-price offer")
                         check("12,800" not in body and "+¥5,000" not in body, prefix + " no microaddon price")
                         check("first-year" in body.lower(), prefix + " first year included")
@@ -112,17 +112,75 @@ def run():
                     inspect_overflow(page, prefix + " ZH")
                     if path in ("/", "/pricing"):
                         body = page.locator("#commercial-offers").inner_text()
-                        for amount in PRICES:
+                        for amount in (("¥9,800",) if path == "/" else PRICES):
                             check(amount in body, prefix + " ZH price " + amount)
                         check("参考" in body and "签约前" in body, prefix + " Chinese complete-price disclosure")
-                        check("SEO-Native" in body, prefix + " native SEO service")
+                        check("SEO-Native" in body or "原生 SEO" in body, prefix + " native SEO service")
                         check("完整" in body and "首年" in body, prefix + " full-site and year-one hosting")
                         check("标准增项" not in body, prefix + " no microcharge list")
                         check("12,800" not in body, prefix + " no migration surcharge")
                         screenshot(page, prefix + "_zh")
+                    if path == "/":
+                        check(page.locator("#buyer-capabilities").count() == 1, prefix + " capability section")
+                        check(page.locator("#transformation").count() == 1, prefix + " single transformation preview")
+                        check(page.locator("#delivery-steps").count() == 1, prefix + " delivery summary")
+                        check(page.locator("#report").count() == 0, prefix + " duplicate report removed")
+                        check(page.locator("main input[type=url]").count() == 0, prefix + " no competing homepage URL entry")
+                        check(page.locator('[data-testid="hero-hybrid-panel"]').count() == 1, prefix + " single hybrid hero panel")
+                        check(page.locator('[data-testid="hero-hybrid-signal"]').count() == 4, prefix + " four signal nodes")
+                        check(page.locator('[data-testid="hero-site-before"]').count() == 1, prefix + " before visual")
+                        check(page.locator('[data-testid="hero-site-after"]').count() == 1, prefix + " after visual")
+                        check(page.locator('[data-testid="hero-hybrid-panel"] a[href="/pricing"]').count() == 1, prefix + " right panel pricing CTA")
+                        check("设计示意" in page.locator('[data-testid="hero-hybrid-panel"]').inner_text(), prefix + " honest demo disclosure")
+                        check(page.locator('[data-testid="hero-hybrid-panel"]').is_visible(), prefix + " hero illustration visible")
+                        panel = page.locator('[data-testid="hero-hybrid-panel"]')
+                        # The site uses smooth scrolling globally. Test the observer after a deterministic instant scroll,
+                        # not during a scroll transition where an intermediate visibility event may arrive.
+                        panel.evaluate("(el) => { const r=el.getBoundingClientRect(); window.scrollTo({top: Math.max(0, window.scrollY + r.top - (innerHeight - r.height)/2), behavior:'instant'}); }")
+                        try:
+                            page.wait_for_function(
+                                "() => { const el=document.querySelector('[data-testid=hero-hybrid-panel]'); return el?.dataset.vfMotion === 'started' && el?.dataset.vfVisible === 'yes'; }",
+                                timeout=6000
+                            )
+                        except Exception as observer_error:
+                            observer_debug = page.evaluate("""() => {
+                                const el=document.querySelector('[data-testid=hero-hybrid-panel]');
+                                const r=el?.getBoundingClientRect();
+                                return {top:r?.top,bottom:r?.bottom,height:r?.height,viewport:innerHeight,scrollY:scrollY,
+                                        motion:el?.dataset.vfMotion,visible:el?.dataset.vfVisible,documentHeight:document.documentElement.scrollHeight};
+                            }""")
+                            check(False, prefix + " viewport observer readiness", str(observer_debug) + " " + repr(observer_error))
+                        check(panel.get_attribute("data-vf-motion") == "started", prefix + " first-in-view motion triggered")
+                        check(panel.get_attribute("data-vf-visible") == "yes", prefix + " stable in-viewport signal")
+                        check("vf-hybrid-frame-breathe" in panel.evaluate("(el) => getComputedStyle(el).animationName"),
+                              prefix + " outer frame breathing animation bound")
+                        safe_arrows = page.evaluate("""() => {
+                            const a=document.querySelector('[data-testid=hero-upgrade-arrow]')?.getBoundingClientRect();
+                            const b=document.querySelector('[data-testid=hero-site-after]')?.getBoundingClientRect();
+                            const info=document.querySelector('[data-testid=hero-hybrid-panel]')?.querySelector('a[href="/pricing"]')?.getBoundingClientRect();
+                            return Boolean(a && b && info && a.right <= b.left - 2 && a.bottom <= info.top - 8);
+                        }""")
+                        check(safe_arrows, prefix + " arrow clear of after content and bottom copy")
+                        check(page.locator(".vf-motion-orbit-pulse").count() == 2, prefix + " two light signal paths")
+                        check("vf-hybrid-after-in" in page.locator('[data-testid="hero-site-after"]').evaluate("(el) => getComputedStyle(el).animationName"),
+                              prefix + " after one-shot animation bound")
+                        check(page.locator('[data-testid="hero-hybrid-panel"] a[href="/pricing"]').is_enabled(), prefix + " pricing CTA stays actionable")
+                        if width == 390:
+                            page.emulate_media(reduced_motion="reduce")
+                            check(page.locator('[data-testid="hero-site-after"]').evaluate("(el) => getComputedStyle(el).animationName") == "none",
+                                  prefix + " reduced motion has no entrance animation")
+                            check(panel.evaluate("(el) => getComputedStyle(el).animationName") == "none",
+                                  prefix + " reduced motion disables frame breathing")
+                            check(page.locator(".vf-motion-orbit-pulse").first.evaluate("(el) => getComputedStyle(el).animationName") == "none",
+                                  prefix + " reduced motion disables infinite signal")
+                            check(page.locator('[data-testid="hero-site-after"]').is_visible(),
+                                  prefix + " reduced motion retains a readable static design")
+                            page.emulate_media(reduced_motion="no-preference")
                     if path == "/how-it-works":
                         t = page.locator("main").inner_text()
                         check("书面报价" in t and "确认" in t, prefix + " verified engagement boundary")
+                    if path == "/contact":
+                        check(page.locator('input[name="email"]').count() == 1, prefix + " contact intake exists")
                     # Reset initial language to EN for next route; provider state is per page context.
                     page.locator('[role="group"][aria-label="Language / 语言"] button').filter(has_text="EN").first.click()
                     page.wait_for_function("document.documentElement.lang === 'en'", timeout=7000)

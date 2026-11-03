@@ -30,7 +30,7 @@ const en = {
     pricing: '#what-you-get',
   },
   hero: {
-    caption: '设计效果对比示意，不代表已交付客户案例。',
+    caption: 'Illustrative design comparison for a fictional company; not a delivered client project.',
     proofBefore: 'Before: a model-number list, specifications locked in a PDF, a generic contact page.',
     proofAfter: 'After: global buyers can find relevant products, check key specifications and send sales a clear inquiry.',
     inspect: 'Inspect what changed',
