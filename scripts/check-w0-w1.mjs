@@ -56,4 +56,10 @@ assert.doesNotMatch(ui,/additional designed page|records10|revision round|langua
 assert.doesNotMatch(ui,/offers\.migration|offers\.contentEnhancement/)
 assert.match(read('app/api/leads/route.ts'),/access: 'private'/)
 assert.match(read('components/veyfront/intake-pages.tsx'),/LeadForm/)
-console.log('W1.6 price and truth guard PASS; actual client delivery and hosting cost still pending')
+
+const motionHero=read('components/home/hero.tsx'),motionCss=read('app/globals.css')
+for(const t of ['IntersectionObserver','useRef<HTMLDivElement>','data-vf-motion','data-vf-visible','vf-motion-before','vf-motion-after','vf-motion-node-1','vf-motion-node-4','vf-motion-orbit-pulse']) assert.ok(motionHero.includes(t),'Motion hero missing '+t)
+for(const t of ['vf-hybrid-before-in','vf-hybrid-after-in','vf-hybrid-node-signal','vf-hybrid-signal-travel','prefers-reduced-motion: reduce','data-vf-visible="yes"']) assert.ok(motionCss.includes(t),'Motion CSS missing '+t)
+assert.doesNotMatch(motionHero,/setInterval|requestAnimationFrame|canvas|<video|measured conversion rate/)
+
+console.log('W1.7 right-panel Motion V1.0 guard PASS; client-delivery costs still pending')

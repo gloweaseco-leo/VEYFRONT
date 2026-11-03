@@ -133,6 +133,18 @@ def run():
                         check(page.locator('[data-testid="hero-hybrid-panel"] a[href="/pricing"]').count() == 1, prefix + " right panel pricing CTA")
                         check("设计示意" in page.locator('[data-testid="hero-hybrid-panel"]').inner_text(), prefix + " honest demo disclosure")
                         check(page.locator('[data-testid="hero-hybrid-panel"]').is_visible(), prefix + " hero illustration visible")
+                        panel = page.locator('[data-testid="hero-hybrid-panel"]')
+                        panel.scroll_into_view_if_needed()
+                        page.wait_for_function(
+                            "() => document.querySelector('[data-testid=hero-hybrid-panel]')?.getAttribute('data-vf-motion') === 'started'",
+                            timeout=7000
+                        )
+                        check(panel.get_attribute("data-vf-motion") == "started", prefix + " first-in-view motion triggered")
+                        check(panel.get_attribute("data-vf-visible") == "yes", prefix + " motion visible")
+                        check(page.locator(".vf-motion-orbit-pulse").count() == 2, prefix + " two light signal paths")
+                        check("vf-hybrid-after-in" in page.locator('[data-testid="hero-site-after"]').evaluate("(el) => getComputedStyle(el).animationName"),
+                              prefix + " after one-shot animation bound")
+                        check(page.locator('[data-testid="hero-hybrid-panel"] a[href="/pricing"]').is_enabled(), prefix + " pricing CTA stays actionable")
                     if path == "/how-it-works":
                         t = page.locator("main").inner_text()
                         check("书面报价" in t and "确认" in t, prefix + " verified engagement boundary")

@@ -1,12 +1,28 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowUpRight, Globe2, RefreshCw, Search, ScanSearch, Send, ChartNoAxesCombined } from 'lucide-react'
 import { useLang } from '@/lib/i18n'
 
 export function Hero() {
  const {lang}=useLang()
  const zh=lang==='zh'
+ const motionFrame=useRef<HTMLDivElement>(null)
+ const [motionStarted,setMotionStarted]=useState(false)
+ const [motionVisible,setMotionVisible]=useState(false)
+ // All static content remains visible if IntersectionObserver/JS is unavailable.
+ useEffect(()=>{
+   const frame=motionFrame.current
+   if(!frame || typeof IntersectionObserver === 'undefined')return
+   const observer=new IntersectionObserver(([entry])=>{
+     const visible=Boolean(entry?.isIntersecting)
+     setMotionVisible(visible)
+     if(visible)setMotionStarted(true)
+   },{threshold:0.15})
+   observer.observe(frame)
+   return ()=>observer.disconnect()
+ },[])
 
  return <section aria-labelledby="hero-title" className="bg-ink text-ivory">
    <div className="mx-auto grid max-w-[1440px] gap-12 px-5 py-16 md:px-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)] lg:items-center lg:gap-16 lg:py-24">
@@ -30,8 +46,8 @@ export function Hero() {
      </div>
      <p className="text-sm text-ivory/60">{zh?'两种方式，标准建设均为 ¥9,800 参考完整价。提交需求不产生收费。':'Both paths start from the same ¥9,800 complete-site reference price. Inquiries are free.'}</p>
     </div>
-    <div data-testid="hero-hybrid-panel" className="relative isolate min-w-0 overflow-hidden rounded-xl border border-lime/25 bg-[#172e34] p-5 shadow-2xl shadow-black/20 sm:p-7">
-      <div aria-hidden="true" className="pointer-events-none absolute -right-12 top-24 h-80 w-80 rounded-full bg-lime/10 blur-[95px]"/>
+    <div ref={motionFrame} data-testid="hero-hybrid-panel" data-vf-motion={motionStarted?'started':'static'} data-vf-visible={motionVisible?'yes':'no'} className="relative isolate min-w-0 overflow-hidden rounded-xl border border-lime/25 bg-[#172e34] p-5 shadow-2xl shadow-black/20 sm:p-7">
+      <div aria-hidden="true" className="vf-motion-ambient pointer-events-none absolute -right-12 top-24 h-80 w-80 rounded-full bg-lime/10 blur-[95px]"/>
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.10]" style={{backgroundImage:'linear-gradient(rgba(184,240,107,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(184,240,107,.18) 1px,transparent 1px)',backgroundSize:'36px 36px'}}/>
       <div className="relative z-10 flex flex-wrap items-start justify-between gap-2 border-b border-ivory/15 pb-4">
         <div>
@@ -48,25 +64,27 @@ export function Hero() {
             <radialGradient id="vf-hybrid-ambient"><stop offset="0" stopColor="#b8f06b" stopOpacity=".20"/><stop offset="1" stopColor="#b8f06b" stopOpacity="0"/></radialGradient>
           </defs>
           <ellipse cx="285" cy="185" rx="230" ry="150" fill="url(#vf-hybrid-ambient)"/>
-          <ellipse cx="286" cy="184" rx="243" ry="116" fill="none" stroke="url(#vf-hybrid-path)" strokeWidth="1.5" strokeDasharray="4 7" transform="rotate(-13 286 184)"/>
+          <ellipse className="vf-motion-orbit-ring" cx="286" cy="184" rx="243" ry="116" fill="none" stroke="url(#vf-hybrid-path)" strokeWidth="1.5" strokeDasharray="4 7" transform="rotate(-13 286 184)"/>
           <path d="M45 113 Q210 39 511 128" fill="none" stroke="url(#vf-hybrid-path)" strokeWidth="1.6"/>
+          <path className="vf-motion-orbit-pulse" d="M45 113 Q210 39 511 128" fill="none" stroke="#b8f06b" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="7 480" opacity=".5"/>
           <path d="M48 253 Q285 344 513 246" fill="none" stroke="url(#vf-hybrid-path)" strokeWidth="1.6"/>
+          <path className="vf-motion-orbit-pulse vf-motion-orbit-reverse" d="M48 253 Q285 344 513 246" fill="none" stroke="#b8f06b" strokeWidth="2" strokeLinecap="round" strokeDasharray="7 480" opacity=".45"/>
           <circle cx="83" cy="110" r="4" fill="#b8f06b"/><circle cx="484" cy="120" r="4" fill="#b8f06b"/>
           <circle cx="85" cy="270" r="4" fill="#b8f06b"/><circle cx="480" cy="265" r="4" fill="#b8f06b"/>
         </svg>
 
         {[
-          {icon:Search,zh:'搜索发现',en:'Discover',pos:'left-0 top-0'},
-          {icon:ScanSearch,zh:'买家评估',en:'Evaluate',pos:'right-0 top-0'},
-          {icon:Send,zh:'有效询盘',en:'Inquire',pos:'bottom-0 left-0'},
-          {icon:ChartNoAxesCombined,zh:'持续改善',en:'Improve',pos:'bottom-0 right-0'},
-        ].map(({icon:Icon,zh:cn,en,pos})=><div key={pos} data-testid="hero-hybrid-signal" className={'absolute z-30 flex min-h-11 w-[45%] items-center gap-2 rounded-lg border border-lime/35 bg-[#10262c]/95 px-3 py-2 shadow-lg shadow-black/20 '+pos}>
+          {icon:Search,zh:'搜索发现',en:'Discover',pos:'left-0 top-0',motion:'vf-motion-node-1'},
+          {icon:ScanSearch,zh:'买家评估',en:'Evaluate',pos:'right-0 top-0',motion:'vf-motion-node-2'},
+          {icon:Send,zh:'有效询盘',en:'Inquire',pos:'bottom-0 left-0',motion:'vf-motion-node-3'},
+          {icon:ChartNoAxesCombined,zh:'持续改善',en:'Improve',pos:'bottom-0 right-0',motion:'vf-motion-node-4'},
+        ].map(({icon:Icon,zh:cn,en,pos,motion})=><div key={pos} data-testid="hero-hybrid-signal" className={'vf-motion-node '+motion+' absolute z-30 flex min-h-11 w-[45%] items-center gap-2 rounded-lg border border-lime/35 bg-[#10262c]/95 px-3 py-2 shadow-lg shadow-black/20 '+pos}>
           <Icon className="size-4 shrink-0 text-lime sm:size-5" aria-hidden="true"/>
           <span className="text-xs font-semibold sm:text-sm">{zh?cn:en}</span>
         </div>)}
 
         <span className="absolute left-[5%] top-[26%] z-20 rounded-full bg-ivory/25 px-2.5 py-1 text-[10px] font-semibold">{zh?'之前':'Before'}</span>
-        <div data-testid="hero-site-before" className="absolute left-[3%] top-[35%] z-10 w-[47%] -rotate-[4deg] overflow-hidden rounded-lg border border-ivory/25 bg-[#d0dada] shadow-2xl shadow-black/30">
+        <div data-testid="hero-site-before" className="vf-motion-before absolute left-[3%] top-[35%] z-10 w-[47%] -rotate-[4deg] overflow-hidden rounded-lg border border-ivory/25 bg-[#d0dada] shadow-2xl shadow-black/30">
           <div className="flex h-5 items-center gap-1 bg-[#9daeb0] px-2"><i className="size-1 rounded-full bg-[#597276]"/><i className="size-1 rounded-full bg-[#597276]"/><i className="size-1 rounded-full bg-[#597276]"/><i className="ml-2 h-1 w-[35%] rounded bg-[#70878a]"/></div>
           <div className="space-y-2 p-3">
             <div className="h-2 w-2/3 rounded bg-[#899b9d]"/>
@@ -80,10 +98,10 @@ export function Hero() {
           </div>
         </div>
 
-        <svg aria-hidden="true" viewBox="0 0 100 55" className="pointer-events-none absolute left-[23%] top-[56%] z-30 h-12 w-20 overflow-visible drop-shadow-[0_0_8px_rgba(184,240,107,.6)] sm:w-24"><path d="M5 46 Q43 2 89 18" fill="none" stroke="#b8f06b" strokeWidth="4" strokeLinecap="round"/><path d="M73 8 L92 18 L81 34" fill="none" stroke="#b8f06b" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        <svg aria-hidden="true" viewBox="0 0 100 55" className="vf-motion-upgrade-arrow pointer-events-none absolute left-[23%] top-[56%] z-30 h-12 w-20 overflow-visible drop-shadow-[0_0_8px_rgba(184,240,107,.6)] sm:w-24"><path d="M5 46 Q43 2 89 18" fill="none" stroke="#b8f06b" strokeWidth="4" strokeLinecap="round"/><path d="M73 8 L92 18 L81 34" fill="none" stroke="#b8f06b" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
 
         <span className="absolute right-[4%] top-[25%] z-30 rounded-full bg-lime px-3 py-1 text-[10px] font-bold text-ink shadow-[0_0_18px_rgba(184,240,107,.25)]">{zh?'之后':'After'}</span>
-        <div data-testid="hero-site-after" className="absolute right-[2%] top-[32%] z-20 w-[67%] rotate-[1.4deg] overflow-hidden rounded-xl border border-lime/75 bg-ivory shadow-[0_0_34px_rgba(184,240,107,.20),0_16px_35px_rgba(0,0,0,.35)]">
+        <div data-testid="hero-site-after" className="vf-motion-after absolute right-[2%] top-[32%] z-20 w-[67%] rotate-[1.4deg] overflow-hidden rounded-xl border border-lime/75 bg-ivory shadow-[0_0_34px_rgba(184,240,107,.20),0_16px_35px_rgba(0,0,0,.35)]">
           <div className="flex h-6 items-center justify-between bg-[#0d2127] px-2.5">
             <span className="font-mono text-[7px] font-semibold tracking-wider text-ivory">INDUSTRIAL / B2B</span>
             <div className="flex gap-1"><i className="h-1 w-3 rounded bg-ivory/30"/><i className="h-1 w-3 rounded bg-ivory/30"/><i className="h-1 w-3 rounded bg-lime"/></div>
