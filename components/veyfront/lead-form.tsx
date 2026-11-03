@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Link from '@/components/l2m/localized-link'
 import { useEffect, useState, type FormEvent } from 'react'
 import { CheckCircle2, AlertCircle, LoaderCircle, ArrowUpRight } from 'lucide-react'
 import { useLang } from '@/lib/i18n'

@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Link from '@/components/l2m/localized-link'
 import { useEffect, useRef, useState } from 'react'
 import { ArrowUpRight, Globe2, RefreshCw, Search, ScanSearch, Send, ChartNoAxesCombined } from 'lucide-react'
 import { useLang } from '@/lib/i18n'

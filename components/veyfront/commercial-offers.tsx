@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Link from '@/components/l2m/localized-link'
 import { ArrowUpRight, Check, ShieldCheck } from 'lucide-react'
 import { useLang } from '@/lib/i18n'
 import prices from '@/lib/commercial-offers.json'

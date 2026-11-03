@@ -1,5 +1,5 @@
 'use client'
-import Link from 'next/link'
+import Link from '@/components/l2m/localized-link'
 import { ArrowUpRight } from 'lucide-react'
 import { Logo } from '@/components/l2m/brand'
 import { useSiteLinks } from '@/components/l2m/site-header'

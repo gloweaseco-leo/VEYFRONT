@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Link from '@/components/l2m/localized-link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { ChevronLeft, Menu, X } from 'lucide-react'

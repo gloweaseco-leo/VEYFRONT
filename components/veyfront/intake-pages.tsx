@@ -1,5 +1,5 @@
 'use client'
-import Link from 'next/link'
+import Link from '@/components/l2m/localized-link'
 import { PageShell } from '@/components/site/page-shell'
 import { LeadForm, type Service } from '@/components/veyfront/lead-form'
 import { useLang } from '@/lib/i18n'
