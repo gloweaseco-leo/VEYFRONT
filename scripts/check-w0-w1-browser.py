@@ -136,11 +136,20 @@ def run():
                         panel = page.locator('[data-testid="hero-hybrid-panel"]')
                         # The site uses smooth scrolling globally. Test the observer after a deterministic instant scroll,
                         # not during a scroll transition where an intermediate visibility event may arrive.
-                        panel.evaluate("(el) => el.scrollIntoView({block:'center',behavior:'instant'})")
-                        page.wait_for_function(
-                            "() => { const el = document.querySelector('[data-testid=hero-hybrid-panel]'); return el?.dataset.vfMotion === 'started' && el?.dataset.vfVisible === 'yes'; }",
-                            timeout=7000
-                        )
+                        panel.evaluate("(el) => { const r=el.getBoundingClientRect(); window.scrollTo({top: Math.max(0, window.scrollY + r.top - (innerHeight - r.height)/2), behavior:'instant'}); }")
+                        try:
+                            page.wait_for_function(
+                                "() => { const el=document.querySelector('[data-testid=hero-hybrid-panel]'); return el?.dataset.vfMotion === 'started' && el?.dataset.vfVisible === 'yes'; }",
+                                timeout=6000
+                            )
+                        except Exception as observer_error:
+                            observer_debug = page.evaluate("""() => {
+                                const el=document.querySelector('[data-testid=hero-hybrid-panel]');
+                                const r=el?.getBoundingClientRect();
+                                return {top:r?.top,bottom:r?.bottom,height:r?.height,viewport:innerHeight,scrollY:scrollY,
+                                        motion:el?.dataset.vfMotion,visible:el?.dataset.vfVisible,documentHeight:document.documentElement.scrollHeight};
+                            }""")
+                            check(False, prefix + " viewport observer readiness", str(observer_debug) + " " + repr(observer_error))
                         check(panel.get_attribute("data-vf-motion") == "started", prefix + " first-in-view motion triggered")
                         check(panel.get_attribute("data-vf-visible") == "yes", prefix + " stable in-viewport signal")
                         check("vf-hybrid-frame-breathe" in panel.evaluate("(el) => getComputedStyle(el).animationName"),
