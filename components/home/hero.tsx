@@ -98,7 +98,7 @@ export function Hero() {
           </div>
         </div>
 
-        <svg data-testid="hero-upgrade-arrow" aria-hidden="true" viewBox="0 0 100 55" className="vf-motion-upgrade-arrow pointer-events-none absolute left-[12%] top-[49%] z-30 h-7 w-[15%] overflow-visible drop-shadow-[0_0_5px_rgba(184,240,107,.45)] sm:left-[13%] sm:top-[50%] sm:h-8 sm:w-[15%]"><path d="M5 46 Q43 2 89 18" fill="none" stroke="#b8f06b" strokeWidth="3.2" strokeLinecap="round"/><path d="M73 8 L92 18 L81 34" fill="none" stroke="#b8f06b" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        <svg data-testid="hero-upgrade-arrow" aria-hidden="true" viewBox="0 0 100 55" className="vf-motion-upgrade-arrow pointer-events-none absolute left-[10%] top-[46%] z-30 h-7 w-[11%] overflow-visible drop-shadow-[0_0_5px_rgba(184,240,107,.45)] sm:left-[10%] sm:top-[47%] sm:h-8 sm:w-[11%]"><path d="M5 46 Q43 2 89 18" fill="none" stroke="#b8f06b" strokeWidth="3.2" strokeLinecap="round"/><path d="M73 8 L92 18 L81 34" fill="none" stroke="#b8f06b" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 
         <span className="absolute right-[4%] top-[25%] z-30 rounded-full bg-lime px-3 py-1 text-[10px] font-bold text-ink shadow-[0_0_18px_rgba(184,240,107,.25)]">{zh?'之后':'After'}</span>
         <div data-testid="hero-site-after" className="vf-motion-after absolute right-[2%] top-[32%] z-20 w-[67%] rotate-[1.4deg] overflow-hidden rounded-xl border border-lime/75 bg-ivory shadow-[0_0_34px_rgba(184,240,107,.20),0_16px_35px_rgba(0,0,0,.35)]">
