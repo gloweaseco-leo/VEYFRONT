@@ -62,4 +62,10 @@ for(const t of ['IntersectionObserver','useRef<HTMLDivElement>','data-vf-motion'
 for(const t of ['vf-hybrid-before-in','vf-hybrid-after-in','vf-hybrid-node-signal','vf-hybrid-signal-travel','prefers-reduced-motion: reduce','data-vf-visible="yes"']) assert.ok(motionCss.includes(t),'Motion CSS missing '+t)
 assert.doesNotMatch(motionHero,/setInterval|requestAnimationFrame|canvas|<video|measured conversion rate/)
 
+assert.match(motionHero,/data-testid="hero-upgrade-arrow"/)
+assert.match(motionHero,/left-\[12%\] top-\[49%\]/)
+assert.match(motionHero,/vf-motion-frame/)
+assert.match(motionCss,/vf-hybrid-frame-breathe 9\.6s/)
+assert.match(motionCss,/@keyframes vf-hybrid-frame-breathe/)
+assert.match(motionCss,/\[data-testid="hero-hybrid-panel"\],/)
 console.log('W1.7 right-panel Motion V1.0 guard PASS; client-delivery costs still pending')

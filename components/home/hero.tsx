@@ -46,7 +46,7 @@ export function Hero() {
      </div>
      <p className="text-sm text-ivory/60">{zh?'两种方式，标准建设均为 ¥9,800 参考完整价。提交需求不产生收费。':'Both paths start from the same ¥9,800 complete-site reference price. Inquiries are free.'}</p>
     </div>
-    <div ref={motionFrame} data-testid="hero-hybrid-panel" data-vf-motion={motionStarted?'started':'static'} data-vf-visible={motionVisible?'yes':'no'} className="relative isolate min-w-0 overflow-hidden rounded-xl border border-lime/25 bg-[#172e34] p-5 shadow-2xl shadow-black/20 sm:p-7">
+    <div ref={motionFrame} data-testid="hero-hybrid-panel" data-vf-motion={motionStarted?'started':'static'} data-vf-visible={motionVisible?'yes':'no'} className="vf-motion-frame relative isolate min-w-0 overflow-hidden rounded-xl border border-lime/25 bg-[#172e34] p-5 shadow-2xl shadow-black/20 sm:p-7">
       <div aria-hidden="true" className="vf-motion-ambient pointer-events-none absolute -right-12 top-24 h-80 w-80 rounded-full bg-lime/10 blur-[95px]"/>
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.10]" style={{backgroundImage:'linear-gradient(rgba(184,240,107,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(184,240,107,.18) 1px,transparent 1px)',backgroundSize:'36px 36px'}}/>
       <div className="relative z-10 flex flex-wrap items-start justify-between gap-2 border-b border-ivory/15 pb-4">
@@ -98,7 +98,7 @@ export function Hero() {
           </div>
         </div>
 
-        <svg aria-hidden="true" viewBox="0 0 100 55" className="vf-motion-upgrade-arrow pointer-events-none absolute left-[23%] top-[56%] z-30 h-12 w-20 overflow-visible drop-shadow-[0_0_8px_rgba(184,240,107,.6)] sm:w-24"><path d="M5 46 Q43 2 89 18" fill="none" stroke="#b8f06b" strokeWidth="4" strokeLinecap="round"/><path d="M73 8 L92 18 L81 34" fill="none" stroke="#b8f06b" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        <svg data-testid="hero-upgrade-arrow" aria-hidden="true" viewBox="0 0 100 55" className="vf-motion-upgrade-arrow pointer-events-none absolute left-[12%] top-[49%] z-30 h-7 w-[15%] overflow-visible drop-shadow-[0_0_5px_rgba(184,240,107,.45)] sm:left-[13%] sm:top-[50%] sm:h-8 sm:w-[15%]"><path d="M5 46 Q43 2 89 18" fill="none" stroke="#b8f06b" strokeWidth="3.2" strokeLinecap="round"/><path d="M73 8 L92 18 L81 34" fill="none" stroke="#b8f06b" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
 
         <span className="absolute right-[4%] top-[25%] z-30 rounded-full bg-lime px-3 py-1 text-[10px] font-bold text-ink shadow-[0_0_18px_rgba(184,240,107,.25)]">{zh?'之后':'After'}</span>
         <div data-testid="hero-site-after" className="vf-motion-after absolute right-[2%] top-[32%] z-20 w-[67%] rotate-[1.4deg] overflow-hidden rounded-xl border border-lime/75 bg-ivory shadow-[0_0_34px_rgba(184,240,107,.20),0_16px_35px_rgba(0,0,0,.35)]">

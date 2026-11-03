@@ -143,6 +143,15 @@ def run():
                         )
                         check(panel.get_attribute("data-vf-motion") == "started", prefix + " first-in-view motion triggered")
                         check(panel.get_attribute("data-vf-visible") == "yes", prefix + " stable in-viewport signal")
+                        check("vf-hybrid-frame-breathe" in panel.evaluate("(el) => getComputedStyle(el).animationName"),
+                              prefix + " outer frame breathing animation bound")
+                        safe_arrows = page.evaluate("""() => {
+                            const a=document.querySelector('[data-testid=hero-upgrade-arrow]')?.getBoundingClientRect();
+                            const b=document.querySelector('[data-testid=hero-site-after]')?.getBoundingClientRect();
+                            const info=document.querySelector('[data-testid=hero-hybrid-panel]')?.querySelector('a[href="/pricing"]')?.getBoundingClientRect();
+                            return Boolean(a && b && info && a.right <= b.left - 2 && a.bottom <= info.top - 8);
+                        }""")
+                        check(safe_arrows, prefix + " arrow clear of after content and bottom copy")
                         check(page.locator(".vf-motion-orbit-pulse").count() == 2, prefix + " two light signal paths")
                         check("vf-hybrid-after-in" in page.locator('[data-testid="hero-site-after"]').evaluate("(el) => getComputedStyle(el).animationName"),
                               prefix + " after one-shot animation bound")
@@ -151,6 +160,8 @@ def run():
                             page.emulate_media(reduced_motion="reduce")
                             check(page.locator('[data-testid="hero-site-after"]').evaluate("(el) => getComputedStyle(el).animationName") == "none",
                                   prefix + " reduced motion has no entrance animation")
+                            check(panel.evaluate("(el) => getComputedStyle(el).animationName") == "none",
+                                  prefix + " reduced motion disables frame breathing")
                             check(page.locator(".vf-motion-orbit-pulse").first.evaluate("(el) => getComputedStyle(el).animationName") == "none",
                                   prefix + " reduced motion disables infinite signal")
                             check(page.locator('[data-testid="hero-site-after"]').is_visible(),

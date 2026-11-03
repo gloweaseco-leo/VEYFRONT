@@ -134,6 +134,10 @@
   [data-testid="hero-hybrid-panel"][data-vf-motion="started"] .vf-motion-node-2 { animation-delay:2.82s; }
   [data-testid="hero-hybrid-panel"][data-vf-motion="started"] .vf-motion-node-3 { animation-delay:3.39s; }
   [data-testid="hero-hybrid-panel"][data-vf-motion="started"] .vf-motion-node-4 { animation-delay:3.96s; }
+  /* W1.7.1: understated, out-of-phase breathing on the OUTER frame, without moving the box. */
+  [data-testid="hero-hybrid-panel"][data-vf-motion="started"][data-vf-visible="yes"].vf-motion-frame {
+    animation: vf-hybrid-frame-breathe 9.6s ease-in-out 5.7s infinite alternate;
+  }
   /* Low-frequency ambient motion only while visible, after the opening narrative. */
   [data-testid="hero-hybrid-panel"][data-vf-motion="started"][data-vf-visible="yes"] .vf-motion-ambient {
     animation: vf-hybrid-ambient-pulse 10s ease-in-out 5.3s infinite alternate;
@@ -178,7 +182,18 @@
   to { stroke-dashoffset:0;opacity:.3; }
 }
 @keyframes vf-hybrid-ambient-pulse { from { opacity:.75; } to { opacity:1; } }
+@keyframes vf-hybrid-frame-breathe {
+  from {
+    border-color: rgba(184,240,107,.24);
+    box-shadow: 0 20px 44px rgba(0,0,0,.20), 0 0 0 1px rgba(184,240,107,.025), 0 0 10px rgba(184,240,107,.035);
+  }
+  to {
+    border-color: rgba(184,240,107,.58);
+    box-shadow: 0 20px 44px rgba(0,0,0,.20), 0 0 0 1px rgba(184,240,107,.13), 0 0 26px rgba(184,240,107,.14);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
+  [data-testid="hero-hybrid-panel"],
   [data-testid="hero-hybrid-panel"] *,
   [data-testid="hero-hybrid-panel"] *::before,
   [data-testid="hero-hybrid-panel"] *::after { animation:none!important;transition:none!important; }
