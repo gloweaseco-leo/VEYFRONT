@@ -32,7 +32,7 @@ export function Hero() {
       {zh?'让海外客户找到你、看懂你，并向你发起询盘。':'Building Digital Frontiers for Global Business.'}
      </h1>
      <p className="max-w-2xl text-pretty text-lg leading-relaxed text-ivory/75">
-      {zh?'从零建立或升级国际化 B2B 商业网站。专业设计、原生 SEO、产品内容与真实询盘，一次完整交付。':'Build a new international B2B website or improve your existing one. Professional design, SEO-Native foundations, buyer-ready content and real inquiry paths — delivered together.'}
+      {zh?'从零建设或升级面向海外采购商的 B2B 企业官网。专业设计、中英文产品展示、搜索优化基础与在线询盘，从建设到上线一次交付。':'Build a new international B2B website or improve your existing one. Professional design, SEO-Native foundations, buyer-ready content and real inquiry paths — delivered together.'}
      </p>
      <div className="grid gap-3 sm:grid-cols-2" aria-label={zh?'选择网站项目':'Choose a website project'}>
       <Link href="/start/launch" className="group flex min-h-28 flex-col justify-between gap-3 rounded-lg bg-lime p-5 font-semibold text-ink transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-lime">
@@ -44,15 +44,15 @@ export function Hero() {
        <span><span className="block text-xl">{zh?'我要升级旧网站':'Improve my current site'}</span><span className="mt-1 block text-sm font-normal text-ivory/70">{zh?'已有网站，保留有价值的内容':'Already have a site'}</span></span>
       </Link>
      </div>
-     <p className="text-sm text-ivory/60">{zh?'两种方式，标准建设均为 ¥9,800 参考完整价。提交需求不产生收费。':'Both paths start from the same ¥9,800 complete-site reference price. Inquiries are free.'}</p>
+     <p className="text-sm text-ivory/60">{zh?'新建或常规旧站升级，标准方案参考价 ¥9,800；免费提交需求。':'Both paths start from the same ¥9,800 complete-site reference price. Inquiries are free.'}</p>
     </div>
     <div ref={motionFrame} data-testid="hero-hybrid-panel" data-vf-motion={motionStarted?'started':'static'} data-vf-visible={motionVisible?'yes':'no'} className="vf-motion-frame relative isolate min-w-0 overflow-hidden rounded-xl border border-lime/25 bg-[#172e34] p-5 shadow-2xl shadow-black/20 sm:p-7">
       <div aria-hidden="true" className="vf-motion-ambient pointer-events-none absolute -right-12 top-24 h-80 w-80 rounded-full bg-lime/10 blur-[95px]"/>
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.10]" style={{backgroundImage:'linear-gradient(rgba(184,240,107,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(184,240,107,.18) 1px,transparent 1px)',backgroundSize:'36px 36px'}}/>
       <div className="relative z-10 flex flex-wrap items-start justify-between gap-2 border-b border-ivory/15 pb-4">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.17em] text-lime">{zh?'智能转化 / 设计示意':'INTELLIGENT CONVERSION / CONCEPT'}</p>
-          <p className="mt-1 text-sm text-ivory/80">{zh?'更清楚的网站 × 可观察的买家行动':'Clearer websites × buyer-action signals'}</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.17em] text-lime">{zh?'网站升级 / 买家体验示意':'INTELLIGENT CONVERSION / CONCEPT'}</p>
+          <p className="mt-1 text-sm text-ivory/80">{zh?'产品更好找 · 网站更好懂 · 询盘更容易':'Clearer websites × buyer-action signals'}</p>
         </div>
         <span className="rounded-full border border-ivory/20 px-2 py-1 text-[10px] text-ivory/60">{zh?'概念展示':'ILLUSTRATIVE'}</span>
       </div>
@@ -76,7 +76,7 @@ export function Hero() {
         {[
           {icon:Search,zh:'搜索发现',en:'Discover',pos:'left-0 top-0',motion:'vf-motion-node-1'},
           {icon:ScanSearch,zh:'买家评估',en:'Evaluate',pos:'right-0 top-0',motion:'vf-motion-node-2'},
-          {icon:Send,zh:'有效询盘',en:'Inquire',pos:'bottom-0 left-0',motion:'vf-motion-node-3'},
+          {icon:Send,zh:'产品询盘',en:'Inquire',pos:'bottom-0 left-0',motion:'vf-motion-node-3'},
           {icon:ChartNoAxesCombined,zh:'持续改善',en:'Improve',pos:'bottom-0 right-0',motion:'vf-motion-node-4'},
         ].map(({icon:Icon,zh:cn,en,pos,motion})=><div key={pos} data-testid="hero-hybrid-signal" className={'vf-motion-node '+motion+' absolute z-30 flex min-h-11 w-[45%] items-center gap-2 rounded-lg border border-lime/35 bg-[#10262c]/95 px-3 py-2 shadow-lg shadow-black/20 '+pos}>
           <Icon className="size-4 shrink-0 text-lime sm:size-5" aria-hidden="true"/>
@@ -128,7 +128,7 @@ export function Hero() {
         </div>
       </div>
       <div className="relative z-10 flex flex-col gap-2 border-t border-ivory/15 pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs leading-relaxed text-ivory/60">{zh?'设计示意，非真实客户交付或增长数据。':'Illustrative concept, not a client delivery or measured result.'}</p>
+        <p className="text-xs leading-relaxed text-ivory/60">{zh?'网站设计示意，非真实客户案例或增长数据。':'Illustrative concept, not a client delivery or measured result.'}</p>
         <Link href="/pricing" className="inline-flex min-h-10 shrink-0 items-center gap-2 text-sm font-semibold text-lime underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-lime">{zh?'查看 ¥9,800 完整服务内容':'Explore the ¥9,800 package'} <ArrowUpRight aria-hidden="true" className="size-4"/></Link>
       </div>
     </div>

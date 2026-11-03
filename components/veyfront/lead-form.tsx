@@ -68,8 +68,8 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
     return (
       <div role="status" aria-live="polite" className="rounded-xl border border-ink/20 bg-mist/40 p-7">
         <CheckCircle2 className="mb-4 size-8 text-ink" aria-hidden="true"/>
-        <h2 className="text-2xl font-semibold">{zh ? '项目需求已收到' : 'Your request has been received'}</h2>
-        <p className="mt-3 text-ink/75">{zh ? '你的需求已保存到 VEYFRONT 的私有受理系统。请保存受理编号，方便后续核对；这并不代表项目已被接受、报价或付款。' : 'Your request has been saved to VEYFRONT’s private intake. Keep the reference for follow-up. This is not a project acceptance, quotation or payment.'}</p>
+        <h2 className="text-2xl font-semibold">{service === 'privacy' ? (zh ? '隐私请求已收到' : 'Privacy request received') : (zh ? '提交成功，我们已收到您的建站咨询' : 'Your website inquiry has been received')}</h2>
+        <p className="mt-3 text-ink/75">{service === 'privacy' ? (zh ? '请保存下方申请编号，以便后续核对。我们将在核实后处理您的请求。' : 'Keep the reference for follow-up. We will verify your request before handling it.') : (zh ? '请保存下方咨询编号。我们会与您确认下一步；也可邮件至 hello@veyfront.com 补充项目资料。提交不等于签约或付款。' : 'Keep your inquiry reference. You can add details by emailing hello@veyfront.com. An inquiry is not a purchase or contract.')}</p>
         <p className="mt-5 font-mono text-xl font-semibold">{reference}</p>
         <button type="button" onClick={() => { setStatus('idle'); setReference('') }} className="mt-6 inline-flex min-h-11 items-center underline underline-offset-4">{zh ? '提交另一个需求' : 'Submit another request'}</button>
       </div>
@@ -83,7 +83,7 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
         <input id="vf-name" name="name" autoComplete="name" required minLength={2} maxLength={100} className={field} value={name} onChange={e => setName(e.target.value)}/>
       </div>
       <div>
-        <label htmlFor="vf-email" className="mb-2 block text-sm font-medium">{zh ? '工作邮箱 *' : 'Work email *'}</label>
+        <label htmlFor="vf-email" className="mb-2 block text-sm font-medium">{zh ? '联系邮箱 *' : 'Work email *'}</label>
         <input id="vf-email" name="email" type="email" autoComplete="email" required maxLength={254} className={field} value={email} onChange={e => setEmail(e.target.value)}/>
       </div>
     </div>
@@ -101,8 +101,8 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
       <input id="vf-markets" name="markets" placeholder={zh ? '例如：欧洲、北美' : 'e.g. Europe, North America'} maxLength={240} className={field} value={markets} onChange={e => setMarkets(e.target.value)}/>
     </div>}
     <div>
-      <label htmlFor="vf-details" className="mb-2 block text-sm font-medium">{service === 'privacy' ? (zh ? '你的数据请求 *' : 'Your data request *') : (zh ? '项目需求与目标 *' : 'Project brief and goals *')}</label>
-      <textarea id="vf-details" name="details" required minLength={20} maxLength={3000} rows={5} className={field + ' py-3'} placeholder={zh ? '请至少用20个字符描述需求、目标或希望解决的问题。' : 'Describe your goals or request in at least 20 characters.'} value={details} onChange={e => setDetails(e.target.value)}/>
+      <label htmlFor="vf-details" className="mb-2 block text-sm font-medium">{service === 'privacy' ? (zh ? '需要查阅、更正或删除什么信息？ *' : 'Your data request *') : (zh ? '项目需求与目标 *' : 'Project brief and goals *')}</label>
+      <textarea id="vf-details" name="details" required minLength={20} maxLength={3000} rows={5} className={field + ' py-3'} placeholder={zh ? (service === 'privacy' ? '请说明您希望查阅、更正或删除的资料（至少20字），请勿填写密码或身份证件。' : '例如：主营产品、目标国家、希望展示的内容及需要解决的问题（至少20字）。') : 'Describe your goals or request in at least 20 characters.'} value={details} onChange={e => setDetails(e.target.value)}/>
     </div>
     {/* Accessible honeypot: never expose this field to keyboard or screen reader users. */}
     <div className="hidden" aria-hidden="true">
@@ -118,6 +118,6 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
       {status === 'sending' ? <LoaderCircle className="size-4 animate-spin"/> : <ArrowUpRight className="size-4"/>}
       {status === 'sending' ? (zh ? '正在安全提交…' : 'Saving your request…') : (zh ? '提交项目需求' : 'Send project inquiry')}
     </button>
-    <p className="text-xs leading-relaxed text-ink/65">{zh ? '提交后会返回受理编号。需求提交不构成合同或报价，VEYFRONT 不会自动修改你的网站。' : 'A reference is shown only after secure storage is confirmed. Sending an inquiry does not create a contract or quotation. We never modify your website automatically.'}</p>
+    <p className="text-xs leading-relaxed text-ink/65">{service === 'privacy' ? (zh ? '成功提交后会显示申请编号；如需补充信息，可以邮件联系 hello@veyfront.com。' : 'A reference will appear after successful submission. Email us to follow up.') : (zh ? '成功提交后会显示咨询编号。免费咨询，建设内容及价格以签约前的书面确认为准。' : 'A reference is shown after secure storage. Sending an inquiry does not create a contract or quotation.')}</p>
   </form>
 }

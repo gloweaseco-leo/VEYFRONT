@@ -8,16 +8,16 @@ import prices from '@/lib/commercial-offers.json'
 const money=(v:number)=>'¥'+v.toLocaleString('en-US')
 const included:[string,string][]=[
  ['专业视觉与手机适配，完整的企业、产品及联系信息结构','Professional design, mobile-ready pages and a clear company/product/contact structure'],
- ['中英文双语，结构清晰的产品资料通常最多50条','English and Chinese; usually up to 50 structured, customer-supplied product records'],
- ['1个主要产品方向的搜索需求梳理，以及2个应用/解决方案主题','Buyer-search focus for one product area and two application/solution topics'],
- ['SEO-Native：页面标题、规范网址、内部链接、站点地图和适用的多语言配置','SEO-Native: page titles, canonical URLs, internal links, sitemap and applicable multilingual settings'],
- ['可实际接收的产品询盘与基础数据事件追踪','Working product-related inquiry receipt and basic analytics events'],
+ ['中英文双语；通常最多整理50条客户提供的产品资料','English and Chinese; usually up to 50 structured, customer-supplied product records'],
+ ['围绕1个主要产品方向梳理买家搜索需求，并设计2个应用/解决方案主题','Buyer-search focus for one product area and two application/solution topics'],
+ ['搜索优化基础（SEO）：页面标题、规范网址、内部链接、站点地图和适用的多语言设置','SEO-Native: page titles, canonical URLs, internal links, sitemap and applicable multilingual settings'],
+ ['经过测试、可接收的产品询盘功能及基础访问事件统计','Working product-related inquiry receipt and basic analytics events'],
  ['约定范围内的合理修改、源码移交与30天交付缺陷保障','In-scope refinements, source handover and 30-day defect coverage'],
  ['一次上线协助、首年基础托管与普通域名注册额度','One launch assist, first-year basic hosting and a standard-domain allowance']
 ]
 const checklist:[string,string][]=[
  ['项目范围先确认','Agree the scope upfront'],
- ['不按正常页面、产品和修改轮次逐项加价','No per-page, product-batch or routine-revision surcharges'],
+ ['双方确认范围内的常规调整不另收费','No per-page, product-batch or routine-revision surcharges'],
  ['常规旧站升级与新建同价','Regular Rebuild and Launch share the standard price'],
  ['客户拥有域名控制权并获得约定源码','Your domain stays under your control; agreed source is handed over']
 ]
@@ -27,21 +27,21 @@ export function CommercialOffers({detail=false}:{detail?:boolean}){
   <div className="mx-auto grid max-w-[1440px] gap-8 px-5 py-16 md:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-center lg:py-20">
    <div className="space-y-5">
     <p className="font-mono text-xs uppercase tracking-widest text-ink/60">VEYFRONT / ONE CLEAR PRICE</p>
-    <h2 id="commercial-offers-title" className="text-balance text-3xl font-semibold sm:text-[42px]">{zh?'¥9,800，正常规模的海外 B2B 网站完整建设。':'One clear price for a complete international B2B website.'}</h2>
-    <p className="max-w-2xl text-base leading-relaxed text-ink/75">{zh?'从商业规划、设计、多语言、原生 SEO，到实际询盘、上线和首年基础运行，一次包含。新建和常规旧站升级同价。':'Design, multilingual content, SEO-Native foundations, working inquiries, launch and first-year basic hosting — together. For new websites and regular rebuilds alike.'}</p>
+    <h2 id="commercial-offers-title" className="text-balance text-3xl font-semibold sm:text-[42px]">{zh?'¥9,800，建设面向海外采购商的 B2B 企业网站':'One clear price for a complete international B2B website.'}</h2>
+    <p className="max-w-2xl text-base leading-relaxed text-ink/75">{zh?'新建网站和常规旧站升级，同一套标准服务：专业设计、中英文产品展示、搜索优化基础、在线询盘、上线协助及首年基础托管。':'Design, multilingual content, SEO-Native foundations, working inquiries, launch and first-year basic hosting — together. For new websites and regular rebuilds alike.'}</p>
     <div className="flex flex-wrap items-center gap-4">
      <span className="text-5xl font-semibold tabular-nums">{money(prices.build[0].price)}</span>
-     <span className="text-sm text-ink/60">{zh?'参考完整价 · 签约前确认实际范围':'complete-site guide price · scope agreed upfront'}</span>
+     <span className="text-sm text-ink/60">{zh?'标准方案参考价 · 具体范围以书面确认为准':'complete-site guide price · scope agreed upfront'}</span>
     </div>
     <Link href="/pricing" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-ink px-6 font-semibold text-ivory">{zh?'查看完整包含内容':'View full inclusions'} <ArrowUpRight className="size-4"/></Link>
    </div>
    <div className="rounded-xl border border-ink/15 bg-mist/40 p-6">
-    <h3 className="text-xl font-semibold">{zh?'你一次买到什么':'What is included'}</h3>
+    <h3 className="text-xl font-semibold">{zh?'标准方案包含什么':'What is included'}</h3>
     <ul className="mt-5 space-y-4">
      {[
       zh?'专业设计 + 电脑手机适配':'Professional design + responsive layouts',
-      zh?'中英文 + 产品与应用内容':'English/Chinese + product and application content',
-      zh?'原生 SEO + 真实询盘 + 基础统计':'SEO-Native + verified inquiries + analytics',
+      zh?'中英文 + 产品资料与应用展示':'English/Chinese + product and application content',
+      zh?'搜索优化基础（SEO）+ 在线询盘功能 + 基础统计':'SEO-Native + verified inquiries + analytics',
       zh?'源码交付 + 首年基础托管':'Source handover + first-year basic hosting'
      ].map(x=><li key={x} className="flex gap-3 text-sm leading-relaxed"><Check className="mt-0.5 size-4 shrink-0" aria-hidden="true"/>{x}</li>)}
     </ul>
@@ -53,14 +53,14 @@ export function CommercialOffers({detail=false}:{detail?:boolean}){
  <div className="mx-auto max-w-[1440px] space-y-10 px-5 py-14 md:px-10 lg:py-20">
   <div className="max-w-4xl space-y-5">
    <p className="font-mono text-xs uppercase tracking-widest text-ink/60">SERVICES & PRICING / BUILD · REBUILD · RUN</p>
-   <h1 id="commercial-offers-title" className="text-balance text-4xl font-semibold leading-tight sm:text-[54px]">{zh?'服务与价格，一次讲清楚。':'Complete service. One clear price.'}</h1>
-   <p className="max-w-2xl text-lg leading-relaxed text-ink/70">{zh?'正常规模的国际化 B2B 网站，不按页面或修改轮次层层收费。新建与普通旧站升级同价。':'One complete B2B site, not a collection of page, product or revision fees. The standard price is the same for a new site or a regular rebuild.'}</p>
+   <h1 id="commercial-offers-title" className="text-balance text-4xl font-semibold leading-tight sm:text-[54px]">{zh?'建站服务与价格，清楚列明':'Complete service. One clear price.'}</h1>
+   <p className="max-w-2xl text-lg leading-relaxed text-ink/70">{zh?'为有海外业务的企业建设专业网站。新建和常规旧站升级采用相同标准参考价；约定范围内的调整不另收费。':'One complete B2B site, not a collection of page, product or revision fees. The standard price is the same for a new site or a regular rebuild.'}</p>
   </div>
   <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)]">
    <article className="rounded-xl border border-ink/15 bg-mist/35 p-6 md:p-8">
     <p className="font-mono text-xs uppercase tracking-widest text-ink/60">FRONTIER BUILD / LAUNCH + REBUILD</p>
-    <div className="mt-4 flex flex-wrap items-end gap-3"><span className="text-5xl font-semibold tabular-nums">{money(prices.build[0].price)}</span><span className="pb-2 text-sm text-ink/65">{zh?'正常规模项目参考完整价':'complete-site guide price'}</span></div>
-    <p className="mt-4 text-sm leading-relaxed text-ink/75">{zh?'根据客户提供并确认的真实资料，建设清晰、可搜索、可询盘、可运行的 B2B 网站。':'A clear, searchable, inquiry-ready B2B website, built from verified customer materials.'}</p>
+    <div className="mt-4 flex flex-wrap items-end gap-3"><span className="text-5xl font-semibold tabular-nums">{money(prices.build[0].price)}</span><span className="pb-2 text-sm text-ink/65">{zh?'标准方案参考价':'complete-site guide price'}</span></div>
+    <p className="mt-4 text-sm leading-relaxed text-ink/75">{zh?'以客户提供并确认的企业、产品及应用资料为基础，交付可上线、可接收产品询盘的 B2B 企业网站。':'A clear, searchable, inquiry-ready B2B website, built from verified customer materials.'}</p>
     <h2 className="mt-7 border-t border-ink/15 pt-6 text-xl font-semibold">{zh?'标准建设包含':'Standard delivery includes'}</h2>
     <ul className="mt-5 space-y-4">
      {included.map(x=><li key={x[0]} className="flex items-start gap-3 text-sm leading-relaxed"><Check className="mt-0.5 size-4 shrink-0"/><span>{t(x)}</span></li>)}
@@ -98,11 +98,11 @@ export function CommercialOffers({detail=false}:{detail?:boolean}){
   </div>
   <div className="rounded-xl border border-ink/15 bg-mist/30 p-6">
    <div className="flex flex-wrap items-start justify-between gap-4">
-    <div className="max-w-2xl"><p className="font-mono text-xs uppercase tracking-widest text-ink/60">OPTIONAL / FRONTIER RUN</p><h2 className="mt-2 text-xl font-semibold">{zh?'持续运营与改善':'Ongoing improvement'}</h2><p className="mt-2 text-sm leading-relaxed text-ink/75">{zh?'需要持续的小幅内容调整、询盘运行检查和季度搜索与询盘数据回顾，可选择 Run。它不等于第一年基础托管，也不是第二年保持网站在线的强制服务。':'For ongoing small content edits, inquiry checks and quarterly search/inquiry reviews. Run is separate from the first-year hosting included in Build and is not required to keep the site online.'}</p></div>
+    <div className="max-w-2xl"><p className="font-mono text-xs uppercase tracking-widest text-ink/60">OPTIONAL / FRONTIER RUN</p><h2 className="mt-2 text-xl font-semibold">{zh?'持续维护与优化（可选）':'Ongoing improvement'}</h2><p className="mt-2 text-sm leading-relaxed text-ink/75">{zh?'如需定期更新内容、检查询盘功能，并按季度回顾搜索和询盘数据，可选择 Frontier Run。它是独立的增值服务，不是网站续费的必选项。':'For ongoing small content edits, inquiry checks and quarterly search/inquiry reviews. Run is separate from the first-year hosting included in Build and is not required to keep the site online.'}</p></div>
     <div className="shrink-0 text-right"><p className="text-3xl font-semibold">{money(prices.run.priceYear)}<span className="ml-1 text-sm font-normal text-ink/65">{zh?'/年':'/year'}</span></p><Link href="/contact" className="mt-3 inline-flex min-h-11 items-center font-semibold underline underline-offset-4">{zh?'咨询 Run':'Ask about Run'}</Link></div>
    </div>
   </div>
-  <p className="text-xs leading-relaxed text-ink/65">{zh?'¥9,800 为参考完整价，以签约前书面确认的范围、费用和税务条件为准。SEO-Native 表示搜索技术和内容基础，不保证收录、排名、询盘或成交。':'¥9,800 is an indicative complete-site price subject to a written scope and tax terms before signing. SEO-Native provides a technical and content foundation, not a promise of indexing, ranking, inquiry volume or sales.'}</p>
+  <p className="text-xs leading-relaxed text-ink/65">{zh?'¥9,800 为标准建设参考价，实际范围、费用及税务条件以签约前书面确认为准。搜索优化基础（SEO）不保证搜索收录、排名、询盘数量或成交。':'¥9,800 is an indicative complete-site price subject to a written scope and tax terms before signing. SEO-Native provides a technical and content foundation, not a promise of indexing, ranking, inquiry volume or sales.'}</p>
  </div>
  </section>
 }
