@@ -49,7 +49,7 @@ export function LangToggle({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
             const cleanPath = pathname.startsWith('/zh/') ? pathname.slice(3) : pathname === '/zh' ? '/' : pathname
             const publicPaths = new Set(['/', '/pricing', '/transformations', '/how-it-works', '/contact', '/start/launch', '/start/rebuild', '/privacy', '/terms', '/contact/privacy'])
             if (publicPaths.has(cleanPath)) router.replace(o.value === 'zh' ? '/zh' + (cleanPath === '/' ? '' : cleanPath) : cleanPath, { scroll: false })
-          }
+          }}
           className={cn(
             'min-h-8 min-w-10 rounded-full px-2.5 focus-visible:outline-2 focus-visible:outline-offset-1',
             lang === o.value
