@@ -116,7 +116,7 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
     {status === 'error' && <p role="alert" className="flex items-start gap-2 rounded-md border border-red-300 p-3 text-sm text-red-800"><AlertCircle className="mt-0.5 size-4 shrink-0"/>{error}</p>}
     <button disabled={status === 'sending'} type="submit" className="inline-flex min-h-12 w-fit items-center gap-2 rounded-md bg-ink px-6 font-semibold text-ivory disabled:opacity-65">
       {status === 'sending' ? <LoaderCircle className="size-4 animate-spin"/> : <ArrowUpRight className="size-4"/>}
-      {status === 'sending' ? (zh ? '正在安全提交…' : 'Saving your request…') : (zh ? '提交项目需求' : 'Send project inquiry')}
+      {status === 'sending' ? (zh ? '正在安全提交…' : 'Saving your request…') : (service === 'privacy' ? (zh ? '提交隐私请求' : 'Send privacy request') : (zh ? '提交建站咨询' : 'Send project inquiry'))}
     </button>
     <p className="text-xs leading-relaxed text-ink/65">{service === 'privacy' ? (zh ? '成功提交后会显示申请编号；如需补充信息，可以邮件联系 hello@veyfront.com。' : 'A reference will appear after successful submission. Email us to follow up.') : (zh ? '成功提交后会显示咨询编号。免费咨询，建设内容及价格以签约前的书面确认为准。' : 'A reference is shown after secure storage. Sending an inquiry does not create a contract or quotation.')}</p>
   </form>
