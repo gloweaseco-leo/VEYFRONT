@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Link from '@/components/l2m/localized-link'
 import type { ReactNode } from 'react'
 import { ArrowRight, Info } from 'lucide-react'
 import { ProtoBar } from '@/components/home/proto-bar'

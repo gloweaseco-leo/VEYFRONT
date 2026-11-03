@@ -115,7 +115,7 @@ def run():
                         for amount in (("¥9,800",) if path == "/" else PRICES):
                             check(amount in body, prefix + " ZH price " + amount)
                         check("参考" in body and "签约前" in body, prefix + " Chinese complete-price disclosure")
-                        check("SEO-Native" in body or "原生 SEO" in body, prefix + " native SEO service")
+                        check("SEO-Native" in body or "原生 SEO" in body or "搜索优化基础" in body, prefix + " native SEO service")
                         check("完整" in body and "首年" in body, prefix + " full-site and year-one hosting")
                         check("标准增项" not in body, prefix + " no microcharge list")
                         check("12,800" not in body, prefix + " no migration surcharge")
@@ -130,7 +130,7 @@ def run():
                         check(page.locator('[data-testid="hero-hybrid-signal"]').count() == 4, prefix + " four signal nodes")
                         check(page.locator('[data-testid="hero-site-before"]').count() == 1, prefix + " before visual")
                         check(page.locator('[data-testid="hero-site-after"]').count() == 1, prefix + " after visual")
-                        check(page.locator('[data-testid="hero-hybrid-panel"] a[href="/pricing"]').count() == 1, prefix + " right panel pricing CTA")
+                        check(page.locator('[data-testid="hero-hybrid-panel"] a[href="/zh/pricing"]').count() == 1, prefix + " right panel Chinese pricing CTA")
                         check("设计示意" in page.locator('[data-testid="hero-hybrid-panel"]').inner_text(), prefix + " honest demo disclosure")
                         check(page.locator('[data-testid="hero-hybrid-panel"]').is_visible(), prefix + " hero illustration visible")
                         panel = page.locator('[data-testid="hero-hybrid-panel"]')
@@ -157,14 +157,16 @@ def run():
                         safe_arrows = page.evaluate("""() => {
                             const a=document.querySelector('[data-testid=hero-upgrade-arrow]')?.getBoundingClientRect();
                             const b=document.querySelector('[data-testid=hero-site-after]')?.getBoundingClientRect();
-                            const info=document.querySelector('[data-testid=hero-hybrid-panel]')?.querySelector('a[href="/pricing"]')?.getBoundingClientRect();
-                            return Boolean(a && b && info && a.right <= b.left - 2 && a.bottom <= info.top - 8);
+                            const info=document.querySelector('[data-testid=hero-hybrid-panel]')?.querySelector('a[href="/zh/pricing"]')?.getBoundingClientRect();
+                            if(!a || !b || !info)return {safe:false, reason:'missing element'};
+                            return {safe:a.right <= b.left - 2 && a.bottom <= info.top - 8,
+                              arrowRight:Math.round(a.right),afterLeft:Math.round(b.left),arrowBottom:Math.round(a.bottom),infoTop:Math.round(info.top)};
                         }""")
-                        check(safe_arrows, prefix + " arrow clear of after content and bottom copy")
+                        check(safe_arrows["safe"], prefix + " arrow clear of after content and bottom copy", safe_arrows)
                         check(page.locator(".vf-motion-orbit-pulse").count() == 2, prefix + " two light signal paths")
                         check("vf-hybrid-after-in" in page.locator('[data-testid="hero-site-after"]').evaluate("(el) => getComputedStyle(el).animationName"),
                               prefix + " after one-shot animation bound")
-                        check(page.locator('[data-testid="hero-hybrid-panel"] a[href="/pricing"]').is_enabled(), prefix + " pricing CTA stays actionable")
+                        check(page.locator('[data-testid="hero-hybrid-panel"] a[href="/zh/pricing"]').is_enabled(), prefix + " Chinese pricing CTA stays actionable")
                         if width == 390:
                             page.emulate_media(reduced_motion="reduce")
                             check(page.locator('[data-testid="hero-site-after"]').evaluate("(el) => getComputedStyle(el).animationName") == "none",
@@ -184,6 +186,22 @@ def run():
                     # Reset initial language to EN for next route; provider state is per page context.
                     page.locator('[role="group"][aria-label="Language / 语言"] button').filter(has_text="EN").first.click()
                     page.wait_for_function("document.documentElement.lang === 'en'", timeout=7000)
+                if width in (1440, 390):
+                    for zh_path in ("/zh", "/zh/pricing", "/zh/contact", "/zh/contact/privacy", "/zh/start/launch", "/zh/start/rebuild"):
+                        response = visit(page, zh_path)
+                        zprefix = str(width) + "_" + zh_path.strip("/").replace("/", "_")
+                        check(response is not None and response.status == 200, zprefix + " direct Chinese URL HTTP 200")
+                        check(page.locator("html").get_attribute("lang") == "zh-CN", zprefix + " SSR lang zh-CN")
+                        check(page.locator('link[rel="canonical"]').get_attribute("href") == "https://veyfront.com" + zh_path, zprefix + " localized canonical")
+                        check(page.locator('meta[name="robots"][content*="noindex"]').count() > 0, zprefix + " preview stays noindex")
+                        inspect_overflow(page, zprefix + " ZH")
+                        if zh_path == "/zh":
+                            check(page.locator("h1").first.inner_text().startswith("让海外客户找到你"), zprefix + " Chinese SSR headline")
+                            check(page.locator('a[href="/zh/pricing"]').count() > 0, zprefix + " Chinese nav pricing URL")
+                        if zh_path == "/zh/contact/privacy":
+                            tx = page.locator("main").inner_text()
+                            check("个人信息与隐私请求" in tx and "提交隐私请求" in tx, zprefix + " privacy-specific content and CTA")
+                            check("标准建设范围" not in tx and "完整报价" not in tx, zprefix + " no sales quote on privacy form")
                 check(len(page_errors) == 0, str(width) + " runtime JavaScript errors", page_errors)
                 context.close()
             browser.close()

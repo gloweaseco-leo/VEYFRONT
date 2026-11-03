@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import Link from '@/components/l2m/localized-link'
 import { ArrowRight, Monitor, Smartphone } from 'lucide-react'
 import { DemoViewport, PageTabs } from '@/components/l2m/demo-viewport'
 import { Segmented } from '@/components/l2m/brand'

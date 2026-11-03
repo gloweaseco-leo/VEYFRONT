@@ -1,5 +1,5 @@
 'use client'
-import Link from 'next/link'
+import Link from '@/components/l2m/localized-link'
 import { ArrowUpRight } from 'lucide-react'
 import { Logo } from '@/components/l2m/brand'
 import { useSiteLinks } from '@/components/l2m/site-header'
@@ -9,8 +9,8 @@ export function Invitation(){
  return <section className="bg-ink text-ivory" aria-labelledby="invite-title">
  <div className="mx-auto max-w-4xl px-5 py-16 text-center md:px-10 lg:py-24">
   <p className="font-mono text-xs uppercase tracking-widest text-lime">YOUR NEXT DIGITAL FRONTIER</p>
-  <h2 id="invite-title" className="mt-3 text-balance text-3xl font-semibold sm:text-5xl">{zh?'让你的下一个网站，从这里开始。':'Your next website starts here.'}</h2>
-  <p className="mx-auto mt-4 max-w-xl leading-relaxed text-ivory/70">{zh?'告诉我们你的业务目标，我们先确认完整服务范围与价格。提交咨询无需付款。':'Tell us your goals. We agree the full scope and price before any work or payment.'}</p>
+  <h2 id="invite-title" className="mt-3 text-balance text-3xl font-semibold sm:text-5xl">{zh?'让海外客户更容易找到您的企业，从新网站开始。':'Your next website starts here.'}</h2>
+  <p className="mx-auto mt-4 max-w-xl leading-relaxed text-ivory/70">{zh?'告诉我们您的产品与目标市场，我们先确认交付范围和总价。免费提交需求。':'Tell us your goals. We agree the full scope and price before any work or payment.'}</p>
   <div className="mt-8 grid gap-3 text-left sm:grid-cols-2">
    <Link href="/start/launch" className="flex min-h-20 items-center justify-between gap-3 rounded-lg bg-lime p-5 font-semibold text-ink">{zh?'我要建新网站':'Build a new site'} <ArrowUpRight className="size-5"/></Link>
    <Link href="/start/rebuild" className="flex min-h-20 items-center justify-between gap-3 rounded-lg border border-ivory/35 p-5 font-semibold text-ivory">{zh?'我要升级网站':'Rebuild my site'} <ArrowUpRight className="size-5"/></Link>

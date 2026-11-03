@@ -63,7 +63,7 @@ for(const t of ['vf-hybrid-before-in','vf-hybrid-after-in','vf-hybrid-node-signa
 assert.doesNotMatch(motionHero,/setInterval|requestAnimationFrame|canvas|<video|measured conversion rate/)
 
 assert.match(motionHero,/data-testid="hero-upgrade-arrow"/)
-assert.match(motionHero,/left-\[12%\] top-\[49%\]/)
+assert.match(motionHero,/left-\[10%\] top-\[46%\]/)
 assert.match(motionHero,/vf-motion-frame/)
 assert.match(motionCss,/vf-hybrid-frame-breathe 9\.6s/)
 assert.match(motionCss,/@keyframes vf-hybrid-frame-breathe/)

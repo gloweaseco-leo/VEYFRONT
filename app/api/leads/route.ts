@@ -1,5 +1,6 @@
 import { put } from '@vercel/blob'
 import { sendLeadAlert } from '@/lib/lead-alert'
+import { sendLeadConfirmation } from '@/lib/lead-confirmation'
 import { randomUUID } from 'node:crypto'
 import type { NextRequest } from 'next/server'
 import { checkUrl } from '@/lib/url'
@@ -20,6 +21,7 @@ type LeadInput = {
   details?: unknown
   consent?: unknown
   honeypot?: unknown
+  lang?: unknown
 }
 
 function reject(message: string, status: number) {
@@ -55,6 +57,7 @@ export async function POST(request: NextRequest) {
   const service = data.service
   if (!['launch', 'rebuild', 'general', 'privacy'].includes(String(service))) return reject('Invalid request type.', 400)
   const category = service as Service
+  const lang = data.lang === 'zh' ? 'zh' : 'en'
   const name = clean(data.name, 100)
   const email = clean(data.email, 254)
   const company = clean(data.company, 160)
@@ -84,6 +87,7 @@ export async function POST(request: NextRequest) {
     website: website || null,
     markets: markets || null,
     details,
+    language: lang,
     consent: { accepted: true, version: 'VEYFRONT-PRIVACY-2026-10-30' },
     // IP and browser fingerprint deliberately NOT persisted.
   }
@@ -104,6 +108,10 @@ export async function POST(request: NextRequest) {
   // Await the bounded delivery attempt so the serverless function doesn't discard a background promise.
   const alert = await sendLeadAlert({ reference, service: category, receivedAt: record.receivedAt })
   if (alert === 'failed') console.warn('VEYFRONT inquiry alert unavailable; manual private-store review required')
+  // Transactional acknowledgement is optional and never modifies durable save result.
+  // Privacy requests receive no automatic customer message until identity-verification procedures are finalized.
+  const confirmation = await sendLeadConfirmation({ reference, email, service: category, lang })
+  if (confirmation === 'failed') console.warn('VEYFRONT customer confirmation unavailable; stored inquiry remains valid')
   return Response.json({ ok: true, reference, message: 'Your request was received.' }, { status: 201, headers: noStore })
 }
 

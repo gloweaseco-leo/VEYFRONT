@@ -1,5 +1,5 @@
 'use client'
-import Link from 'next/link'
+import Link from '@/components/l2m/localized-link'
 import { PageShell } from '@/components/site/page-shell'
 import { useLang } from '@/lib/i18n'
 
@@ -8,7 +8,7 @@ const pzh:[string,string][]=[
  ['适用范围','本说明适用于 VEYFRONT 网站上的项目需求、一般联系和隐私请求。填写表单不会自动诊断网站、生成网站或创建订单。'],
  ['收集哪些信息','根据咨询类型，我们收集你主动提交的姓名、工作邮箱、公司、目标市场、现有网站网址和需求描述，以及受理编号与提交时间。请勿提交密码、机密合同或身份证件。'],
  ['为何使用','仅为接收、管理和回复咨询，核对项目范围、安排后续沟通，以及处理隐私请求。未经允许不会对旧网站实施修改。'],
- ['存储及跨境处理','咨询记录使用有服务端权限控制的 Vercel 私有存储；相关基础设施可能涉及跨境数据处理。我们不会将完整咨询信息作为公开网站内容展示。'],
+ ['存储及跨境处理','咨询记录使用受服务端权限控制的 Vercel 私有存储。若启用咨询确认邮件，邮件地址与咨询编号将由邮件服务商用于发送确认通知；相关基础设施可能涉及跨境处理。咨询完整内容不会公开展示。'],
  ['保留与请求','记录按处理咨询及必要业务记录的需求保留，尚未启用自动到期删除。你可以请求查阅、更正或删除，或拒绝后续联系；我们会核实请求并依法处理。'],
  ['联系','如有隐私或数据请求，可使用网站的数据请求入口或发送邮件至 hello@veyfront.com。正式运营法律主体及适用司法辖区的法定披露仍须在商业签约前核实。']
 ]
@@ -16,7 +16,7 @@ const pen:[string,string][]=[
  ['Scope','This notice covers project inquiries, general contact and privacy requests made through VEYFRONT. Submitting a form does not initiate automated website analysis, site generation or a purchase.'],
  ['Information collected','Depending on the inquiry, you may provide your name, work email, company, markets, existing website and project details. Records also include a reference and submission time. Please do not share passwords, confidential contracts or identity documents.'],
  ['Purpose','We use the information to receive and reply to inquiries, verify project scope and respond to privacy requests. Existing sites are not modified without authorization.'],
- ['Storage and cross-border processing','Inquiries are stored in access-controlled, server-side Vercel private storage. The infrastructure may involve cross-border data processing; inquiries are not displayed as public site content.'],
+ ['Storage and cross-border processing','Inquiries are stored in access-controlled Vercel private storage. If acknowledgement emails are enabled, an email provider handles the recipient address and inquiry reference solely to send the confirmation. Infrastructure may involve cross-border processing. Full inquiry content is not public.'],
  ['Retention and requests','Records are retained for inquiry handling and necessary business records; automated expiration is not currently active. You can request access, correction or deletion and ask us to stop further contact. We review and handle requests under applicable law.'],
  ['Contact','For privacy or data requests, use the privacy-request form or hello@veyfront.com. The legal operating entity and required jurisdiction-specific disclosures still need verification before formal commercial contracting.']
 ]

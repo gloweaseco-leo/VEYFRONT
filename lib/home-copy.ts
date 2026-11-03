@@ -267,8 +267,8 @@ const zh: HomeCopy = {
     viewLabel: '预览版本',
   },
   transformation: {
-    notesHeading: '影响买家行动的三处变化',
-    synced: '对比旧站与升级后的体验，看看买家如何更高效地查找和评估产品。',
+    notesHeading: '产品展示和询盘体验有哪些变化',
+    synced: '切换升级前后版本，看看产品查找、规格评估和询盘入口如何改善。',
     exploreNote: '了解设计变化，欢迎讨论你的网站升级方向。',
     fromTo: '改造前 → 改造后',
   },

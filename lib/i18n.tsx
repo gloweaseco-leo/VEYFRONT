@@ -134,12 +134,12 @@ export type Dict = typeof en
 const zh: Dict = {
   nav: {
     services: '服务',
-    transformations: '改造示例',
-    howItWorks: '工作方式',
+    transformations: '网站设计示例',
+    howItWorks: '交付流程',
     pricing: '服务与价格',
     contact: '联系我们',
     signIn: '登录',
-    analyze: '联系咨询',
+    analyze: '咨询建站',
     navLabel: '主导航',
     navDemo: '本轮设计中导航仅为视觉占位。',
   },
@@ -176,9 +176,9 @@ const zh: Dict = {
   },
   flagship: {
     eyebrow: '改造演示',
-    title: '还是同一家企业，但客户看到的体验已经不同。',
+    title: '同一家企业，网站升级前后大不一样。',
     altTitle: 'Same business. A completely different experience.',
-    lede: '同一家企业、同样的页面与事实，围绕买家如何发现、评估和联系重新组织。',
+    lede: '在不编造企业和产品事实的前提下，重新组织产品展示、采购评估与询盘路径。',
     before: '改造前',
     after: '改造后',
     viewLabel: '版本',
@@ -192,8 +192,8 @@ const zh: Dict = {
     beforeLabel: '改造前',
     afterLabel: '改造后',
     valueLabel: '商业意义',
-    explore: '查看完整改造',
-    showOnSite: '在页面中定位',
+    explore: '查看完整设计对比',
+    showOnSite: '查看对应设计',
     beforeHint: '当前为原网站。切换到「改造后」查看标记的变化。',
     legacyMobileNote: '原网站不支持响应式 — 桌面页面被缩小显示在手机上。',
     placeholder: 'Design preview',
@@ -250,8 +250,8 @@ type LangContextValue = { lang: Lang; setLang: (lang: Lang) => void; t: Dict }
 
 const LangContext = createContext<LangContextValue | null>(null)
 
-export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>('en')
+export function LangProvider({ children, initialLang = 'en' }: { children: ReactNode; initialLang?: Lang }) {
+  const [lang, setLang] = useState<Lang>(initialLang)
 
   useEffect(() => {
     document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en'
