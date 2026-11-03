@@ -52,7 +52,7 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         cache: 'no-store',
-        body: JSON.stringify({ service, name, email, company, website, markets, details, consent, honeypot }),
+        body: JSON.stringify({ service, name, email, company, website, markets, details, consent, honeypot, lang }),
       })
       const data = await response.json() as { ok?: boolean; reference?: string; message?: string }
       if (!response.ok || !data.ok || !data.reference) throw new Error(data.message || 'Request could not be saved')
