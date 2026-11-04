@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { CheckCircle2, AlertCircle, LoaderCircle, ArrowUpRight } from 'lucide-react'
 import { useLang } from '@/lib/i18n'
 import { checkUrl } from '@/lib/url'
+import { validateContactDetails, type ContactPreference } from '@/lib/contact-validation'
 
 export type Service = 'launch' | 'rebuild' | 'general' | 'privacy'
 
@@ -13,6 +14,9 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
   const zh = lang === 'zh'
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [wechat, setWechat] = useState('')
+  const [preferredContact, setPreferredContact] = useState<ContactPreference>('any')
   const [company, setCompany] = useState('')
   const [website, setWebsite] = useState(defaultWebsite)
   const [markets, setMarkets] = useState('')
@@ -45,6 +49,12 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
       setStatus('error')
       return
     }
+    const contactError = validateContactDetails({ email: email.trim(), phone: phone.trim(), wechat: wechat.trim(), preferredContact }, service === 'privacy')
+    if (contactError) {
+      setError(zh ? (service === 'privacy' && !email.trim() ? '隐私申请需要提供邮箱，以便核对申请。' : '请至少填写一种有效联系方式；如选择了优先联系方式，也请填写对应账号或号码。微信号请填写微信 ID，而非昵称。') : contactError)
+      setStatus('error')
+      return
+    }
     setError('')
     setStatus('sending')
     try {
@@ -52,7 +62,7 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         cache: 'no-store',
-        body: JSON.stringify({ service, name, email, company, website, markets, details, consent, honeypot, lang }),
+        body: JSON.stringify({ service, name, email, phone: service === 'privacy' ? '' : phone, wechat: service === 'privacy' ? '' : wechat, preferredContact: service === 'privacy' ? 'email' : preferredContact, company, website, markets, details, consent, honeypot, lang }),
       })
       const data = await response.json() as { ok?: boolean; reference?: string; message?: string }
       if (!response.ok || !data.ok || !data.reference) throw new Error(data.message || 'Request could not be saved')
@@ -69,7 +79,7 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
       <div role="status" aria-live="polite" className="rounded-xl border border-ink/20 bg-mist/40 p-7">
         <CheckCircle2 className="mb-4 size-8 text-ink" aria-hidden="true"/>
         <h2 className="text-2xl font-semibold">{service === 'privacy' ? (zh ? '隐私请求已收到' : 'Privacy request received') : (zh ? '提交成功，我们已收到您的建站咨询' : 'Your website inquiry has been received')}</h2>
-        <p className="mt-3 text-ink/75">{service === 'privacy' ? (zh ? '请保存下方申请编号，以便后续核对。我们将在核实后处理您的请求。' : 'Keep the reference for follow-up. We will verify your request before handling it.') : (zh ? '请保存下方咨询编号。我们会与您确认下一步；也可邮件至 hello@veyfront.com 补充项目资料。提交不等于签约或付款。' : 'Keep your inquiry reference. You can add details by emailing hello@veyfront.com. An inquiry is not a purchase or contract.')}</p>
+        <p className="mt-3 text-ink/75">{service === 'privacy' ? (zh ? '请保存下方申请编号，以便后续核对。我们将在核实后处理您的请求。' : 'Keep the reference for follow-up. We will verify your request before handling it.') : (zh ? '请保存下方咨询编号。我们将通过您填写的联系方式沟通下一步；补充资料也可发送至 hello@veyfront.com。提交不等于签约或付款。' : 'Keep your inquiry reference. You can add details by emailing hello@veyfront.com. An inquiry is not a purchase or contract.')}</p>
         <p className="mt-5 font-mono text-xl font-semibold">{reference}</p>
         <button type="button" onClick={() => { setStatus('idle'); setReference('') }} className="mt-6 inline-flex min-h-11 items-center underline underline-offset-4">{zh ? '提交另一个需求' : 'Submit another request'}</button>
       </div>
@@ -83,10 +93,33 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
         <input id="vf-name" name="name" autoComplete="name" required minLength={2} maxLength={100} className={field} value={name} onChange={e => setName(e.target.value)}/>
       </div>
       <div>
-        <label htmlFor="vf-email" className="mb-2 block text-sm font-medium">{zh ? '联系邮箱 *' : 'Work email *'}</label>
-        <input id="vf-email" name="email" type="email" autoComplete="email" required maxLength={254} className={field} value={email} onChange={e => setEmail(e.target.value)}/>
+        <label htmlFor="vf-email" className="mb-2 block text-sm font-medium">{service === 'privacy' ? (zh ? '核验邮箱 *' : 'Verification email *') : (zh ? '电子邮箱（选填）' : 'Email (optional)')}</label>
+        <input id="vf-email" name="email" type="email" autoComplete="email" required={service === 'privacy'} maxLength={254} className={field} value={email} onChange={e => setEmail(e.target.value)}/>
       </div>
     </div>
+    {service !== 'privacy' && <fieldset className="rounded-lg border border-ink/15 bg-mist/30 p-4">
+      <legend className="px-2 text-sm font-semibold">{zh ? '希望我们如何联系您？' : 'How should we contact you?'}</legend>
+      <p className="mb-3 text-xs text-ink/70">{zh ? '微信号、手机号、邮箱至少填写一种；可同时填写多种。' : 'Provide at least one: WeChat ID, phone, or email.'}</p>
+      <div className="flex flex-wrap gap-x-5 gap-y-2">
+        {([
+          ['any', zh ? '任意方式' : 'Any method'],
+          ['wechat', zh ? '微信优先' : 'WeChat'],
+          ['phone', zh ? '电话优先' : 'Phone'],
+          ['email', zh ? '邮件优先' : 'Email'],
+        ] as [ContactPreference,string][]).map(([value,label]) =>
+          <label key={value} className="flex min-h-9 cursor-pointer items-center gap-2 text-sm">
+            <input type="radio" name="preferredContact" checked={preferredContact === value} onChange={() => setPreferredContact(value)} className="size-4 accent-[#17262D]"/>
+            {label}
+          </label>)}
+      </div>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div><label htmlFor="vf-wechat" className="mb-2 block text-sm font-medium">{zh ? '微信号（非昵称）' : 'WeChat ID'}</label>
+          <input id="vf-wechat" name="wechat" autoComplete="off" maxLength={40} className={field} value={wechat} onChange={e=>setWechat(e.target.value)} placeholder="WeChat ID"/></div>
+        <div><label htmlFor="vf-phone" className="mb-2 block text-sm font-medium">{zh ? '手机 / 联系电话' : 'Phone number'}</label>
+          <input id="vf-phone" name="phone" type="tel" autoComplete="tel" maxLength={32} className={field} value={phone} onChange={e=>setPhone(e.target.value)} placeholder="+86"/></div>
+      </div>
+      <p className="mt-3 text-xs text-ink/65">{zh ? '留下微信号不代表已经添加好友。我们仅在处理本次咨询时使用。' : 'Providing a WeChat ID does not mean a connection has been established.'}</p>
+    </fieldset>}
     <div>
       <label htmlFor="vf-company" className="mb-2 block text-sm font-medium">{zh ? '公司名称（选填）' : 'Company (optional)'}</label>
       <input id="vf-company" name="company" autoComplete="organization" maxLength={160} className={field} value={company} onChange={e => setCompany(e.target.value)}/>
@@ -118,6 +151,6 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
       {status === 'sending' ? <LoaderCircle className="size-4 animate-spin"/> : <ArrowUpRight className="size-4"/>}
       {status === 'sending' ? (zh ? '正在安全提交…' : 'Saving your request…') : (service === 'privacy' ? (zh ? '提交隐私请求' : 'Send privacy request') : (zh ? '提交建站咨询' : 'Send project inquiry'))}
     </button>
-    <p className="text-xs leading-relaxed text-ink/65">{service === 'privacy' ? (zh ? '成功提交后会显示申请编号；如需补充信息，可以邮件联系 hello@veyfront.com。' : 'A reference will appear after successful submission. Email us to follow up.') : (zh ? '成功提交后会显示咨询编号。免费咨询，建设内容及价格以签约前的书面确认为准。' : 'A reference is shown after secure storage. Sending an inquiry does not create a contract or quotation.')}</p>
+    <p className="text-xs leading-relaxed text-ink/65">{service === 'privacy' ? (zh ? '成功提交后会显示申请编号；如需补充信息，可以邮件联系 hello@veyfront.com。' : 'A reference will appear after successful submission. Email us to follow up.') : (zh ? '成功提交后会显示咨询编号。联系方式仅用于本次项目沟通；建设内容及价格以签约前书面确认为准。' : 'A reference is shown after secure storage. Sending an inquiry does not create a contract or quotation.')}</p>
   </form>
 }

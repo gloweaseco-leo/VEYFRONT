@@ -183,6 +183,29 @@ def run():
                         check("书面报价" in t and "确认" in t, prefix + " verified engagement boundary")
                     if path == "/contact":
                         check(page.locator('input[name="email"]').count() == 1, prefix + " contact intake exists")
+                        check(page.locator('#wechat').count() == 1, prefix + " Chinese WeCom contact card exists")
+                        check(page.locator('input[name="wechat"]').count() == 1, prefix + " WeChat ID contact field")
+                        check(page.locator('input[name="phone"]').count() == 1, prefix + " phone contact field")
+                        check(page.locator('input[name="email"][required]').count() == 0, prefix + " general inquiry email optional")
+                        check(page.locator('input[name="preferredContact"]').count() == 4, prefix + " contact preference options")
+                        check("企业微信接待入口尚未启用" not in page.locator('#wechat').inner_text(),
+                              prefix + " WeCom contact enabled with real QR")
+                        check(page.locator('#wechat img[src="/contact/veyfront-wecom.png"]').count() == 1,
+                              prefix + " provided WeCom QR is mounted")
+                        check(page.locator('#wechat a[href^="https://work.weixin.qq.com/u/"]').count() == 1,
+                              prefix + " official decoded WeCom mobile contact link")
+                        qr = page.locator('#wechat img').first
+                        qr.scroll_into_view_if_needed()
+                        page.wait_for_function("() => document.querySelector('#wechat img')?.naturalWidth > 0", timeout=8000)
+                        check(qr.evaluate("(img) => img.complete && img.naturalWidth > 0"),
+                              prefix + " WeCom QR asset actually loaded")
+                        if width == 1440:
+                            page.locator('header button:has-text("微信咨询")').first.click()
+                            check(page.locator('#vf-header-contact img[src="/contact/veyfront-wecom.png"]').count() == 1,
+                                  prefix + " desktop header QR panel opens")
+                            page.locator('#vf-header-contact button[aria-label="关闭微信联系面板"]').click()
+                        if width in (1440, 390):
+                            screenshot(page, prefix + "_contact_l1l3_zh")
                     # Reset initial language to EN for next route; provider state is per page context.
                     page.locator('[role="group"][aria-label="Language / 语言"] button').filter(has_text="EN").first.click()
                     page.wait_for_function("document.documentElement.lang === 'en'", timeout=7000)
@@ -198,7 +221,12 @@ def run():
                         if zh_path == "/zh":
                             check(page.locator("h1").first.inner_text().startswith("让海外客户找到你"), zprefix + " Chinese SSR headline")
                             check(page.locator('a[href="/zh/pricing"]').count() > 0, zprefix + " Chinese nav pricing URL")
+                        if zh_path == "/zh/contact":
+                            check(page.locator('input[name="email"][required]').count() == 0, zprefix + " email optional on Chinese contact")
+                            check(page.locator('#wechat').count() == 1, zprefix + " Chinese WeCom path")
                         if zh_path == "/zh/contact/privacy":
+                            check(page.locator('input[name="email"][required]').count() == 1, zprefix + " privacy email still required")
+                            check(page.locator('input[name="wechat"]').count() == 0, zprefix + " privacy is not sales intake")
                             tx = page.locator("main").inner_text()
                             check("个人信息与隐私请求" in tx and "提交隐私请求" in tx, zprefix + " privacy-specific content and CTA")
                             check("标准建设范围" not in tx and "完整报价" not in tx, zprefix + " no sales quote on privacy form")

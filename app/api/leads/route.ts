@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto'
 import type { NextRequest } from 'next/server'
 import { checkUrl } from '@/lib/url'
 import { isJsonContentType, isSameOrigin, readLeadBody } from '@/lib/lead-request'
+import { validateContactDetails } from '@/lib/contact-validation'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -15,6 +16,9 @@ type LeadInput = {
   service?: unknown
   name?: unknown
   email?: unknown
+  phone?: unknown
+  wechat?: unknown
+  preferredContact?: unknown
   company?: unknown
   website?: unknown
   markets?: unknown
@@ -32,10 +36,6 @@ function clean(value: unknown, max: number): string | null {
   if (typeof value !== 'string') return null
   const text = value.trim()
   return text.length <= max ? text : null
-}
-
-function validEmail(value: string): boolean {
-  return value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
 export async function POST(request: NextRequest) {
@@ -60,11 +60,17 @@ export async function POST(request: NextRequest) {
   const lang = data.lang === 'zh' ? 'zh' : 'en'
   const name = clean(data.name, 100)
   const email = clean(data.email, 254)
+  const phone = clean(data.phone ?? '', 32)
+  const wechat = clean(data.wechat ?? '', 40)
+  const preferredContact = clean(data.preferredContact ?? 'any', 10)
   const company = clean(data.company, 160)
   const website = clean(data.website, 500)
   const markets = clean(data.markets, 240)
   const details = clean(data.details, 3000)
-  if (!name || name.length < 2 || !email || !validEmail(email)) return reject('Please provide your name and a valid email.', 422)
+  if (!name || name.length < 2) return reject('Please provide your name.', 422)
+  if (email === null || phone === null || wechat === null || preferredContact === null) return reject('Contact field too long.', 422)
+  const contactError = validateContactDetails({ email, phone, wechat, preferredContact }, category === 'privacy')
+  if (contactError) return reject(contactError, 422)
   if (!details || details.length < 20) return reject('Please describe your request in at least 20 characters.', 422)
   if (data.consent !== true) return reject('Consent is required.', 422)
   if (company === null || website === null || markets === null) return reject('One of the fields is too long.', 422)
@@ -82,7 +88,12 @@ export async function POST(request: NextRequest) {
     status: 'new',
     service: category,
     name,
-    email,
+    email: email || null,
+    phone: phone || null,
+    wechat: wechat || null,
+    preferredContact,
+    source: 'website-form',
+    contactEstablished: false,
     company: company || null,
     website: website || null,
     markets: markets || null,
@@ -110,7 +121,7 @@ export async function POST(request: NextRequest) {
   if (alert === 'failed') console.warn('VEYFRONT inquiry alert unavailable; manual private-store review required')
   // Transactional acknowledgement is optional and never modifies durable save result.
   // Privacy requests receive no automatic customer message until identity-verification procedures are finalized.
-  const confirmation = await sendLeadConfirmation({ reference, email, service: category, lang })
+  const confirmation = email ? await sendLeadConfirmation({ reference, email, service: category, lang }) : 'disabled'
   if (confirmation === 'failed') console.warn('VEYFRONT customer confirmation unavailable; stored inquiry remains valid')
   return Response.json({ ok: true, reference, message: 'Your request was received.' }, { status: 201, headers: noStore })
 }

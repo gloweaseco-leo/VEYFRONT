@@ -3,6 +3,8 @@ import Link from '@/components/l2m/localized-link'
 import { PageShell } from '@/components/site/page-shell'
 import { LeadForm, type Service } from '@/components/veyfront/lead-form'
 import { useLang } from '@/lib/i18n'
+import { WecomContactCard } from '@/components/veyfront/wecom-contact'
+import { wecomQrPath } from '@/lib/wecom-config'
 
 export function IntakePage({ service }: { service: Service }) {
   const { lang } = useLang()
@@ -24,7 +26,13 @@ export function IntakePage({ service }: { service: Service }) {
       </div>
     </section>
     <section className="mx-auto grid max-w-[1200px] gap-10 px-5 py-14 md:px-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)] lg:py-20">
-      <div><LeadForm service={service}/></div>
+      <div>
+        {!isPrivacy && zh && <p className="mb-6 rounded-lg border border-ink/15 bg-mist/40 p-4 text-sm leading-relaxed">
+          需要先沟通？<Link href={wecomQrPath() ? '/contact#wechat' : '/contact'} className="ml-2 font-semibold underline underline-offset-4">{wecomQrPath() ? '微信咨询' : '联系 VEYFRONT'}</Link>。
+          不必先填写邮箱或重复提交表单。
+        </p>}
+        <LeadForm service={service}/>
+      </div>
       <aside className="h-fit rounded-lg border border-ink/15 bg-mist/40 p-6">
         <p className="font-mono text-xs uppercase tracking-widest text-ink/60">{isPrivacy ? (zh ? '个人信息处理说明' : 'Privacy request information') : (zh ? '下一步怎么做' : 'Your next steps')}</p>
         <h2 className="mt-3 text-xl font-semibold">{isPrivacy ? (zh ? '我们先核实申请，再处理请求。' : 'We verify before handling requests.') : (zh ? '先了解需求，再确认建设方案与价格。' : 'Agree on the full scope before work begins.')}</h2>
@@ -38,20 +46,36 @@ export function IntakePage({ service }: { service: Service }) {
 }
 
 export function ContactPage() {
- const { lang } = useLang()
- const zh = lang==='zh'
- return <PageShell>
-   <section className="bg-ink text-ivory"><div className="mx-auto max-w-[1200px] px-5 py-16 md:px-10">
-     <p className="font-mono text-xs uppercase tracking-[0.2em] text-lime">VEYFRONT / CONTACT</p>
-     <h1 className="mt-5 text-4xl font-semibold sm:text-6xl">{zh ? '告诉我们您的建站需求' : 'Start a conversation.'}</h1>
-     <p className="mt-5 max-w-xl text-ivory/75">{zh ? '选择新建网站或旧站升级，也可以直接介绍您的项目。我们会根据需求与您确认服务范围和报价。' : 'Choose a project path or send a general inquiry. A reference is returned only once your request is saved.'}</p>
-   </div></section>
-   <section className="mx-auto max-w-[1200px] px-5 py-14 md:px-10 lg:py-20">
-     <div className="mb-9 flex flex-wrap gap-3">
-       <Link href="/start/launch" className="inline-flex min-h-12 items-center rounded-md bg-ink px-5 font-semibold text-ivory">{zh ? '新建网站' : 'Launch'}</Link>
-       <Link href="/start/rebuild" className="inline-flex min-h-12 items-center rounded-md border border-ink/25 px-5 font-semibold">{zh ? '升级现有网站' : 'Rebuild'}</Link>
-     </div>
-     <div className="max-w-2xl"><p className="mb-6 text-sm leading-relaxed text-ink/75">{zh ? '也可直接邮件联系：' : 'Or email us directly: '}<a className="font-semibold underline underline-offset-4" href="mailto:hello@veyfront.com">hello@veyfront.com</a></p><LeadForm service="general"/></div>
-   </section>
- </PageShell>
+  const { lang } = useLang()
+  const zh = lang === 'zh'
+  return <PageShell>
+    <section className="bg-ink text-ivory">
+      <div className="mx-auto max-w-[1200px] px-5 py-14 md:px-10 lg:py-20">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-lime">VEYFRONT / CONTACT</p>
+        <h1 className="mt-5 max-w-4xl text-balance text-4xl font-semibold leading-tight sm:text-6xl">{zh ? '聊聊您的海外网站计划' : 'Start a conversation.'}</h1>
+        <p className="mt-5 max-w-2xl leading-relaxed text-ivory/75">{zh ? '想建新网站、升级现有网站，或先了解服务与报价？微信咨询与正式提交需求互不依赖，选择您方便的方式。' : 'Choose a project path or send a general inquiry. A reference is returned only when your request has been saved.'}</p>
+      </div>
+    </section>
+    <div className="mx-auto max-w-[1200px] px-5 pt-10 md:px-10">
+      <nav aria-label={zh ? '项目类型' : 'Project type'} className="flex flex-wrap gap-3">
+        <Link href="/start/launch" className="inline-flex min-h-11 items-center rounded-md border border-ink/20 px-5 text-sm font-semibold hover:bg-mist/40">{zh ? '新建网站 Launch' : 'Launch a site'}</Link>
+        <Link href="/start/rebuild" className="inline-flex min-h-11 items-center rounded-md border border-ink/20 px-5 text-sm font-semibold hover:bg-mist/40">{zh ? '升级现有网站 Rebuild' : 'Rebuild a site'}</Link>
+      </nav>
+    </div>
+    <section className="mx-auto grid max-w-[1200px] items-start gap-9 px-5 py-10 md:px-10 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:gap-12 lg:py-16">
+      {zh && <WecomContactCard placement="contact"/>}
+      <div id="project-form" className="scroll-mt-24 rounded-xl border border-ink/15 bg-ivory p-0 sm:p-2">
+        <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink/60">{zh ? '正式需求 / PROJECT BRIEF' : 'PROJECT INQUIRY'}</p>
+        <h2 className="mt-3 text-2xl font-semibold">{zh ? '提交项目需求' : 'Tell us about your project'}</h2>
+        <p className="mb-7 mt-3 max-w-lg text-sm leading-relaxed text-ink/70">{zh ? '适合已有明确需求、希望获得建设方案与书面报价的客户。填写一种有效联系方式即可，成功提交后会获得咨询编号。' : 'Share your business goals and receive a reference after successful storage. You do not need to pay to inquire.'}</p>
+        <LeadForm service="general"/>
+      </div>
+    </section>
+    <section className="border-t border-ink/10 bg-mist/25">
+      <div className="mx-auto max-w-[1200px] px-5 py-8 text-sm text-ink/70 md:px-10">
+        {zh ? '需要发送正式资料或报价文件？商务邮箱：' : 'Prefer a formal email? '}
+        <a href="mailto:hello@veyfront.com" className="font-semibold text-ink underline underline-offset-4">hello@veyfront.com</a>
+      </div>
+    </section>
+  </PageShell>
 }

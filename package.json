@@ -5,14 +5,15 @@
   "packageManager": "pnpm@12.3.4",
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm check:demo && pnpm check:brand && pnpm check:commercial && pnpm check:ops && pnpm check:security && node scripts/check-veyfront-brand.mjs && next build",
+    "build": "pnpm check:demo && pnpm check:brand && pnpm check:commercial && pnpm check:ops && pnpm check:contact && pnpm check:security && node scripts/check-veyfront-brand.mjs && next build",
     "start": "next start",
     "check:demo": "node scripts/check-demo-facts.mjs",
     "check:commercial": "node scripts/check-commercial-intake.mjs",
     "check:brand": "node scripts/check-brand-assets.mjs",
     "check:ops": "node scripts/check-lead-ops.mjs",
     "check:security": "node --test tests/lead-request.test.mjs tests/lead-alert.test.mjs tests/lead-confirmation.test.mjs",
-    "check:w0w1": "node scripts/check-w0-w1.mjs"
+    "check:w0w1": "node scripts/check-w0-w1.mjs",
+    "check:contact": "node --test tests/contact-validation.test.mjs && node scripts/check-contact-journey.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
