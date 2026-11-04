@@ -22,6 +22,7 @@ PATHS = ["/", "/pricing", "/transformations", "/how-it-works", "/start/launch", 
 PRICES = ("¥9,800", "¥6,800")
 findings = []
 errors = []
+lab_navigation = []
 
 def check(condition, label, details=""):
     findings.append({"check": label, "passed": bool(condition), "details": str(details)[:500]})
@@ -82,6 +83,36 @@ def run():
                           getattr(response, "status", "no response"))
                     inspect_overflow(page, prefix + " EN")
                     check(page.locator("html").get_attribute("lang") == "en", prefix + " initial lang EN")
+                    suffix = '' if path == '/' else path
+                    check(page.locator('link[rel="canonical"]').get_attribute("href") == "https://veyfront.com" + suffix,
+                          prefix + " English self canonical")
+                    for hreflang, href in (('en', 'https://veyfront.com' + suffix),
+                                           ('zh-CN', 'https://veyfront.com/zh' + suffix),
+                                           ('x-default', 'https://veyfront.com' + suffix)):
+                        loc = page.locator('link[rel="alternate"][hreflang="' + hreflang + '"]')
+                        check(loc.count() == 1 and loc.first.get_attribute("href") == href,
+                              prefix + " reciprocal " + hreflang + " hreflang")
+                    check(page.locator('meta[property="og:title"]').count() == 1, prefix + " Open Graph title")
+                    check(page.locator('meta[property="og:image"]').count() >= 1, prefix + " Open Graph image")
+                    check(page.locator('meta[name="twitter:card"][content="summary_large_image"]').count() == 1,
+                          prefix + " Twitter summary image card")
+                    scripts = page.locator('script[type="application/ld+json"]')
+                    graph = [json.loads(x.inner_text()) for x in scripts.all() if x.inner_text().strip()]
+                    check(any(any(n.get('@type') == 'Organization' and n.get('name') == 'VEYFRONT'
+                                  for n in doc.get('@graph', [])) for doc in graph if isinstance(doc, dict)),
+                          prefix + " verified brand Organization schema")
+                    check(not any('aggregateRating' in json.dumps(doc) or 'reviewCount' in json.dumps(doc)
+                                  for doc in graph), prefix + " no invented reviews")
+                    if width in (390, 1440) and path in ('/', '/pricing', '/contact'):
+                        sample = page.evaluate("""() => {
+                          const n=performance.getEntriesByType('navigation')[0];
+                          const resources=performance.getEntriesByType('resource');
+                          return {domContentLoadedMs: Math.round(n?.domContentLoadedEventEnd||0),
+                            responseStartMs: Math.round(n?.responseStart||0),
+                            resourceCount: resources.length,
+                            sameOriginTransferBytes: Math.round(resources.filter(r=>r.name.startsWith(location.origin)).reduce((s,r)=>s+(r.transferSize||0),0))};
+                        }""")
+                        lab_navigation.append({"viewport":width,"route":path,"locale":"en","sample":sample})
                     check(page.locator("meta[name='robots'][content*='noindex']").count() > 0,
                           prefix + " noindex retained")
                     if path in ("/", "/pricing"):
@@ -109,6 +140,8 @@ def run():
                     page.locator('[role="group"][aria-label="Language / 语言"] button').filter(has_text="中文").first.click()
                     page.wait_for_function("document.documentElement.lang === 'zh-CN'", timeout=7000)
                     check(page.locator("html").get_attribute("lang") == "zh-CN", prefix + " ZH language toggle")
+                    check(page.locator('meta[property="og:locale"][content="zh_CN"]').count() == 1,
+                          prefix + " Chinese Open Graph locale")
                     inspect_overflow(page, prefix + " ZH")
                     if path in ("/", "/pricing"):
                         body = page.locator("#commercial-offers").inner_text()
@@ -230,6 +263,21 @@ def run():
                             tx = page.locator("main").inner_text()
                             check("个人信息与隐私请求" in tx and "提交隐私请求" in tx, zprefix + " privacy-specific content and CTA")
                             check("标准建设范围" not in tx and "完整报价" not in tx, zprefix + " no sales quote on privacy form")
+                if width == 1440:
+                    response = page.request.get(HOST + "/opengraph-image", timeout=60000)
+                    check(response.status == 200 and "image/png" in (response.headers.get("content-type","")),
+                          str(width) + " brand social PNG route generated",
+                          {"status":response.status,"type":response.headers.get("content-type")})
+                    check(response.body()[:8] == b"\\x89PNG\\r\\n\\x1a\\n",
+                          str(width) + " actual PNG magic bytes")
+                    robots = page.request.get(HOST + "/robots.txt")
+                    check("Disallow: /" in robots.text(), str(width) + " preview robot isolation")
+                    sitemap = page.request.get(HOST + "/sitemap.xml")
+                    check("veyfront.com/zh/contact" not in sitemap.text(), str(width) + " preview sitemap empty")
+                    for internal in ("/a", "/b", "/review/stage-1"):
+                        v = page.request.get(HOST + internal, timeout=20000)
+                        check(v.status == 200 and "noindex" in v.text().lower(),
+                              str(width) + " internal design noindex " + internal)
                 check(len(page_errors) == 0, str(width) + " runtime JavaScript errors", page_errors)
                 context.close()
             browser.close()
@@ -255,7 +303,8 @@ finally:
         "scope": "Local real Chrome browser of the GitHub Actions built commit; NOT protected Vercel Preview or live submitted lead",
         "viewports": VIEWPORTS,
         "routes": PATHS,
-        "evidence": findings
+        "evidence": findings,
+        "labNavigation": lab_navigation
     }
     (OUT / "results.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps({k: v for k, v in report.items() if k != "evidence"}, ensure_ascii=False, indent=2))

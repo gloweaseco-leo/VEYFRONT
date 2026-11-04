@@ -20,6 +20,7 @@ jobs:
       - run: pnpm check:commercial
       - run: pnpm check:brand
       - run: pnpm check:ops
+      - run: pnpm check:seo
       - run: pnpm check:security
       - run: pnpm check:w0w1
       - run: node scripts/check-veyfront-brand.mjs
