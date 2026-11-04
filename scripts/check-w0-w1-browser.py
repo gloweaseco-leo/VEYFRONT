@@ -140,7 +140,7 @@ def run():
                     page.locator('[role="group"][aria-label="Language / 语言"] button').filter(has_text="中文").first.click()
                     page.wait_for_url(HOST + ("/zh" if path == "/" else "/zh" + path), timeout=12000)
                     page.wait_for_function("document.documentElement.lang === 'zh-CN'", timeout=7000)
-                    page.wait_for_function("document.querySelector('meta[property=\\\"og:locale\\\"]')?.getAttribute('content') === 'zh_CN'", timeout=9000)
+                    page.wait_for_function("""() => document.querySelector('meta[property="og:locale"]')?.getAttribute('content') === 'zh_CN'""", timeout=9000)
                     check(page.locator("html").get_attribute("lang") == "zh-CN", prefix + " ZH language toggle")
                     check(page.locator('meta[property="og:locale"][content="zh_CN"]').count() == 1,
                           prefix + " Chinese Open Graph locale")
