@@ -171,7 +171,12 @@ def run():
                         panel = page.locator('[data-testid="hero-hybrid-panel"]')
                         # The site uses smooth scrolling globally. Test the observer after a deterministic instant scroll,
                         # not during a scroll transition where an intermediate visibility event may arrive.
-                        panel.evaluate("(el) => { const r=el.getBoundingClientRect(); window.scrollTo({top: Math.max(0, window.scrollY + r.top - (innerHeight - r.height)/2), behavior:'instant'}); }")
+                        # Full-page screenshots may leave the IntersectionObserver's last
+                        # entry as not-visible while the document is restored without a scroll.
+                        # Force a genuine out-of-view -> in-view crossing before asserting.
+                        page.evaluate("window.scrollTo({top: document.documentElement.scrollHeight, behavior:'instant'})")
+                        page.wait_for_function("() => document.querySelector('[data-testid=hero-hybrid-panel]')?.dataset.vfVisible === 'no'", timeout=5000)
+                        panel.evaluate("(el) => el.scrollIntoView({block:'center',behavior:'instant'})")
                         try:
                             page.wait_for_function(
                                 "() => { const el=document.querySelector('[data-testid=hero-hybrid-panel]'); return el?.dataset.vfMotion === 'started' && el?.dataset.vfVisible === 'yes'; }",
