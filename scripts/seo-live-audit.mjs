@@ -1,0 +1,134 @@
+#!/usr/bin/env node
+/**
+ * Public, read-only SEO availability monitor.
+ * It does not access customer data, private forms, or third-party analytics.
+ * Fetch timings are synthetic request durations, NOT Core Web Vitals.
+ */
+import { mkdir, writeFile } from 'node:fs/promises'
+
+const ORIGIN = 'https://veyfront.com'
+const PUBLIC_PATHS = ['/', '/pricing', '/contact', '/start/launch', '/start/rebuild']
+const NON_INDEXABLE = ['/transformations', '/zh/transformations']
+const report = { version: 'SEO-LIVE-V2', checkedAt: new Date().toISOString(),
+  origin: ORIGIN, mode: 'public-get-only', results: [], failures: [],
+  caveat: 'Synthetic HTTP durations are NOT field LCP/INP/CLS or Google index coverage.' }
+
+function verify(condition, label, detail = '') {
+  if (!condition) report.failures.push({ check: label, detail: String(detail).slice(0,180) })
+}
+function attributes(tag) {
+  const values = {}
+  for (const m of tag.matchAll(/([:\w-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) {
+    values[m[1].toLowerCase()] = m[2] ?? m[3]
+  }
+  return values
+}
+function tags(html, tagName) {
+  const re = new RegExp('<' + tagName + '\\b[^>]*>', 'gi')
+  return [...html.matchAll(re)].map(m => attributes(m[0]))
+}
+function headValue(html, tagName, key, value, field) {
+  const item = tags(html, tagName).find(entry => entry[key] === value)
+  return item ? item[field] : undefined
+}
+async function get(path, kind = 'html') {
+  const started = performance.now()
+  const response = await fetch(ORIGIN + path, {
+    headers: { 'User-Agent': 'VEYFRONT-SEO-Monitor/2.0 (+https://veyfront.com)' },
+    signal: AbortSignal.timeout(20000),
+    redirect: 'follow',
+    cache: 'no-store',
+  })
+  const body = kind === 'image' ? await response.arrayBuffer() : await response.text()
+  const measured = Math.round(performance.now() - started)
+  report.results.push({ path, status: response.status,
+    fetchDurationMs: measured, contentType: response.headers.get('content-type'),
+    bytesRead: kind === 'image' ? body.byteLength : Buffer.byteLength(body) })
+  verify(response.ok, path + ' HTTP 2xx', response.status)
+  return { response, body }
+}
+async function page(path, indexable) {
+  let body
+  try { ({ body } = await get(path)) } catch (error) {
+    report.failures.push({ check: path + ' fetch', detail: String(error).slice(0,180) })
+    return
+  }
+  const canonicalPath = path === '/' ? '' : path
+  const canonical = ORIGIN + canonicalPath
+  const suffix = path === '/zh' ? '' : path.startsWith('/zh/') ? path.slice(3) : path === '/' ? '' : path
+  const expectedEn = ORIGIN + suffix
+  const expectedZh = ORIGIN + '/zh' + suffix
+  const lang = path === '/zh' || path.startsWith('/zh/') ? 'zh-CN' : 'en'
+  const htmlLang = attributes((body.match(/<html\b[^>]*>/i) ?? [''])[0]).lang
+  const title = (body.match(/<title[^>]*>([^<]*)<\/title>/i) ?? [,''])[1]
+  const description = headValue(body, 'meta', 'name', 'description', 'content')
+  const robots = headValue(body, 'meta', 'name', 'robots', 'content') ?? ''
+  const canonicalValue = headValue(body, 'link', 'rel', 'canonical', 'href')
+  const hreflang = {}
+  for (const link of tags(body, 'link')) {
+    if (link.rel === 'alternate' && link.hreflang) hreflang[link.hreflang] = link.href
+  }
+  verify(htmlLang === lang, path + ' document language', htmlLang)
+  verify(title.length >= 18 && title.length <= 110, path + ' meaningful title', title)
+  verify(Boolean(description) && description.length >= 35, path + ' description')
+  verify(canonicalValue === canonical, path + ' self canonical', canonicalValue)
+  verify(hreflang.en === expectedEn, path + ' en hreflang', hreflang.en)
+  verify(hreflang['zh-CN'] === expectedZh, path + ' zh-CN hreflang', hreflang['zh-CN'])
+  verify(hreflang['x-default'] === expectedEn, path + ' default hreflang', hreflang['x-default'])
+  verify(indexable ? !robots.includes('noindex') : robots.includes('noindex'),
+    path + ' index policy', robots)
+  verify(headValue(body, 'meta', 'property', 'og:title', 'content') === title,
+    path + ' OG title parity')
+  verify(headValue(body, 'meta', 'property', 'og:image', 'content') === ORIGIN + '/opengraph-image',
+    path + ' branded OG image')
+  verify(Boolean(body.match(/<h1\b/i)), path + ' semantic H1')
+  if (path === '/' || path === '/zh') {
+    verify(body.includes('https://schema.org') && body.includes('"@type":"Organization"'),
+      path + ' published Organization structured data')
+  }
+}
+async function main() {
+  try {
+    const robots = (await get('/robots.txt')).body
+    const sitemap = (await get('/sitemap.xml')).body
+    verify(robots.includes('Sitemap: ' + ORIGIN + '/sitemap.xml'), 'robots points to public sitemap')
+    verify(!/Disallow:\s*\/\s*$/m.test(robots), 'production is not globally blocked')
+    verify(!sitemap.includes('/transformations'), 'fictional demo excluded from sitemap')
+    verify(!sitemap.includes('/review/'), 'internal review excluded from sitemap')
+    const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gi)].map(x => x[1])
+    verify(urls.length === 16, 'public sitemap has 16 bilingual canonical URLs', urls.length)
+    verify(new Set(urls).size === urls.length, 'public sitemap URLs unique')
+    for (const base of PUBLIC_PATHS) {
+      const path = base === '/' ? '' : base
+      verify(urls.includes(ORIGIN + path), 'sitemap EN ' + path)
+      verify(urls.includes(ORIGIN + '/zh' + path), 'sitemap ZH ' + path)
+    }
+    for (const path of PUBLIC_PATHS) {
+      await page(path, true)
+      await page('/zh' + (path === '/' ? '' : path), true)
+    }
+    for (const path of NON_INDEXABLE) await page(path, false)
+    const image = await get('/opengraph-image', 'image')
+    const magic = new Uint8Array(image.body.slice(0, 8))
+    verify(image.response.headers.get('content-type')?.includes('image/png'), 'OG image PNG MIME')
+    verify(magic.length === 8 && magic[0] === 137 && magic[1] === 80 && magic[2] === 78 && magic[3] === 71,
+      'OG image valid PNG header')
+  } catch (error) {
+    report.failures.push({ check: 'monitor top-level execution', detail: String(error).slice(0,180) })
+  } finally {
+    report.status = report.failures.length === 0 ? 'PASS' : 'FAIL'
+    report.pagesChecked = report.results.length
+    await mkdir('qa-evidence/seo-live', { recursive: true })
+    await writeFile('qa-evidence/seo-live/report.json', JSON.stringify(report, null, 2) + '\n')
+    console.log(JSON.stringify({
+      status: report.status,
+      checkedAt: report.checkedAt,
+      pagesChecked: report.pagesChecked,
+      failures: report.failures,
+      evidence: 'qa-evidence/seo-live/report.json',
+      caveat: report.caveat
+    }, null, 2))
+    if (report.failures.length) process.exitCode = 1
+  }
+}
+await main()
