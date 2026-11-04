@@ -1,0 +1,33 @@
+name: VEYFRONT SEO live crawl monitor
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/seo-live-audit.mjs'
+      - '.github/workflows/seo-live-monitor.yml'
+  schedule:
+    # Once daily, lightweight public GET requests only (no user data).
+    - cron: '17 5 * * *'
+permissions:
+  contents: read
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check monitor syntax
+        run: node --check scripts/seo-live-audit.mjs
+      - name: Audit published bilingual SEO routes
+        run: node scripts/seo-live-audit.mjs
+      - name: Retain non-PII audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: veyfront-seo-live-evidence
+          path: qa-evidence/seo-live/report.json
+          retention-days: 14
+          if-no-files-found: warn

@@ -1,4 +1,5 @@
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono, Noto_Sans_SC } from 'next/font/google'
 import { LangProvider } from '@/lib/i18n'
@@ -61,6 +62,7 @@ export default async function RootLayout({
         />
         <LangProvider initialLang={initialLang}>{children}</LangProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
+        {process.env.VERCEL_ENV === 'production' && <SpeedInsights sampleRate={0.25} />}
       </body>
     </html>
   )
