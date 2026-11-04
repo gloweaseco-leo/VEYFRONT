@@ -7,6 +7,8 @@ import { ChevronLeft, Menu, X } from 'lucide-react'
 import { Logo, LangToggle } from './brand'
 import { useLang } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { wecomQrPath } from '@/lib/wecom-config'
+import { WecomContactCard, recordWecomIntent } from '@/components/veyfront/wecom-contact'
 
 export const HOME_INPUT_ID = 'home-url'
 
@@ -43,9 +45,11 @@ export function useSiteLinks() {
  * "Analyze My Website" focuses the URL field on the current page when one exists, otherwise opens the homepage field.
  */
 export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark'; inputId?: string }) {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [contactOpen, setContactOpen] = useState(false)
+  const canWecom = lang === 'zh' && Boolean(wecomQrPath())
   const dark = tone === 'dark'
   const links = useSiteLinks()
   const menuId = 'site-menu'
@@ -62,9 +66,10 @@ export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark
   )
 
   void inputId // kept for compatibility with the existing homepage
-  const analyze = (
-    <Link href="/contact" className={cn(ctaCls, 'hidden sm:inline-flex')}>{t.nav.analyze}</Link>
-  )
+  const analyze = canWecom
+    ? <button type="button" className={cn(ctaCls, 'hidden sm:inline-flex')} aria-controls="vf-header-contact" aria-expanded={contactOpen}
+        onClick={() => { if (!contactOpen) recordWecomIntent('header'); setContactOpen(v => !v) }}>微信咨询</button>
+    : <Link href="/contact" className={cn(ctaCls, 'hidden sm:inline-flex')}>{lang === 'zh' ? '联系顾问' : t.nav.analyze}</Link>
 
   return (
     <header className={cn('relative', dark ? 'bg-ink text-ivory' : 'border-b border-ink/10 bg-ivory text-ink')}>
@@ -100,6 +105,14 @@ export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark
           </button>
         </div>
       </div>
+      {contactOpen && canWecom && <div id="vf-header-contact" role="region" aria-label="企业微信快捷联系"
+        className="absolute right-5 top-full z-50 w-[min(350px,calc(100vw-40px))] rounded-xl border border-ink/15 bg-ivory p-2 text-ink shadow-xl md:right-10"
+        onKeyDown={e => { if (e.key === 'Escape') setContactOpen(false) }}>
+        <button type="button" onClick={() => setContactOpen(false)} className="mb-1 ml-auto flex min-h-9 items-center gap-1 px-2 text-xs" aria-label="关闭微信联系面板">
+          <X className="size-4" aria-hidden="true"/> 关闭
+        </button>
+        <WecomContactCard placement="header" compact/>
+      </div>}
       {open && (
         <nav id={menuId} aria-label={t.nav.navLabel} className={cn('flex flex-col border-t px-5 pb-4 lg:hidden', dark ? 'border-ivory/15' : 'border-ink/10')}>
           {[{ label: 'VEYFRONT', href: '/' }, ...links].map((l) => {
@@ -121,9 +134,9 @@ export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark
               </Link>
             )
           })}
-          <Link href="/contact" onClick={() => setOpen(false)}
+          <Link href={canWecom ? '/contact#wechat' : '/contact'} onClick={() => setOpen(false)}
             className={cn('mt-4 inline-flex min-h-12 items-center justify-center rounded-md font-semibold', dark ? 'bg-lime text-ink' : 'bg-ink text-ivory')}>
-            {t.nav.analyze}
+            {canWecom ? '微信咨询' : (lang === 'zh' ? '联系顾问' : t.nav.analyze)}
           </Link>
         </nav>
       )}

@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react'
 import { Logo } from '@/components/l2m/brand'
 import { useSiteLinks } from '@/components/l2m/site-header'
 import { useLang } from '@/lib/i18n'
+import { wecomQrPath } from '@/lib/wecom-config'
 export function Invitation(){
  const {lang}=useLang(),zh=lang==='zh'
  return <section className="bg-ink text-ivory" aria-labelledby="invite-title">
@@ -15,6 +16,9 @@ export function Invitation(){
    <Link href="/start/launch" className="flex min-h-20 items-center justify-between gap-3 rounded-lg bg-lime p-5 font-semibold text-ink">{zh?'我要建新网站':'Build a new site'} <ArrowUpRight className="size-5"/></Link>
    <Link href="/start/rebuild" className="flex min-h-20 items-center justify-between gap-3 rounded-lg border border-ivory/35 p-5 font-semibold text-ivory">{zh?'我要升级网站':'Rebuild my site'} <ArrowUpRight className="size-5"/></Link>
   </div>
+  {zh && <Link href={wecomQrPath() ? '/contact#wechat' : '/contact'} className="mt-6 inline-flex min-h-11 items-center text-sm font-semibold text-lime underline underline-offset-4">
+    {wecomQrPath() ? '还没确定需求？先微信咨询' : '还没确定需求？先联系顾问'}
+  </Link>}
  </div>
  </section>
 }
@@ -27,7 +31,10 @@ export function SiteFooter(){
     <div className="space-y-3"><Link href="/" aria-label="VEYFRONT — Home" className="inline-flex"><Logo tone="dark"/></Link>
     <p className="max-w-lg text-sm leading-relaxed text-ivory/65">{zh?'帮助企业建立、升级与改善面向海外买家的数字商业界面。':'Building and improving digital business websites for global B2B buyers.'}</p>
     </div>
-    <a href="mailto:hello@veyfront.com" className="inline-flex min-h-11 items-center text-sm font-semibold text-lime underline underline-offset-4">hello@veyfront.com</a>
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+      {zh && wecomQrPath() && <Link href="/contact#wechat" className="inline-flex min-h-11 items-center text-sm font-semibold text-lime underline underline-offset-4">企业微信咨询</Link>}
+      <a href="mailto:hello@veyfront.com" className="inline-flex min-h-11 items-center text-sm font-semibold text-lime underline underline-offset-4">hello@veyfront.com</a>
+    </div>
    </div>
    <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-7 gap-y-2 border-t border-ivory/15 pt-5 text-sm">
     {links.map(l=><Link key={l.href} href={l.href} className="inline-flex min-h-11 items-center text-ivory/85 hover:text-lime">{l.label}</Link>)}
