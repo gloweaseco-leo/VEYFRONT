@@ -15,6 +15,13 @@ const included:[string,string][]=[
  ['约定范围内的合理修改、源码移交与30天交付缺陷保障','In-scope refinements, source handover and 30-day defect coverage'],
  ['一次上线协助、首年基础托管与普通域名注册额度','One launch assist, first-year basic hosting and a standard-domain allowance']
 ]
+const commonQuestions:{q:[string,string],a:[string,string]}[]=[
+ {q:['外贸独立站与普通展示型网站有什么不同？','How is a B2B export website different from a brochure site?'],a:['除了展示企业和产品，还围绕海外采购商的搜索问题、技术参数、应用场景和询盘行动组织内容。实际包含范围在签约前书面确认。','It connects product facts, buyer questions, applications and a working inquiry path—not just a visual brochure. Exact scope is agreed in writing.']},
+ {q:['新建外贸网站和旧网站升级都是 ¥9,800 吗？','Does the ¥9,800 reference price cover Launch and Rebuild?'],a:['常规规模的 Launch 与 Rebuild 使用相同标准参考价 ¥9,800。复杂数据迁移、超出标准范围的系统或定制功能，必须在合同前另行确认，不自动加价。','For normal-scope Launch and Rebuild, the same indicative ¥9,800 applies. Complex migrations and custom systems require written scoping before any agreement.']},
+ {q:['旧站改版会影响原有搜索排名吗？','Will redesigning my old website preserve rankings?'],a:['我们会盘点有价值的页面，安排适用的 URL 衔接和重定向，并核对规范网址与站点地图；但搜索引擎会重新评估页面，无法承诺排名不变。','We map important pages, plan URL continuity and redirects, and check canonical URLs and sitemaps. Search rankings can change and cannot be guaranteed.']},
+ {q:['建外贸独立站前需要准备哪些资料？','What information should I prepare before the website project?'],a:['先准备主营产品、主要目标市场、已有网站（如有）、产品规格和可核实的企业资料。客户案例、证书等内容只在真实且获授权时使用，不编造业绩。','Start with products, target markets, the existing URL if any, product specifications and verified company information. We do not invent customer cases or certifications.']},
+ {q:['SEO 优化后能保证 Google 收录和订单吗？','Does SEO-Native guarantee indexing, leads or sales?'],a:['不能。标准服务覆盖页面标题、规范网址、站点地图、内部链接和多语言基础配置；收录、关键词排名、询盘及成交需要后续真实运营数据来验证。','No. We build technical foundations including metadata, canonical URLs, sitemap, links and multilingual settings. Indexing, rankings, inquiries and sales depend on subsequent factors.']},
+]
 const checklist:[string,string][]=[
  ['项目范围先确认','Agree the scope upfront'],
  ['双方确认范围内的常规调整不另收费','No per-page, product-batch or routine-revision surcharges'],
@@ -102,6 +109,15 @@ export function CommercialOffers({detail=false}:{detail?:boolean}){
     <div className="shrink-0 text-right"><p className="text-3xl font-semibold">{money(prices.run.priceYear)}<span className="ml-1 text-sm font-normal text-ink/65">{zh?'/年':'/year'}</span></p><Link href="/contact" className="mt-3 inline-flex min-h-11 items-center font-semibold underline underline-offset-4">{zh?'咨询 Run':'Ask about Run'}</Link></div>
    </div>
   </div>
+  <section aria-labelledby="pricing-questions" className="border-t border-ink/15 pt-8">
+    <h2 id="pricing-questions" className="text-2xl font-semibold">{zh?'外贸网站建设常见问题':'Common questions about B2B website projects'}</h2>
+    <div className="mt-6 grid gap-5 md:grid-cols-2">
+      {commonQuestions.map(item=><article key={item.q[0]} className="rounded-xl border border-ink/15 bg-mist/25 p-5">
+        <h3 className="text-base font-semibold">{t(item.q)}</h3>
+        <p className="mt-3 text-sm leading-relaxed text-ink/75">{t(item.a)}</p>
+      </article>)}
+    </div>
+  </section>
   <p className="text-xs leading-relaxed text-ink/65">{zh?'¥9,800 为标准建设参考价，实际范围、费用及税务条件以签约前书面确认为准。搜索优化基础（SEO）不保证搜索收录、排名、询盘数量或成交。':'¥9,800 is an indicative complete-site price subject to a written scope and tax terms before signing. SEO-Native provides a technical and content foundation, not a promise of indexing, ranking, inquiry volume or sales.'}</p>
  </div>
  </section>

@@ -55,7 +55,7 @@ export function BeforeProduct() {
                   <tr key={p}>
                     <td className="border border-legacy-line px-2 py-1.5 text-legacy-link underline">{p}</td>
                     <td className="border border-legacy-line px-2 py-1.5">
-                      {i === 0 ? <img src={P.image} alt="" className="h-12 w-auto grayscale-[40%]" /> : <span className="text-[#888]">No Picture</span>}
+                      {i === 0 ? <img loading="lazy" decoding="async" src={P.image} alt="" className="h-12 w-auto grayscale-[40%]" /> : <span className="text-[#888]">No Picture</span>}
                     </td>
                     <td className="border border-legacy-line px-2 py-1.5 text-legacy-link underline">{i === 0 ? `${P.datasheet.file} (${P.datasheet.size})` : 'Catalog.pdf'}</td>
                   </tr>
@@ -99,7 +99,7 @@ export function AfterProductDesktop() {
       </p>
       <section className="grid grid-cols-12 gap-10 px-12 py-8">
         <div className="col-span-5 flex items-center justify-center rounded-2xl bg-site-soft p-8">
-          <img src={P.image} alt={P.imageAlt.en} className="h-80 w-auto object-contain" />
+          <img loading="lazy" decoding="async" src={P.image} alt={P.imageAlt.en} className="h-80 w-auto object-contain" />
         </div>
         <div className="col-span-7 flex flex-col gap-6">
           <div className="flex flex-col gap-2">
@@ -145,7 +145,7 @@ export function AfterProductMobile() {
         <p className="text-xs text-site-ink/60">
           {APP.name.en} › {P.category.en}
         </p>
-        <img src={P.image} alt={P.imageAlt.en} className="h-48 w-full rounded-xl bg-site-soft object-contain p-4" />
+        <img loading="lazy" decoding="async" src={P.image} alt={P.imageAlt.en} className="h-48 w-full rounded-xl bg-site-soft object-contain p-4" />
         <h3 className="text-[28px] font-semibold leading-[1.1] tracking-tight">{P.name.en}</h3>
         <p className="text-[15px] leading-relaxed text-site-ink/70">{P.summary.en}</p>
         <dl className="flex flex-col text-[15px]">

@@ -93,7 +93,7 @@ export function AfterDesktop(h: HotspotProps) {
           </div>
         </div>
         <div className="flex items-center justify-center rounded-2xl bg-site-soft p-6">
-          <img src={P.image} alt={P.imageAlt.en} className="h-80 w-auto object-contain" />
+          <img loading="lazy" decoding="async" src={P.image} alt={P.imageAlt.en} className="h-80 w-auto object-contain" />
         </div>
       </section>
 
@@ -128,7 +128,7 @@ export function AfterDesktop(h: HotspotProps) {
         <div className="relative col-span-3 flex gap-8 rounded-2xl border border-site-line p-8">
           <Highlight index={1} {...h} />
           <Pin index={1} {...h} className="-top-4 -left-4" />
-          <img src={P.image} alt="" className="size-40 rounded-xl bg-site-soft object-contain p-3" />
+          <img loading="lazy" decoding="async" src={P.image} alt="" className="size-40 rounded-xl bg-site-soft object-contain p-3" />
           <div className="flex flex-1 flex-col gap-4">
             <div>
               <p className="text-sm text-site-ink/60">
@@ -182,7 +182,7 @@ export function AfterMobile(h: HotspotProps) {
         <p className="text-xs font-medium uppercase tracking-widest text-site-brand">{DEMO_COMPANY.tagline.en}</p>
         <h3 className="text-[30px] font-semibold leading-[1.1] tracking-tight">Flow control for demanding process lines.</h3>
         <p className="leading-relaxed text-site-ink/70">Stainless valves for water, chemical and food processing.</p>
-        <img src={P.image} alt={P.imageAlt.en} className="h-44 w-full rounded-xl bg-site-soft object-contain p-3" />
+        <img loading="lazy" decoding="async" src={P.image} alt={P.imageAlt.en} className="h-44 w-full rounded-xl bg-site-soft object-contain p-3" />
       </section>
       <section className="relative mx-5 flex flex-col gap-3 rounded-xl bg-site-soft p-4">
         <Highlight index={0} {...h} />
