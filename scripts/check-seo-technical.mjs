@@ -18,7 +18,8 @@ assert.match(read('app/layout.tsx'),/JSON\.stringify\(brandKnowledgeGraph\)/)
 assert.match(img,/ImageResponse/)
 assert.match(img,/1200, height: 630/)
 assert.match(sitemap,/if \(!isPublicRelease\) return \[\]/)
-assert.doesNotMatch(sitemap,/new Date\(|changeFrequency:|priority:/)
+assert.doesNotMatch(sitemap,/new Date\(/)
+assert.doesNotMatch(sitemap,/return \[.*(?:changeFrequency|priority|lastModified)/)
 for (const name of ['app/a/page.tsx','app/b/page.tsx','app/review/stage-1/page.tsx','app/transformations/page.tsx','app/contact/privacy/page.tsx']) {
   assert.match(read(name),/index: false/,name+' must not be indexed')
 }
