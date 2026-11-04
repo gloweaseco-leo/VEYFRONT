@@ -38,3 +38,8 @@ This V2 project is **instrumentation and measurement**, not a promise of Google 
 - Monthly: 1-2 evidence-led, original buyer-intent resources (not keyword stuffing or generated fake cases); review analytics from search to validated inquiries.
 - Quarterly: use validated customer cases only with permission, quantify on actual project evidence and published scope; review China reach and multi-language indexation.
 - SEO outcome should be measured against actual B2B inquiry quality, not arbitrary keyword count, unverified scraped estimates or robots-only "100/100" scores.
+
+## Speed Insights V2 production SDK staging (2026-11-04)
+- Installed official pinned `@vercel/speed-insights@2.0.0` with lockfile and build-time Vercel integration; rendered only when `VERCEL_ENV === 'production'` (Preview and local test excluded). Sampling rate 0.25 reduces event volume and cost.
+- **Platform activation is still required**: account owner enables Speed Insights for the `veyfront` project from Vercel dashboard after reviewing usage/plan. This SDK alone does not establish active metrics or a successful event receipt. After activation/redeployment, verify the script and dashboard metrics with real visitors; do not infer collection from the `READY` deployment alone.
+- Do not enable Speed Insights Plus, paid upgrades or high sample rates without separate business authorization. Inspect privacy disclosures and blocklist any user-identifying URL paths before activation; current public routes use non-PII pathnames.
