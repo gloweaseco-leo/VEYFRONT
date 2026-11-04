@@ -138,7 +138,9 @@ def run():
                     if path in ("/", "/pricing"):
                         screenshot(page, prefix + "_en")
                     page.locator('[role="group"][aria-label="Language / 语言"] button').filter(has_text="中文").first.click()
+                    page.wait_for_url(HOST + ("/zh" if path == "/" else "/zh" + path), timeout=12000)
                     page.wait_for_function("document.documentElement.lang === 'zh-CN'", timeout=7000)
+                    page.wait_for_function("document.querySelector('meta[property=\\\"og:locale\\\"]')?.getAttribute('content') === 'zh_CN'", timeout=9000)
                     check(page.locator("html").get_attribute("lang") == "zh-CN", prefix + " ZH language toggle")
                     check(page.locator('meta[property="og:locale"][content="zh_CN"]').count() == 1,
                           prefix + " Chinese Open Graph locale")
@@ -241,6 +243,7 @@ def run():
                             screenshot(page, prefix + "_contact_l1l3_zh")
                     # Reset initial language to EN for next route; provider state is per page context.
                     page.locator('[role="group"][aria-label="Language / 语言"] button').filter(has_text="EN").first.click()
+                    page.wait_for_url(HOST + path, timeout=12000)
                     page.wait_for_function("document.documentElement.lang === 'en'", timeout=7000)
                 if width in (1440, 390):
                     for zh_path in ("/zh", "/zh/pricing", "/zh/contact", "/zh/contact/privacy", "/zh/start/launch", "/zh/start/rebuild"):
