@@ -1,7 +1,13 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { ArrowUpRight } from 'lucide-react'
 import { Logo } from '@/components/l2m/brand'
 import { PreviewFrame } from '@/components/review/preview-frame'
+
+export const metadata: Metadata = {
+  title: 'Internal Design Review — VEYFRONT',
+  robots: { index: false, follow: false },
+}
 
 const DIRECTIONS = [
   {

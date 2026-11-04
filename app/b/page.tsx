@@ -4,6 +4,7 @@ import { HeroB } from '@/components/direction-b/hero-b'
 import { FlagshipB } from '@/components/direction-b/flagship-b'
 
 export const metadata: Metadata = {
+  robots: { index: false, follow: false },
   title: 'Direction B — Interactive Product · L2M Stage 1 Review',
 }
 

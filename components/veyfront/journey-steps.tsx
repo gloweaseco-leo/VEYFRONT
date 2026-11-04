@@ -26,6 +26,10 @@ export function JourneySteps({detail=false}:{detail?:boolean}){
     </div>}
    </li>)}
   </ol>
+  {detail && <section className="mt-10 rounded-xl border border-ink/15 bg-mist/30 p-6" aria-labelledby="prepare-materials">
+    <h2 id="prepare-materials" className="text-xl font-semibold">{zh?'开始建设前，需要准备什么？':'What should you prepare before the project?'}</h2>
+    <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink/75">{zh?'先准备企业主营产品与服务、面向哪些国家或采购商、已有网站（如有）、产品规格与可授权展示的企业资料。没有完整素材也可以先沟通；但未经核实的项目业绩、证书和增长数据不会写进网站。':'Start with products, buyer markets, your existing URL if any, specifications and approved company materials. You can inquire before everything is ready; unverifiable client results, certifications and growth data are never invented.'}</p>
+  </section>}
   {!detail && <Link href="/how-it-works" className="mt-7 inline-flex min-h-11 items-center gap-2 font-semibold underline underline-offset-4">{zh?'查看完整交付流程':'See the delivery process'} <ArrowUpRight className="size-4"/></Link>}
   {detail && <div className="mt-10 flex flex-wrap gap-3">
    <Link href="/start/launch" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-ink px-6 font-semibold text-ivory">{zh?'我要新建网站':'Start a new site'} <ArrowUpRight className="size-4"/></Link>
