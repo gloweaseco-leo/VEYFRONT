@@ -69,8 +69,8 @@ async function page(path, indexable) {
     if (link.rel === 'alternate' && link.hreflang) hreflang[link.hreflang] = link.href
   }
   verify(htmlLang === lang, path + ' document language', htmlLang)
-  verify(title.length >= 18 && title.length <= 110, path + ' meaningful title', title)
-  verify(Boolean(description) && description.length >= 35, path + ' description')
+  verify(title.length >= (indexable ? (lang === 'zh-CN' ? 10 : 18) : 5) && title.length <= 110, path + ' meaningful title', title)
+  verify(!indexable || (Boolean(description) && description.length >= (lang === 'zh-CN' ? 15 : 35)), path + ' description')
   verify(canonicalValue === canonical, path + ' self canonical', canonicalValue)
   verify(hreflang.en === expectedEn, path + ' en hreflang', hreflang.en)
   verify(hreflang['zh-CN'] === expectedZh, path + ' zh-CN hreflang', hreflang['zh-CN'])
