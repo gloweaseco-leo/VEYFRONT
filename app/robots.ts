@@ -6,17 +6,12 @@ export default function robots(): MetadataRoute.Robots {
     return { rules: { userAgent: '*', disallow: '/' } }
   }
   return {
-    rules: { userAgent: '*', allow: '/', disallow: ['/a },
-    sitemap: 'https://veyfront.com/sitemap.xml',
-    host: 'https://veyfront.com',
-  }
-}
-, '/a/', '/b },
-    sitemap: 'https://veyfront.com/sitemap.xml',
-    host: 'https://veyfront.com',
-  }
-}
-, '/b/', '/review/'] },
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      // Match only experimental review paths; do not accidentally block /about later.
+      disallow: ['/a$', '/a/', '/b$', '/b/', '/review/'],
+    },
     sitemap: 'https://veyfront.com/sitemap.xml',
     host: 'https://veyfront.com',
   }
