@@ -2,21 +2,45 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { releaseRobots } from '@/lib/seo-release'
 
+const origin = 'https://veyfront.com'
+
+/** Single source for bilingual indexable metadata. Self canonical, reciprocal hreflang and x-default. */
 export async function localizedMetadata(
   path: string, englishTitle: string, chineseTitle: string,
   englishDescription: string, chineseDescription: string,
   robots: Metadata['robots'] = releaseRobots,
 ): Promise<Metadata> {
   const chinese = (await headers()).get('x-vf-page-locale') === 'zh'
-  const base = 'https://veyfront.com'
   const suffix = path === '/' ? '' : path
+  const canonical = origin + (chinese ? '/zh' : '') + suffix
+  const title = chinese ? chineseTitle : englishTitle
+  const description = chinese ? chineseDescription : englishDescription
+  const english = origin + suffix
+  const zh = origin + '/zh' + suffix
+  const image = origin + '/opengraph-image'
   return {
-    title: chinese ? chineseTitle : englishTitle,
-    description: chinese ? chineseDescription : englishDescription,
+    title,
+    description,
     robots,
     alternates: {
-      canonical: base + (chinese ? '/zh' : '') + suffix,
-      languages: { en: base + suffix, 'zh-CN': base + '/zh' + suffix },
+      canonical,
+      languages: { en: english, 'zh-CN': zh, 'x-default': english },
+    },
+    openGraph: {
+      type: 'website',
+      url: canonical,
+      title,
+      description,
+      siteName: 'VEYFRONT',
+      locale: chinese ? 'zh_CN' : 'en_US',
+      alternateLocale: chinese ? ['en_US'] : ['zh_CN'],
+      images: [{ url: image, width: 1200, height: 630, alt: 'VEYFRONT — Building Digital Frontiers for Global Business' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
     },
   }
 }

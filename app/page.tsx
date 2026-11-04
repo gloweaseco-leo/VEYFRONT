@@ -10,7 +10,7 @@ import { Proof } from '@/components/home/proof'
 import { Invitation, SiteFooter } from '@/components/home/invitation'
 
 export async function generateMetadata() {
-  return localizedMetadata("/", "VEYFRONT — Building Digital Frontiers for Global Business", "VEYFRONT｜面向海外采购商的B2B企业网站建设与升级", "Build or rebuild an international B2B website with SEO-Native foundations, buyer-ready content, working inquiries and first-year basic hosting.", "为中国跨境B2B企业建设和升级海外官网：专业设计、中英文产品展示、搜索优化基础、在线询盘及首年基础托管。")
+  return localizedMetadata("/", "International B2B Website Design & Rebuild | VEYFRONT", "外贸独立站建设与旧站升级｜B2B企业网站服务 - VEYFRONT", "Launch or redesign your international B2B website with multilingual product pages, SEO foundations, verified inquiry paths and first-year hosting. Clear scope from ¥9,800.", "VEYFRONT为中国出口企业提供外贸独立站建设与旧网站升级：中英文产品展示、SEO基础、真实询盘接收及首年基础托管，标准参考价¥9,800。")
 }
 export default function HomePage(){
  return <HomeDemoProvider>
