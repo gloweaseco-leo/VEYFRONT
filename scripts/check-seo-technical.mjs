@@ -5,7 +5,7 @@ const metadata=read('lib/locale-metadata.ts')
 const schema=read('lib/seo-schema.ts')
 const sitemap=read('app/sitemap.ts')
 const img=read('app/opengraph-image.tsx')
-for (const keyword of ['canonical','x-default','zh-CN','en: english','openGraph','summary_large_image','og:image']) {
+for (const keyword of ['canonical','x-default','zh-CN','en: english','openGraph','summary_large_image','images: [']]) {
   assert.ok((metadata+sitemap+img).includes(keyword), 'Missing SEO intent '+keyword)
 }
 assert.match(metadata,/locale: chinese \? 'zh_CN' : 'en_US'/)

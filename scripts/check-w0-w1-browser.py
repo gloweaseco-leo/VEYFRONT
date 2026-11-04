@@ -268,7 +268,7 @@ def run():
                     check(response.status == 200 and "image/png" in (response.headers.get("content-type","")),
                           str(width) + " brand social PNG route generated",
                           {"status":response.status,"type":response.headers.get("content-type")})
-                    check(response.body()[:8] == b"\\x89PNG\\r\\n\\x1a\\n",
+                    check(response.body()[:8] == b"\x89PNG\r\n\x1a\n",
                           str(width) + " actual PNG magic bytes")
                     robots = page.request.get(HOST + "/robots.txt")
                     check("Disallow: /" in robots.text(), str(width) + " preview robot isolation")
