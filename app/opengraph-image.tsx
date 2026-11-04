@@ -17,8 +17,9 @@ export default function Image() {
         <div style={{fontSize: 74, fontWeight: 700, letterSpacing: 4}}>VEYFRONT</div>
       </div>
       <div style={{height: 3, width: 970, backgroundColor: '#B8F06B', opacity: 0.9, marginTop: 34}} />
-      <div style={{fontSize: 49, fontWeight: 600, maxWidth: 980, lineHeight: 1.18, marginTop: 42}}>
-        Building Digital Frontiers<br/>for Global Business
+      <div style={{display: 'flex', flexDirection: 'column', fontSize: 49, fontWeight: 600, maxWidth: 980, lineHeight: 1.18, marginTop: 42}}>
+        <span>Building Digital Frontiers</span>
+        <span>for Global Business</span>
       </div>
       <div style={{fontSize: 24, color:'#B8F06B', marginTop: 36}}>LAUNCH  /  REBUILD  /  RUN</div>
     </div>,
