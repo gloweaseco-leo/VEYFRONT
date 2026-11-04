@@ -188,9 +188,22 @@ def run():
                         check(page.locator('input[name="phone"]').count() == 1, prefix + " phone contact field")
                         check(page.locator('input[name="email"][required]').count() == 0, prefix + " general inquiry email optional")
                         check(page.locator('input[name="preferredContact"]').count() == 4, prefix + " contact preference options")
-                        check("企业微信接待入口尚未启用" in page.locator('#wechat').inner_text(),
-                              prefix + " inactive WeCom QR safe fallback")
-                        check(page.locator('#wechat img').count() == 0, prefix + " no invented QR image")
+                        check("企业微信接待入口尚未启用" not in page.locator('#wechat').inner_text(),
+                              prefix + " WeCom contact enabled with real QR")
+                        check(page.locator('#wechat img[src="/contact/veyfront-wecom.png"]').count() == 1,
+                              prefix + " provided WeCom QR is mounted")
+                        check(page.locator('#wechat a[href^="https://work.weixin.qq.com/u/"]').count() == 1,
+                              prefix + " official decoded WeCom mobile contact link")
+                        qr = page.locator('#wechat img').first
+                        qr.scroll_into_view_if_needed()
+                        page.wait_for_function("() => document.querySelector('#wechat img')?.naturalWidth > 0", timeout=8000)
+                        check(qr.evaluate("(img) => img.complete && img.naturalWidth > 0"),
+                              prefix + " WeCom QR asset actually loaded")
+                        if width == 1440:
+                            page.locator('header button:has-text("微信咨询")').first.click()
+                            check(page.locator('#vf-header-contact img[src="/contact/veyfront-wecom.png"]').count() == 1,
+                                  prefix + " desktop header QR panel opens")
+                            page.locator('#vf-header-contact button[aria-label="关闭微信联系面板"]').click()
                         if width in (1440, 390):
                             screenshot(page, prefix + "_contact_l1l3_zh")
                     # Reset initial language to EN for next route; provider state is per page context.

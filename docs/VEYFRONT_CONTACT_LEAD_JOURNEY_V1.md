@@ -1,8 +1,8 @@
 # VEYFRONT Contact & Lead Journey V1.0 · L1–L3
-Status: **Preview implementation; not a claim of configured WeCom or completed production acceptance.**
+Status: **Operator QR integration complete in branch. External WeCom friend-add and real lead delivery still require live verification.**
 
 ## Decision and boundaries
-- Chinese contact: WeCom QR (when configured) + independent formal inquiry form + retained email.
+- Chinese contact: real operator-supplied WeCom QR + official decoded contact URL + independent formal inquiry form + retained email.
 - English contact: project form/email retained; no forced WeCom entry.
 - Launch and Rebuild intake, existing storage and original VF references preserved. No CRM or SCRM.
 - WeCom click/QR reveal **does not mean** scan, friend-add or confirmed contact. Manual operator confirmation is the source of truth for new WeCom contacts.
@@ -10,15 +10,14 @@ Status: **Preview implementation; not a claim of configured WeCom or completed p
 - Never place visitor WeChat handles, phone numbers, raw chats or personal identity in public analytics, GitHub or alerts.
 
 ## Go-live prerequisites
-1. Set up a real enterprise WeCom account with a named owner and backup.
-2. Obtain permission to publish its true external-contact QR image, add an optimized raster asset at `public/contact/<approved-name>.png`, and test an actual add in WeChat on mobile.
-3. Set `NEXT_PUBLIC_VF_WECOM_QR_PATH=/contact/<approved-name>.png` for the relevant Vercel environment. Without the setting, **no QR is displayed, and the navigation uses '联系顾问' rather than promising WeCom service**. Setting the variable without the file is a broken configuration; review both together.
-4. Confirm operator, privacy data retention and cross-border arrangements, actual staffing and alert monitoring before public promotion. Do not promise 24/7 or a response time.
-5. Preview/production flags are separate; inspect the Preview first, then authorize any main/production promotion explicitly.
+1. The operator supplied the actual WeCom contact QR on 2026-11-04. Source JPEG and optimized 1-bit PNG both decode to the same official `work.weixin.qq.com` URL. The PNG is stored in `public/contact/veyfront-wecom.png` with an immutable SHA-256 guard. No additional Vercel QR environment variable is required.
+2. Confirm a staffed enterprise WeCom reception account with a named owner/backup and run a real phone-to-WeCom friend-add test. The official URL and mobile browser handling are not guaranteed by a local QR decode or browser mock.
+3. Confirm operator, privacy retention and cross-border handling, and monitor the private lead inbox. Do not promise 24/7 or a response time.
+4. Keep English site form/email first, maintain distinct Preview and Production environments, and check the actual deployed domain after merge.
 
 ## Public website journey
-1. Visitor opens `/zh/contact`: WeCom card (if configured) and a general project form are independent paths.
-2. Navigation CTA opens a compact QR panel only when QR is configured. Header, footer, homepage and Launch/Rebuild links lead to contact otherwise.
+1. Visitor opens `/zh/contact`: the actual WeCom QR is directly visible alongside the independent project inquiry form.
+2. Chinese navigation CTA opens the QR panel; homepage, footer, Launch and Rebuild lead to contact. Mobile visitors may use a first-party hosted QR image or the official URL decoded from the operator QR.
 3. Form asks for name, at least one contact method (WeChat ID/phone/email), company, site details, and explicit privacy consent. A preferred method can be selected but its corresponding field must be filled. Privacy data requests continue to require verified-by-follow-up **email entry**; the form itself does not establish the requester's identity.
 4. Server validates all fields again, writes private Blob, returns reference. Email acknowledgment only attempted when an email was supplied and the prior explicit email-confirmation feature flag allows it. Alerts contain reference only.
 

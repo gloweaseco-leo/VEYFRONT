@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { readFileSync, existsSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 const read = p => readFileSync(p, 'utf8')
 for (const p of ['lib/contact-validation.ts','lib/wecom-config.ts','components/veyfront/wecom-contact.tsx','scripts/contact-ops.mjs'])
   assert.ok(existsSync(p), p)
@@ -7,6 +8,13 @@ const api = read('app/api/leads/route.ts')
 const form = read('components/veyfront/lead-form.tsx')
 const wecom = read('components/veyfront/wecom-contact.tsx')
 const ops = read('scripts/contact-ops.mjs')
+const qr = 'public/contact/veyfront-wecom.png'
+assert.ok(existsSync(qr), 'Operator-provided WeCom QR is missing')
+assert.equal(createHash('sha256').update(readFileSync(qr)).digest('hex'), '428a9969a148f5bce4d483e4ad8f4e5f4b54c2b4c6a6119e6462b82bc75ae11a', 'QR asset mismatch')
+assert.match(read('lib/wecom-config.ts'), /work\.weixin\.qq\.com\/u\/vca396b8d0fcbe5822/)
+assert.match(read('lib/wecom-config.ts'), /contact\/veyfront-wecom\.png/)
+assert.match(wecom, /WECOM_CONTACT_URL/)
+
 assert.match(api, /validateContactDetails/)
 assert.match(api, /category === 'privacy'/)
 assert.match(api, /source: 'website-form'/)
