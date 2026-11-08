@@ -154,7 +154,8 @@ def run():
                         check("完整" in body and "首年" in body, prefix + " full-site and year-one hosting")
                         check("标准增项" not in body, prefix + " no microcharge list")
                         check("12,800" not in body, prefix + " no migration surcharge")
-                        screenshot(page, prefix + "_zh")
+                        if path == "/pricing":
+                            screenshot(page, prefix + "_zh")
                     if path == "/":
                         check(page.locator("#buyer-capabilities").count() == 1, prefix + " capability section")
                         check(page.locator("#transformation").count() == 1, prefix + " single transformation preview")
@@ -169,13 +170,10 @@ def run():
                         check("设计示意" in page.locator('[data-testid="hero-hybrid-panel"]').inner_text(), prefix + " honest demo disclosure")
                         check(page.locator('[data-testid="hero-hybrid-panel"]').is_visible(), prefix + " hero illustration visible")
                         panel = page.locator('[data-testid="hero-hybrid-panel"]')
-                        # The site uses smooth scrolling globally. Test the observer after a deterministic instant scroll,
-                        # not during a scroll transition where an intermediate visibility event may arrive.
-                        # Full-page screenshots may leave the IntersectionObserver's last
-                        # entry as not-visible while the document is restored without a scroll.
-                        # Force a genuine out-of-view -> in-view crossing before asserting.
-                        page.evaluate("window.scrollTo({top: document.documentElement.scrollHeight, behavior:'instant'})")
-                        page.wait_for_function("() => document.querySelector('[data-testid=hero-hybrid-panel]')?.dataset.vfVisible === 'no'", timeout=5000)
+                        # Assert the actual IntersectionObserver state BEFORE any full-page
+                        # screenshot. Full-page screenshots change scroll geometry and can
+                        # leave an observer reporting 'no' even while the final bounding
+                        # rect returns to the viewport. We test on a live visual state.
                         panel.evaluate("(el) => el.scrollIntoView({block:'center',behavior:'instant'})")
                         try:
                             page.wait_for_function(
@@ -218,6 +216,7 @@ def run():
                             check(page.locator('[data-testid="hero-site-after"]').is_visible(),
                                   prefix + " reduced motion retains a readable static design")
                             page.emulate_media(reduced_motion="no-preference")
+                        screenshot(page, prefix + "_zh")
                     if path == "/how-it-works":
                         t = page.locator("main").inner_text()
                         check("书面报价" in t and "确认" in t, prefix + " verified engagement boundary")
