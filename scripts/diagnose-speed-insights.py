@@ -64,6 +64,26 @@ def probe():
             }
             return rem.apply(this,arguments);
           };
+          const srcProp = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
+          if (srcProp?.get && srcProp?.set) {
+            Object.defineProperty(HTMLScriptElement.prototype,'src',{
+              configurable:srcProp.configurable,enumerable:srcProp.enumerable,
+              get(){return srcProp.get.call(this)},
+              set(v){
+                if(String(v).includes('speed-insights')){
+                  window.__vey_si_script_lifecycle.push({action:'script-src-set',src:String(v).slice(0,160),t:Math.round(performance.now())})
+                }
+                return srcProp.set.call(this,v);
+              }
+            });
+          }
+          const ib=Node.prototype.insertBefore;
+          Node.prototype.insertBefore=function(n,r){
+            if(n?.tagName==='SCRIPT'&&n.src?.includes('speed-insights')){
+              window.__vey_si_script_lifecycle.push({action:'insertBefore',src:new URL(n.src).pathname,parent:this.nodeName,t:Math.round(performance.now())})
+            }
+            return ib.apply(this,arguments);
+          };
           const origCreate=document.createElement.bind(document);
           document.createElement=function(name,...args) {
             if (String(name).toLowerCase()==='script') window.__vey_si_script_lifecycle.push({action:'create-script',t:Math.round(performance.now())});
@@ -103,6 +123,8 @@ def probe():
                 pendingSiQueue: Array.isArray(window.siq) ? window.siq.length : null,
                 domReadyState: document.readyState,
                 allScriptCount: document.scripts.length,
+                scriptPaths: [...document.scripts].map(x=>x.src ? new URL(x.src).pathname : '[inline]').slice(0,35),
+                headSpeedTag: [...document.head.querySelectorAll('script')].filter(x=>x.src.includes('speed-insights')).map(x=>x.src),
                 nextAppScriptCount: [...document.scripts].filter(s => s.src.includes('/_next/')).length,
                 scriptResources: performance.getEntriesByType('resource')
                     .filter(r => r.name.includes('speed-insights'))
