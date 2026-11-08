@@ -41,6 +41,35 @@ def probe():
         browser = p.chromium.launch(executable_path=executable, headless=True,
             args=["--no-sandbox"])
         context = browser.new_context(viewport={"width": 1200, "height": 900})
+        context.add_init_script("""(() => {
+          window.__vey_si_script_lifecycle = [];
+          const add = Node.prototype.appendChild;
+          Node.prototype.appendChild = function(n) {
+            if (n?.tagName === 'SCRIPT' && n.src?.includes('speed-insights')) {
+              window.__vey_si_script_lifecycle.push({action:'append',src:new URL(n.src).pathname,parent:this.nodeName,t:Math.round(performance.now())});
+            }
+            return add.apply(this,arguments);
+          };
+          const rm = Node.prototype.removeChild;
+          Node.prototype.removeChild = function(n) {
+            if (n?.tagName === 'SCRIPT' && n.src?.includes('speed-insights')) {
+              window.__vey_si_script_lifecycle.push({action:'removeChild',src:new URL(n.src).pathname,parent:this.nodeName,t:Math.round(performance.now())});
+            }
+            return rm.apply(this,arguments);
+          };
+          const rem=Element.prototype.remove;
+          Element.prototype.remove=function() {
+            if (this.tagName === 'SCRIPT' && this.src?.includes('speed-insights')) {
+              window.__vey_si_script_lifecycle.push({action:'remove',src:new URL(this.src).pathname,parent:this.parentNode?.nodeName,t:Math.round(performance.now())});
+            }
+            return rem.apply(this,arguments);
+          };
+          const origCreate=document.createElement.bind(document);
+          document.createElement=function(name,...args) {
+            if (String(name).toLowerCase()==='script') window.__vey_si_script_lifecycle.push({action:'create-script',t:Math.round(performance.now())});
+            return origCreate(name,...args);
+          };
+        })();""")
         page = context.new_page()
         page_errors = []
         page.on("pageerror", lambda e: page_errors.append(str(e)[:180]))
@@ -69,6 +98,8 @@ def probe():
                     .filter(s => s.src.includes('speed-insights'))
                     .map(s => ({path: new URL(s.src).pathname, async: s.async, dataset: {...s.dataset}})),
                 windowSiType: typeof window.si,
+                windowSiBody: typeof window.si === 'function' ? String(window.si).slice(0,150) : null,
+                siLifecycle: window.__vey_si_script_lifecycle || [],
                 pendingSiQueue: Array.isArray(window.siq) ? window.siq.length : null,
                 domReadyState: document.readyState,
                 allScriptCount: document.scripts.length,
@@ -82,6 +113,7 @@ def probe():
                  response.status if response else None)
             note(path + " Speed Insights injected script", len(evidence["scriptTags"]) > 0,
                  {"tags": evidence["scriptTags"], "si": evidence["windowSiType"],
+                  "lifecycle": evidence["siLifecycle"],
                   "ready": evidence["domReadyState"], "scripts": evidence["allScriptCount"],
                   "nextScripts": evidence["nextAppScriptCount"]})
             note(path + " performance resource recorded", len(evidence["scriptResources"]) > 0,
