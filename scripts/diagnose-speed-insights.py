@@ -138,6 +138,10 @@ def probe():
                   "lifecycle": evidence["siLifecycle"],
                   "ready": evidence["domReadyState"], "scripts": evidence["allScriptCount"],
                   "nextScripts": evidence["nextAppScriptCount"]})
+            note(path + " real production Speed Insights sample rate 100%",
+                 len(evidence["scriptTags"]) > 0 and
+                 all(tag.get("dataset",{}).get("sampleRate") == "1" for tag in evidence["scriptTags"]),
+                 [tag.get("dataset",{}) for tag in evidence["scriptTags"]])
             note(path + " performance resource recorded", len(evidence["scriptResources"]) > 0,
                  evidence["scriptResources"], required=False)
             events.append({"kind": "page", "path": path, "inspect": evidence})
