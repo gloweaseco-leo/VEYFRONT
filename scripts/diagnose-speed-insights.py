@@ -15,7 +15,7 @@ from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
 
 HOST = "https://veyfront.com"
-PAGES = ["/zh", "/zh/pricing"]
+PAGES = ["/", "/pricing", "/zh", "/zh/pricing"]
 ARTIFACT = Path("qa-evidence/speed-insights-probe")
 ARTIFACT.mkdir(parents=True, exist_ok=True)
 events = []
@@ -60,7 +60,7 @@ def probe():
         for path in PAGES:
             response = page.goto(HOST + path, wait_until="domcontentloaded", timeout=40000)
             page.locator("main").first.wait_for(state="visible", timeout=15000)
-            page.wait_for_timeout(4000)
+            page.wait_for_timeout(8500)
             evidence = page.evaluate("""() => ({
                 url: location.origin + location.pathname,
                 webdriver: navigator.webdriver === true,
@@ -68,6 +68,11 @@ def probe():
                 scriptTags: [...document.querySelectorAll('script[src]')]
                     .filter(s => s.src.includes('speed-insights'))
                     .map(s => ({path: new URL(s.src).pathname, async: s.async, dataset: {...s.dataset}})),
+                windowSiType: typeof window.si,
+                pendingSiQueue: Array.isArray(window.siq) ? window.siq.length : null,
+                domReadyState: document.readyState,
+                allScriptCount: document.scripts.length,
+                nextAppScriptCount: [...document.scripts].filter(s => s.src.includes('/_next/')).length,
                 scriptResources: performance.getEntriesByType('resource')
                     .filter(r => r.name.includes('speed-insights'))
                     .map(r => ({path: new URL(r.name).pathname, durationMs: Math.round(r.duration),
@@ -76,7 +81,9 @@ def probe():
             note(path + " HTTP 200", bool(response) and response.status == 200,
                  response.status if response else None)
             note(path + " Speed Insights injected script", len(evidence["scriptTags"]) > 0,
-                 evidence["scriptTags"])
+                 {"tags": evidence["scriptTags"], "si": evidence["windowSiType"],
+                  "ready": evidence["domReadyState"], "scripts": evidence["allScriptCount"],
+                  "nextScripts": evidence["nextAppScriptCount"]})
             note(path + " performance resource recorded", len(evidence["scriptResources"]) > 0,
                  evidence["scriptResources"], required=False)
             events.append({"kind": "page", "path": path, "inspect": evidence})
