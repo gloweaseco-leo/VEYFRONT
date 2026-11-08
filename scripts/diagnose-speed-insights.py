@@ -95,7 +95,7 @@ def probe():
         page.on("pageerror", lambda e: page_errors.append(str(e)[:180]))
         def response_handler(resp):
             path = route_only(resp.url)
-            if "speed-insights" in path or path.endswith("/vitals"):
+            if "speed-insights" in path or path.endswith("/vitals") or (path.endswith("/script.js") and resp.request.resource_type=="script"):
                 events.append({"kind": "response", "path": path, "method": resp.request.method,
                                "status": resp.status, "resourceType": resp.request.resource_type})
         def failed_handler(req):
@@ -109,13 +109,13 @@ def probe():
         for path in PAGES:
             response = page.goto(HOST + path, wait_until="domcontentloaded", timeout=40000)
             page.locator("main").first.wait_for(state="visible", timeout=15000)
-            page.wait_for_timeout(8500)
+            page.wait_for_timeout(3000)
             evidence = page.evaluate("""() => ({
                 url: location.origin + location.pathname,
                 webdriver: navigator.webdriver === true,
                 headlessUserAgent: navigator.userAgent.includes('Headless'),
                 scriptTags: [...document.querySelectorAll('script[src]')]
-                    .filter(s => s.src.includes('speed-insights'))
+                    .filter(s => (s.dataset.sdkn || '').includes('speed-insights') || s.src.includes('speed-insights'))
                     .map(s => ({path: new URL(s.src).pathname, async: s.async, dataset: {...s.dataset}})),
                 windowSiType: typeof window.si,
                 windowSiBody: typeof window.si === 'function' ? String(window.si).slice(0,150) : null,
@@ -127,7 +127,7 @@ def probe():
                 headSpeedTag: [...document.head.querySelectorAll('script')].filter(x=>x.src.includes('speed-insights')).map(x=>x.src),
                 nextAppScriptCount: [...document.scripts].filter(s => s.src.includes('/_next/')).length,
                 scriptResources: performance.getEntriesByType('resource')
-                    .filter(r => r.name.includes('speed-insights'))
+                    .filter(r => r.initiatorType === 'script' && new URL(r.name).pathname.endsWith('/script.js'))
                     .map(r => ({path: new URL(r.name).pathname, durationMs: Math.round(r.duration),
                         responseStatus: r.responseStatus || null, initiatorType: r.initiatorType}))
             })""")
@@ -142,12 +142,14 @@ def probe():
                  evidence["scriptResources"], required=False)
             events.append({"kind": "page", "path": path, "inspect": evidence})
 
-        loaded = any(e.get("kind") == "response" and
-                     ("speed-insights" in e.get("path", "")) and
-                     ("/script" in e.get("path", "")) and
-                     e.get("status") == 200 for e in events)
-        note("Production Speed Insights script HTTP 200", loaded,
-             [e for e in events if e.get("kind") == "response"])
+        # Match the vendor-tagged script path, not just a textual speed-insights URL.
+        # Vercel can route the SDK under a dynamic, hashed first-party pathname.
+        tagged_paths = {tag["path"] for e in events if e.get("kind")=="page"
+            for tag in e.get("inspect",{}).get("scriptTags",[])}
+        loaded = any(e.get("kind")=="response" and e.get("path") in tagged_paths
+                     and e.get("status")==200 for e in events)
+        note("Production tagged Speed Insights script HTTP 200", loaded,
+             {"taggedPaths":sorted(tagged_paths),"scriptResponses":[e for e in events if e.get("kind") == "response"]})
         note("No uncaught JavaScript errors", len(page_errors) == 0, page_errors)
         events.append({"kind":"caveat","message":
             "Headless browser navigator.webdriver is often true, and SDK filters automated visitors. "
