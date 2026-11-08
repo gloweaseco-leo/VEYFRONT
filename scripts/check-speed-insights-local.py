@@ -38,7 +38,7 @@ try:
               path:new URL(s.src).pathname,rate:s.dataset.sampleRate,sdk:s.dataset.sdkn
             }))""")
             record(bool(result),path+" SDK script injected",result)
-            record(result[0]["rate"]=="0.25",path+" sample rate preserved",result)
+            record(result[0]["rate"]=="1",path+" sample rate preserved",result)
             record(result[0]["sdk"]=="@vercel/speed-insights/next",path+" Next SDK framework",result)
         browser.close()
 except Exception as e:

@@ -62,7 +62,7 @@ export default async function RootLayout({
         />
         <LangProvider initialLang={initialLang}>{children}</LangProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
-        <SpeedInsights sampleRate={0.25} />
+        <SpeedInsights sampleRate={1} />
       </body>
     </html>
   )
