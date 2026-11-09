@@ -27,7 +27,7 @@ try {
     for (const blob of result.blobs) {
       if (!/^inquiries\/\d{4}\/\d{2}\/[0-9a-f-]{36}\.json$/i.test(blob.pathname)) continue
       if (blob.size > 32_000) throw new Error('Record exceeds safe limit; refuse partial report')
-      if (sinceArg && String(blob.uploadedAt).slice(0, 10) < sinceArg) continue
+      if (sinceArg && new Date(blob.uploadedAt).toISOString().slice(0, 10) < sinceArg) continue
       recordsExamined++
       if (recordsExamined > MAX_RECORDS) throw new Error('Too many records; refuse partial report')
       const response = await get(blob.pathname, { access: 'private' })
