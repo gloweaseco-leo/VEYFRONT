@@ -17,7 +17,7 @@ export function safeAcquisitionLandingPage(value: unknown): string | null {
     : null
 }
 export const acquisitionChannels = [
-  'google-organic', 'bing-organic', 'baidu-organic', 'other-search',
+  'google-referrer', 'bing-referrer', 'baidu-referrer', 'other-search-referrer',
   'external-referral', 'unknown',
 ] as const
 export type AcquisitionChannel = typeof acquisitionChannels[number]
@@ -29,9 +29,19 @@ const googleDomains = new Set([
 ])
 const otherSearchDomains = new Set(['duckduckgo.com', 'search.yahoo.com', 'yahoo.com', 'ecosia.org', 'yandex.com', 'yandex.ru'])
 
+// Earlier short-lived release used "organic" labels although referrer alone cannot
+// distinguish an ad click from unpaid search. Normalize legacy session values.
+const legacyAliases: Record<string, AcquisitionChannel> = {
+  'google-organic': 'google-referrer',
+  'bing-organic': 'bing-referrer',
+  'baidu-organic': 'baidu-referrer',
+  'other-search': 'other-search-referrer',
+}
 export function safeAcquisitionChannel(value: unknown): AcquisitionChannel {
-  return typeof value === 'string' && (acquisitionChannels as readonly string[]).includes(value)
-    ? value as AcquisitionChannel
+  if (typeof value !== 'string') return 'unknown'
+  const normalized = legacyAliases[value] ?? value
+  return (acquisitionChannels as readonly string[]).includes(normalized)
+    ? normalized as AcquisitionChannel
     : 'unknown'
 }
 
@@ -44,10 +54,10 @@ export function classifyAcquisitionReferrer(referrer: string, ownHostname: strin
     const own = ownHostname.toLowerCase().replace(/\.$/, '')
     if (host === own || (own === 'veyfront.com' && host === 'www.veyfront.com')) return 'unknown'
     const bare = host.startsWith('www.') ? host.slice(4) : host
-    if (googleDomains.has(bare)) return 'google-organic'
-    if (bare === 'bing.com' || bare === 'cn.bing.com' || bare === 'bing.com.cn') return 'bing-organic'
-    if (bare === 'baidu.com' || bare === 'm.baidu.com' || bare === 'baidu.com.cn') return 'baidu-organic'
-    if (otherSearchDomains.has(bare)) return 'other-search'
+    if (googleDomains.has(bare)) return 'google-referrer'
+    if (bare === 'bing.com' || bare === 'cn.bing.com' || bare === 'bing.com.cn') return 'bing-referrer'
+    if (bare === 'baidu.com' || bare === 'm.baidu.com' || bare === 'baidu.com.cn') return 'baidu-referrer'
+    if (otherSearchDomains.has(bare)) return 'other-search-referrer'
     return 'external-referral'
   } catch {
     return 'unknown'
