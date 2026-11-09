@@ -6,6 +6,7 @@ import { CheckCircle2, AlertCircle, LoaderCircle, ArrowUpRight } from 'lucide-re
 import { useLang } from '@/lib/i18n'
 import { checkUrl } from '@/lib/url'
 import { validateContactDetails, type ContactPreference } from '@/lib/contact-validation'
+import { ACQUISITION_SESSION_KEY, safeAcquisitionChannel } from '@/lib/acquisition-channel'
 
 export type Service = 'launch' | 'rebuild' | 'general' | 'privacy'
 
@@ -56,13 +57,19 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
       return
     }
     setError('')
+    // Never transmit raw referrer URLs, search queries or cookies; privacy requests are excluded.
+    let acquisitionChannel: string | undefined
+    if (service !== 'privacy') {
+      try { acquisitionChannel = safeAcquisitionChannel(sessionStorage.getItem(ACQUISITION_SESSION_KEY)) }
+      catch { acquisitionChannel = 'unknown' }
+    }
     setStatus('sending')
     try {
       const response = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         cache: 'no-store',
-        body: JSON.stringify({ service, name, email, phone: service === 'privacy' ? '' : phone, wechat: service === 'privacy' ? '' : wechat, preferredContact: service === 'privacy' ? 'email' : preferredContact, company, website, markets, details, consent, honeypot, lang }),
+        body: JSON.stringify({ service, name, email, phone: service === 'privacy' ? '' : phone, wechat: service === 'privacy' ? '' : wechat, preferredContact: service === 'privacy' ? 'email' : preferredContact, company, website, markets, details, consent, honeypot, lang, acquisitionChannel }),
       })
       const data = await response.json() as { ok?: boolean; reference?: string; message?: string }
       if (!response.ok || !data.ok || !data.reference) throw new Error(data.message || 'Request could not be saved')
