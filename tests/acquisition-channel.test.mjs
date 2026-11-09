@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { classifyAcquisitionReferrer, safeAcquisitionChannel } from '../lib/acquisition-channel.ts'
+import { classifyAcquisitionReferrer, safeAcquisitionChannel, safeAcquisitionLandingPage } from '../lib/acquisition-channel.ts'
 
 const own = 'veyfront.com'
 
@@ -20,6 +20,17 @@ test('missing, malformed, internal or unrecognized sources never pretend to be o
   assert.equal(classifyAcquisitionReferrer('https://www.veyfront.com/zh', own), 'unknown')
   assert.equal(classifyAcquisitionReferrer('https://google.com.evil.example', own), 'external-referral')
   assert.equal(classifyAcquisitionReferrer('https://partner.example/', own), 'external-referral')
+})
+
+test('only canonical public paths are eligible for landing attribution', () => {
+  assert.equal(safeAcquisitionLandingPage('/zh/pricing'), '/zh/pricing')
+  assert.equal(safeAcquisitionLandingPage('/'), '/')
+  assert.equal(safeAcquisitionLandingPage('/zh'), '/zh')
+  assert.equal(safeAcquisitionLandingPage('/api/leads'), null)
+  assert.equal(safeAcquisitionLandingPage('/review/stage-1'), null)
+  assert.equal(safeAcquisitionLandingPage('/contact?token=secret'), null)
+  assert.equal(safeAcquisitionLandingPage('https://veyfront.com/contact'), null)
+  assert.equal(safeAcquisitionLandingPage(null), null)
 })
 
 test('the server accepts only a closed source-category enumeration', () => {
