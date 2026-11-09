@@ -32,5 +32,13 @@ for (const name of ['app/page.tsx','app/pricing/page.tsx','app/start/launch/page
 const faq=read('components/veyfront/commercial-offers.tsx')
 assert.match(faq,/外贸网站建设常见问题/)
 assert.doesNotMatch(faq,/aggregateRating|reviewCount|FAQPage/)
+const liveMonitor = read('scripts/seo-live-audit.mjs')
+for (const path of ['/pricing', '/how-it-works', '/contact', '/start/launch', '/start/rebuild', '/privacy', '/terms']) {
+  assert.ok(liveMonitor.includes("'" + path + "'"), 'Live monitor missing canonical path ' + path)
+}
+assert.match(liveMonitor,/PUBLIC_PATHS.length \* 2/,'Technical coverage must count both languages')
+assert.match(liveMonitor,/googleIndexedUrls: null/,'Never substitute technical readiness for actual GSC indexing')
+assert.match(liveMonitor,/INTERNAL_REVIEW_PATHS/,'Review noindex controls require a live check')
 assert.ok(existsSync('docs/VEYFRONT_SEO_PERFORMANCE_AUDIT_2026-11-04.md'))
+assert.ok(existsSync('docs/VEYFRONT_SEO_GROWTH_PHASE_V3_2026-11-09.md'))
 console.log('VEYFRONT SEO structural guard PASS (not a field ranking, CWV or indexing test)')

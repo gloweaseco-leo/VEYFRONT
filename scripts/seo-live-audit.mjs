@@ -7,11 +7,22 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 
 const ORIGIN = 'https://veyfront.com'
-const PUBLIC_PATHS = ['/', '/pricing', '/contact', '/start/launch', '/start/rebuild']
-const NON_INDEXABLE = ['/transformations', '/zh/transformations']
-const report = { version: 'SEO-LIVE-V2', checkedAt: new Date().toISOString(),
+// Canonical sitemap inventory: six buyer-intent pairs and two legal pairs.
+const PUBLIC_PATHS = [
+  '/', '/pricing', '/how-it-works', '/contact',
+  '/start/launch', '/start/rebuild', '/privacy', '/terms',
+]
+const NON_INDEXABLE = [
+  '/transformations', '/zh/transformations', '/contact/privacy', '/zh/contact/privacy',
+]
+const INTERNAL_REVIEW_PATHS = ['/a', '/b', '/review/stage-1']
+const report = { version: 'SEO-LIVE-V3', checkedAt: new Date().toISOString(),
   origin: ORIGIN, mode: 'public-get-only', results: [], failures: [],
-  caveat: 'Synthetic HTTP durations are NOT field LCP/INP/CLS or Google index coverage.' }
+  technicalIndexReadiness: {
+    buyerIntentUrls: 12, legalUrls: 4, assessedPublicUrls: PUBLIC_PATHS.length * 2,
+    googleIndexedUrls: null, // Requires authenticated Search Console reporting.
+  },
+  caveat: 'Technical eligibility and synthetic HTTP timings are NOT Google index coverage, ranking, field CWV, or lead conversions.' }
 
 function verify(condition, label, detail = '') {
   if (!condition) report.failures.push({ check: label, detail: String(detail).slice(0,180) })
@@ -92,6 +103,16 @@ async function page(path, indexable) {
       path + ' published Organization structured data')
   }
 }
+async function reviewNoindex(path) {
+  try {
+    const { body } = await get(path)
+    const metaRobots = headValue(body, 'meta', 'name', 'robots', 'content') ?? ''
+    verify(metaRobots.includes('noindex'), path + ' intentionally noindex', metaRobots)
+  } catch (error) {
+    report.failures.push({ check: path + ' fetch', detail: String(error).slice(0, 180) })
+  }
+}
+
 async function main() {
   try {
     const robots = (await get('/robots.txt')).body
@@ -116,6 +137,17 @@ async function main() {
       await page('/zh' + (path === '/' ? '' : path), true)
     }
     for (const path of NON_INDEXABLE) await page(path, false)
+    for (const path of INTERNAL_REVIEW_PATHS) await reviewNoindex(path)
+    // Old public links must remain canonicalized to the single commercial pricing route.
+    const oldServices = await fetch(ORIGIN + '/services', {
+      redirect: 'manual', cache: 'no-store',
+      signal: AbortSignal.timeout(20000),
+    })
+    report.results.push({ path: '/services', status: oldServices.status, redirectTarget: oldServices.headers.get('location') })
+    verify([301, 308].includes(oldServices.status), '/services permanent redirect', oldServices.status)
+    const redirectTarget = new URL(oldServices.headers.get('location') ?? '/', ORIGIN)
+    verify(redirectTarget.origin === ORIGIN && redirectTarget.pathname === '/pricing',
+      '/services redirects to canonical pricing', redirectTarget.href)
     const image = await get('/opengraph-image', 'image')
     const magic = new Uint8Array(image.body.slice(0, 8))
     verify(image.response.headers.get('content-type')?.includes('image/png'), 'OG image PNG MIME')
