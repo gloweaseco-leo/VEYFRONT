@@ -59,6 +59,11 @@ async function page(path, indexable) {
   const expectedEn = ORIGIN + suffix
   const expectedZh = ORIGIN + '/zh' + suffix
   const lang = path === '/zh' || path.startsWith('/zh/') ? 'zh-CN' : 'en'
+  const languageAnchors = tags(body, 'a')
+  const enHref = suffix || '/'
+  const zhHref = '/zh' + suffix
+  verify(languageAnchors.some(a => a.href === enHref && a.hreflang === 'en'), path + ' crawlable EN link', enHref)
+  verify(languageAnchors.some(a => a.href === zhHref && a.hreflang === 'zh-CN'), path + ' crawlable ZH link', zhHref)
   const htmlLang = attributes((body.match(/<html\b[^>]*>/i) ?? [''])[0]).lang
   const title = (body.match(/<title[^>]*>([^<]*)<\/title>/i) ?? [,''])[1]
   const description = headValue(body, 'meta', 'name', 'description', 'content')
@@ -90,7 +95,10 @@ async function page(path, indexable) {
 async function main() {
   try {
     const robots = (await get('/robots.txt')).body
-    const sitemap = (await get('/sitemap.xml')).body
+    const sitemapResult = await get('/sitemap.xml')
+    const sitemap = sitemapResult.body
+    verify((sitemapResult.response.headers.get('content-type') ?? '').includes('xml'), 'sitemap XML content type')
+    verify(sitemap.includes('<urlset'), 'sitemap XML document')
     verify(robots.includes('Sitemap: ' + ORIGIN + '/sitemap.xml'), 'robots points to public sitemap')
     verify(!/Disallow:\s*\/\s*$/m.test(robots), 'production is not globally blocked')
     verify(!sitemap.includes('/transformations'), 'fictional demo excluded from sitemap')
