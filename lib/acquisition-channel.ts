@@ -4,6 +4,18 @@
  * Browser-origin information may be missing or spoofed, so this is NOT verified attribution.
  */
 export const ACQUISITION_SESSION_KEY = 'vf:acquisition-channel-v1'
+export const LANDING_PAGE_SESSION_KEY = 'vf:first-public-landing-v1'
+const canonicalPaths = [
+  '/', '/zh', '/pricing', '/zh/pricing', '/how-it-works', '/zh/how-it-works',
+  '/contact', '/zh/contact', '/start/launch', '/zh/start/launch',
+  '/start/rebuild', '/zh/start/rebuild', '/privacy', '/zh/privacy',
+  '/terms', '/zh/terms',
+] as const
+export function safeAcquisitionLandingPage(value: unknown): string | null {
+  return typeof value === 'string' && (canonicalPaths as readonly string[]).includes(value)
+    ? value
+    : null
+}
 export const acquisitionChannels = [
   'google-organic', 'bing-organic', 'baidu-organic', 'other-search',
   'external-referral', 'unknown',
