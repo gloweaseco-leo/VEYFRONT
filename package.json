@@ -13,7 +13,7 @@
     "check:ops": "node scripts/check-lead-ops.mjs",
     "check:security": "node --test tests/lead-request.test.mjs tests/lead-alert.test.mjs tests/lead-confirmation.test.mjs",
     "check:w0w1": "node scripts/check-w0-w1.mjs",
-    "check:contact": "node --test tests/contact-validation.test.mjs tests/acquisition-channel.test.mjs && node scripts/check-contact-journey.mjs",
+    "check:contact": "node --test tests/contact-validation.test.mjs tests/acquisition-channel.test.mjs tests/acquisition-report.test.mjs && node scripts/check-contact-journey.mjs",
     "check:seo": "node scripts/check-production-seo.mjs && node scripts/check-seo-technical.mjs"
   },
   "dependencies": {
