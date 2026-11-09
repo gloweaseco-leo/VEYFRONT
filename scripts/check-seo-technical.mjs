@@ -5,6 +5,9 @@ const metadata=read('lib/locale-metadata.ts')
 const schema=read('lib/seo-schema.ts')
 const sitemap=read('app/sitemap.ts')
 const img=read('app/opengraph-image.tsx')
+const localeSwitch=read('components/l2m/brand.tsx')
+assert.match(localeSwitch,/<a key=\{o\.value\} href=\{href\}/,'Public language switch must be a crawlable anchor')
+assert.match(localeSwitch,/hrefLang=\{o\.value === 'zh' \? 'zh-CN' : 'en'\}/)
 for (const keyword of ['canonical','x-default','zh-CN','en: english','openGraph','summary_large_image','images: [']) {
   assert.ok((metadata+sitemap+img).includes(keyword), 'Missing SEO intent '+keyword)
 }

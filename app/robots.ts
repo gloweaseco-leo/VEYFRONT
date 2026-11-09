@@ -9,8 +9,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      // Match only experimental review paths; do not accidentally block /about later.
-      disallow: ['/a$', '/a/', '/b$', '/b/', '/review/'],
+      // Non-public review URLs are excluded by page-level noindex. Do not block
+      // their crawling here: crawlers need to read the noindex directive.
     },
     sitemap: 'https://veyfront.com/sitemap.xml',
     host: 'https://veyfront.com',
