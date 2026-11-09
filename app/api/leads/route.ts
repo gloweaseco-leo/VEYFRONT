@@ -6,6 +6,7 @@ import type { NextRequest } from 'next/server'
 import { checkUrl } from '@/lib/url'
 import { isJsonContentType, isSameOrigin, readLeadBody } from '@/lib/lead-request'
 import { validateContactDetails } from '@/lib/contact-validation'
+import { safeAcquisitionChannel, safeAcquisitionLandingPage } from '@/lib/acquisition-channel'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -26,6 +27,8 @@ type LeadInput = {
   consent?: unknown
   honeypot?: unknown
   lang?: unknown
+  acquisitionChannel?: unknown
+  acquisitionLandingPage?: unknown
 }
 
 function reject(message: string, status: number) {
@@ -58,6 +61,8 @@ export async function POST(request: NextRequest) {
   if (!['launch', 'rebuild', 'general', 'privacy'].includes(String(service))) return reject('Invalid request type.', 400)
   const category = service as Service
   const lang = data.lang === 'zh' ? 'zh' : 'en'
+  const acquisitionChannel = safeAcquisitionChannel(data.acquisitionChannel)
+  const acquisitionLandingPage = safeAcquisitionLandingPage(data.acquisitionLandingPage)
   const name = clean(data.name, 100)
   const email = clean(data.email, 254)
   const phone = clean(data.phone ?? '', 32)
@@ -93,6 +98,10 @@ export async function POST(request: NextRequest) {
     wechat: wechat || null,
     preferredContact,
     source: 'website-form',
+    // A browser-reported, non-PII hint; never treat it as verified organic attribution.
+    acquisition: category === 'privacy' ? undefined : {
+      channel: acquisitionChannel, landingPage: acquisitionLandingPage, provenance: 'unverified-browser-referrer-category',
+    },
     contactEstablished: false,
     company: company || null,
     website: website || null,

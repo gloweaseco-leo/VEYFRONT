@@ -7,6 +7,7 @@ import { headers } from 'next/headers'
 import './globals.css'
 import { releaseRobots } from '@/lib/seo-release'
 import { brandKnowledgeGraph } from '@/lib/seo-schema'
+import { AcquisitionCapture } from '@/components/veyfront/acquisition-capture'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
@@ -56,6 +57,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="font-sans antialiased">
+        <AcquisitionCapture />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(brandKnowledgeGraph).replace(/</g, '\\u003c') }}
