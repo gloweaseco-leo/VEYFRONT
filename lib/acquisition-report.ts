@@ -1,4 +1,4 @@
-import { safeAcquisitionChannel, safeAcquisitionLandingPage } from './acquisition-channel'
+import { safeAcquisitionChannel, safeAcquisitionLandingPage } from './acquisition-channel.ts'
 
 export type LeadSourceSummary = {
   savedFormInquiries: number
