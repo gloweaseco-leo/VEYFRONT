@@ -21,7 +21,10 @@ jobs:
           node-version: '24'
       - name: Check monitor syntax
         run: node --check scripts/seo-live-audit.mjs
+      # Pull requests only validate script syntax. The live target is production,
+      # which does not yet have branch-only SEO changes; avoid false PR failures.
       - name: Audit published bilingual SEO routes
+        if: github.event_name != 'pull_request'
         run: node scripts/seo-live-audit.mjs
       - name: Retain non-PII audit evidence
         if: always()
