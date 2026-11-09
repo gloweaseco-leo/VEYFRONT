@@ -5,11 +5,11 @@ import { classifyAcquisitionReferrer, safeAcquisitionChannel, safeAcquisitionLan
 const own = 'veyfront.com'
 
 test('known search referrers are classified without persisting their URLs or search terms', () => {
-  assert.equal(classifyAcquisitionReferrer('https://www.google.com/search?q=secret+query', own), 'google-organic')
-  assert.equal(classifyAcquisitionReferrer('https://google.com.hk/search?q=test', own), 'google-organic')
-  assert.equal(classifyAcquisitionReferrer('https://www.bing.com/search?q=test', own), 'bing-organic')
-  assert.equal(classifyAcquisitionReferrer('https://www.baidu.com/s?wd=test', own), 'baidu-organic')
-  assert.equal(classifyAcquisitionReferrer('https://duckduckgo.com/?q=test', own), 'other-search')
+  assert.equal(classifyAcquisitionReferrer('https://www.google.com/search?q=secret+query', own), 'google-referrer')
+  assert.equal(classifyAcquisitionReferrer('https://google.com.hk/search?q=test', own), 'google-referrer')
+  assert.equal(classifyAcquisitionReferrer('https://www.bing.com/search?q=test', own), 'bing-referrer')
+  assert.equal(classifyAcquisitionReferrer('https://www.baidu.com/s?wd=test', own), 'baidu-referrer')
+  assert.equal(classifyAcquisitionReferrer('https://duckduckgo.com/?q=test', own), 'other-search-referrer')
 })
 
 test('missing, malformed, internal or unrecognized sources never pretend to be organic', () => {
@@ -34,9 +34,10 @@ test('only canonical public paths are eligible for landing attribution', () => {
 })
 
 test('the server accepts only a closed source-category enumeration', () => {
-  assert.equal(safeAcquisitionChannel('google-organic'), 'google-organic')
+  assert.equal(safeAcquisitionChannel('google-referrer'), 'google-referrer')
+  assert.equal(safeAcquisitionChannel('google-organic'), 'google-referrer') // legacy session alias
   assert.equal(safeAcquisitionChannel('external-referral'), 'external-referral')
   assert.equal(safeAcquisitionChannel('https://www.google.com/search?q=user'), 'unknown')
-  assert.equal(safeAcquisitionChannel({channel:'google-organic'}), 'unknown')
+  assert.equal(safeAcquisitionChannel({channel:'google-referrer'}), 'unknown')
   assert.equal(safeAcquisitionChannel(null), 'unknown')
 })

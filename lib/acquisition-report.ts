@@ -14,8 +14,8 @@ export function createLeadSourceSummary(): LeadSourceSummary {
     savedFormInquiries: 0,
     byService: { launch: 0, rebuild: 0, general: 0 },
     byChannel: {
-      'google-organic': 0, 'bing-organic': 0, 'baidu-organic': 0,
-      'other-search': 0, 'external-referral': 0, unknown: 0,
+      'google-referrer': 0, 'bing-referrer': 0, 'baidu-referrer': 0,
+      'other-search-referrer': 0, 'external-referral': 0, unknown: 0,
     },
     byLandingPage: {},
     caveat: 'Only persisted form receipts. Browser referrer categories are unverified hints. Not GSC-verified organic clicks, qualified leads or conversions. WeCom/Email handled separately.',
