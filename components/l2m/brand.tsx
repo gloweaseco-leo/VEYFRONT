@@ -24,10 +24,14 @@ export function Logo({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
 export function LangToggle({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
   const { lang, setLang } = useLang()
   const pathname = usePathname()
+  const cleanPath = pathname.startsWith('/zh/') ? pathname.slice(3) : pathname === '/zh' ? '/' : pathname
+  const publicPaths = new Set(['/', '/pricing', '/transformations', '/how-it-works', '/contact', '/start/launch', '/start/rebuild', '/privacy', '/terms', '/contact/privacy'])
+  const isPublicPath = publicPaths.has(cleanPath)
   const options: { value: Lang; label: string }[] = [
     { value: 'en', label: 'EN' },
     { value: 'zh', label: '中文' },
   ]
+
   return (
     <div
       role="group"
@@ -37,42 +41,38 @@ export function LangToggle({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
         tone === 'dark' ? 'border-ivory/25' : 'border-ink/20',
       )}
     >
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          aria-pressed={lang === o.value}
-          onClick={() => {
-            if (o.value === lang) return
-            const cleanPath = pathname.startsWith('/zh/') ? pathname.slice(3) : pathname === '/zh' ? '/' : pathname
-            const publicPaths = new Set(['/', '/pricing', '/transformations', '/how-it-works', '/contact', '/start/launch', '/start/rebuild', '/privacy', '/terms', '/contact/privacy'])
-            if (publicPaths.has(cleanPath)) {
-              // A full first-party navigation is intentional: Next's client navigation
-              // can reuse the same rewritten route without refreshing the page's
-              // server-rendered locale metadata (canonical, OG locale, hreflang).
-              // Never store partially completed inquiry data in browser storage.
-              const href = o.value === 'zh' ? '/zh' + (cleanPath === '/' ? '' : cleanPath) : cleanPath
-              window.location.assign(href)
-              return
-            }
-            // Internal design review routes keep a local language toggle only.
-            setLang(o.value)
-          }}
-          className={cn(
-            'min-h-8 min-w-10 rounded-full px-2.5 focus-visible:outline-2 focus-visible:outline-offset-1',
-            lang === o.value
-              ? tone === 'dark'
-                ? 'bg-ivory text-ink'
-                : 'bg-ink text-ivory'
-              : tone === 'dark'
-                ? 'text-ivory/75 hover:text-ivory'
-                : 'text-ink/70 hover:text-ink',
-            tone === 'dark' ? 'focus-visible:outline-ivory' : 'focus-visible:outline-ink',
-          )}
-        >
-          {o.label}
-        </button>
-      ))}
+      {options.map((o) => {
+        const active = lang === o.value
+        const className = cn(
+          'min-h-8 min-w-10 rounded-full px-2.5 focus-visible:outline-2 focus-visible:outline-offset-1',
+          active
+            ? tone === 'dark'
+              ? 'bg-ivory text-ink'
+              : 'bg-ink text-ivory'
+            : tone === 'dark'
+              ? 'text-ivory/75 hover:text-ivory'
+              : 'text-ink/70 hover:text-ink',
+          tone === 'dark' ? 'focus-visible:outline-ivory' : 'focus-visible:outline-ink',
+        )
+
+        if (isPublicPath) {
+          // Native anchors expose both language URLs in server-rendered HTML to crawlers.
+          // A full document navigation also refreshes rewrite-derived canonical/hreflang metadata.
+          const href = o.value === 'zh' ? '/zh' + (cleanPath === '/' ? '' : cleanPath) : cleanPath
+          return (
+            <a key={o.value} href={href} hrefLang={o.value === 'zh' ? 'zh-CN' : 'en'} aria-current={active ? 'page' : undefined} className={className}>
+              {o.label}
+            </a>
+          )
+        }
+
+        // Internal review surfaces are intentionally kept out of public locale URLs.
+        return (
+          <button key={o.value} type="button" aria-pressed={active} onClick={() => setLang(o.value)} className={className}>
+            {o.label}
+          </button>
+        )
+      })}
     </div>
   )
 }
