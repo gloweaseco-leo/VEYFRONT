@@ -1,4 +1,5 @@
 'use client'
+import { useEffect, useState } from 'react'
 import Link from '@/components/l2m/localized-link'
 import { PageShell } from '@/components/site/page-shell'
 import { LeadForm, type Service } from '@/components/veyfront/lead-form'
@@ -48,6 +49,18 @@ export function IntakePage({ service }: { service: Service }) {
 export function ContactPage() {
   const { lang } = useLang()
   const zh = lang === 'zh'
+  const [selectedPlan, setSelectedPlan] = useState<'start' | 'sales' | 'growth' | null>(null)
+  useEffect(() => {
+    const candidate = new URLSearchParams(window.location.search).get('plan')
+    if (candidate === 'start' || candidate === 'sales' || candidate === 'growth') setSelectedPlan(candidate)
+  }, [])
+  const planName = selectedPlan === 'start' ? (zh ? '专业启航版' : 'Professional Start')
+    : selectedPlan === 'sales' ? (zh ? '商业拓展版' : 'Sales Expansion')
+    : selectedPlan === 'growth' ? (zh ? '增长领航版' : 'Growth Navigator') : ''
+  const prefill = selectedPlan
+    ? (zh ? '我想咨询 VEYFRONT ' + planName + '（V3.5参考价格）。请联系我确认项目范围、交付权益和正式报价。'
+        : 'I would like to discuss the VEYFRONT ' + planName + ' package (V3.5 guide price). Please confirm the project scope and a written quotation.')
+    : ''
   return <PageShell>
     <section className="bg-ink text-ivory">
       <div className="mx-auto max-w-[1200px] px-5 py-14 md:px-10 lg:py-20">
@@ -68,7 +81,11 @@ export function ContactPage() {
         <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink/60">{zh ? '正式需求 / PROJECT BRIEF' : 'PROJECT INQUIRY'}</p>
         <h2 className="mt-3 text-2xl font-semibold">{zh ? '提交项目需求' : 'Tell us about your project'}</h2>
         <p className="mb-7 mt-3 max-w-lg text-sm leading-relaxed text-ink/70">{zh ? '适合已有明确需求、希望获得建设方案与书面报价的客户。填写一种有效联系方式即可，成功提交后会获得咨询编号。' : 'Share your business goals and receive a reference after successful storage. You do not need to pay to inquire.'}</p>
-        <LeadForm service="general"/>
+        {selectedPlan && <p className="mb-5 rounded-lg border border-ink/20 bg-mist/45 p-4 text-sm leading-relaxed">
+          {zh ? '您选择咨询：' : 'Selected plan: '}<strong>{planName}</strong>。
+          {zh ? '已在需求栏预填方案名称，您可以自行修改。' : ' We have prefilled the plan name in your request. You can edit it.'}
+        </p>}
+        <LeadForm service="general" defaultDetails={prefill}/>
       </div>
     </section>
     <section className="border-t border-ink/10 bg-mist/25">
