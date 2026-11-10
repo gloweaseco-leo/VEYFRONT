@@ -159,7 +159,7 @@ export function PricingV35() {
           <ul className="flex-1 space-y-4">
             {plan.points.map((point,i) => <li key={i} className="flex items-start gap-3 text-sm leading-relaxed"><Check className="mt-0.5 size-[18px] shrink-0 text-ink"/>{t(point)}</li>)}
           </ul>
-          <Link href="/contact" className={'mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-md px-5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ' + (plan.featured ? 'bg-ink text-ivory hover:bg-ink/85' : 'border border-ink/25 bg-ivory text-ink hover:bg-mist')}>{zh ? '咨询' + t(plan.title) + '方案' : 'Ask about ' + t(plan.title)}<ArrowRight className="size-4"/></Link>
+          <Link href={'/contact?plan=' + plan.id} className={'mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-md px-5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ' + (plan.featured ? 'bg-ink text-ivory hover:bg-ink/85' : 'border border-ink/25 bg-ivory text-ink hover:bg-mist')}>{zh ? '咨询' + t(plan.title) + '方案' : 'Ask about ' + t(plan.title)}<ArrowRight className="size-4"/></Link>
         </article>)}
       </div>
       <p className="mt-5 text-sm leading-relaxed text-ink/65">{zh ? '三个方案都支持新建官网及标准范围的旧站升级。标准范围和第三方费用在签约前书面确认；V3.5当前为商业审核中的预览方案。' : 'All three plans support new builds and standard rebuilds. Scope and external costs are agreed in writing before signing; V3.5 remains a preview under commercial review.'}</p>
