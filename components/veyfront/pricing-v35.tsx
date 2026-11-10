@@ -1,6 +1,7 @@
 'use client'
 
 import Link from '@/components/l2m/localized-link'
+import { Fragment } from 'react'
 import { ArrowRight, ArrowUpRight, Check, CheckCircle2, Globe2, Search, ShieldCheck, UsersRound } from 'lucide-react'
 import { useLang } from '@/lib/i18n'
 
@@ -193,7 +194,7 @@ export function PricingV35() {
       <div className="mt-3 overflow-x-auto rounded-xl border border-ink/15 bg-white/75">
         <table className="w-full min-w-[760px] border-collapse text-left text-sm">
           <thead><tr className="border-b border-ink/15 bg-ink text-ivory"><th scope="col" className="w-[34%] px-5 py-5 font-semibold">{zh ? '具体服务权益' : 'Included services'}</th>{plans.map(p=><th key={p.id} scope="col" className="w-[22%] px-4 py-5 font-semibold">{t(p.title)}<span className="mt-1 block text-ivory/70">¥{p.price}</span></th>)}</tr></thead>
-          <tbody>{groups.map(group=><>{/* Keyed fragment uses section header identity through row */}<tr key={group.title[0]} className="border-y border-ink/10 bg-mist/65"><th scope="rowgroup" colSpan={4} className="px-5 py-3 text-sm font-semibold">{t(group.title)}</th></tr>{group.rows.map(row=><tr key={group.title[0] + row.name[0]} className="border-t border-ink/10 align-top"><th scope="row" className="px-5 py-4 font-medium leading-relaxed">{t(row.name)}</th>{row.cells.map((cell,i)=><td key={i} className={'px-4 py-4 leading-relaxed ' + (i===1 ? 'bg-mist/20' : '')}>{t(cell)}</td>)}</tr>)}</>)}</tbody>
+          <tbody>{groups.map(group=><Fragment key={group.title[0]}><tr key={group.title[0]} className="border-y border-ink/10 bg-mist/65"><th scope="rowgroup" colSpan={4} className="px-5 py-3 text-sm font-semibold">{t(group.title)}</th></tr>{group.rows.map(row=><tr key={group.title[0] + row.name[0]} className="border-t border-ink/10 align-top"><th scope="row" className="px-5 py-4 font-medium leading-relaxed">{t(row.name)}</th>{row.cells.map((cell,i)=><td key={i} className={'px-4 py-4 leading-relaxed ' + (i===1 ? 'bg-mist/20' : '')}>{t(cell)}</td>)}</tr>)}</Fragment>)}</tbody>
         </table>
       </div>
       <p className="mt-4 text-xs leading-relaxed text-ink/60">{zh ? '标准产品资料数量是客户提供、结构一致、可批量整理的记录上限，并非网站URL上限。专题是基于已核实材料的一份采购专业网页，不是工程设计服务。' : 'Product record caps apply to consistent, client-supplied structured entries, not total site URLs. A guide is a verified buyer-oriented page, not an engineering design project.'}</p>
@@ -257,8 +258,8 @@ export function PricingV35() {
           {num:'03',title:['增长研究成果','Growth research evidence'],body:['采购问题或候选企业研究清单、公开来源、核查状态及优先行动建议。','Buyer questions or candidate research, public sources, review status and prioritized next steps.']}].map(item=>
             <article key={item.num} className="rounded-lg border border-ink/15 bg-ivory p-6">
               <p className="font-mono text-sm text-ink/45">{item.num} / EVIDENCE</p>
-              <h3 className="mt-5 text-xl font-semibold">{t(item.title as Pair)}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-ink/65">{t(item.body as Pair)}</p>
+              <h3 className="mt-5 text-xl font-semibold">{t(item.title as unknown as Pair)}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-ink/65">{t(item.body as unknown as Pair)}</p>
             </article>)}
         </div>
         <p className="mt-5 text-xs leading-relaxed text-ink/55">{zh ? '上述为交付成果结构示意；具体包含哪些成果取决于所选套餐，不代表已有真实客户增长案例。' : 'Illustrates deliverable types by plan; this is not a claim of historical customer results.'}</p>
