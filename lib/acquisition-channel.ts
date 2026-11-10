@@ -11,8 +11,13 @@ const canonicalPaths = [
   '/start/rebuild', '/en/start/rebuild', '/privacy', '/en/privacy',
   '/terms', '/en/terms',
 ] as const
+// Historical /zh records remain valid for readback; public requests to these paths now 308 to Chinese canonical.
+const legacyLandingPaths = [
+  '/zh', '/zh/pricing', '/zh/how-it-works', '/zh/contact',
+  '/zh/start/launch', '/zh/start/rebuild', '/zh/privacy', '/zh/terms',
+] as const
 export function safeAcquisitionLandingPage(value: unknown): string | null {
-  return typeof value === 'string' && (canonicalPaths as readonly string[]).includes(value)
+  return typeof value === 'string' && ((canonicalPaths as readonly string[]).includes(value) || (legacyLandingPaths as readonly string[]).includes(value))
     ? value
     : null
 }
