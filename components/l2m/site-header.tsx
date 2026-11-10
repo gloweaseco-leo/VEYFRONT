@@ -47,6 +47,7 @@ export function useSiteLinks() {
 export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark'; inputId?: string }) {
   const { t, lang } = useLang()
   const pathname = usePathname()
+  const normalizedPath = pathname.startsWith('/en/') ? pathname.slice(3) : pathname === '/en' ? '/' : pathname
   const [open, setOpen] = useState(false)
   const [contactOpen, setContactOpen] = useState(false)
   const canWecom = lang === 'zh' && Boolean(wecomQrPath())
@@ -79,7 +80,7 @@ export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark
         </Link>
         <nav aria-label={t.nav.navLabel} className="hidden items-center gap-8 text-sm font-medium lg:flex">
           {links.map((l) => {
-            const active = pathname === l.href
+            const active = normalizedPath === l.href
             return (
               <Link key={l.href} href={l.href} aria-current={active ? 'page' : undefined} className={linkCls(active)}>
                 {l.label}
@@ -116,7 +117,7 @@ export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark
       {open && (
         <nav id={menuId} aria-label={t.nav.navLabel} className={cn('flex flex-col border-t px-5 pb-4 lg:hidden', dark ? 'border-ivory/15' : 'border-ink/10')}>
           {[{ label: 'VEYFRONT', href: '/' }, ...links].map((l) => {
-            const active = pathname === l.href
+            const active = normalizedPath === l.href
             return (
               <Link
                 key={l.href}
