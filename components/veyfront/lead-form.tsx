@@ -10,7 +10,7 @@ import { ACQUISITION_SESSION_KEY, LANDING_PAGE_SESSION_KEY, safeAcquisitionChann
 
 export type Service = 'launch' | 'rebuild' | 'general' | 'privacy'
 
-export function LeadForm({ service, defaultWebsite = '' }: { service: Service; defaultWebsite?: string }) {
+export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: { service: Service; defaultWebsite?: string; defaultDetails?: string }) {
   const { lang } = useLang()
   const zh = lang === 'zh'
   const [name, setName] = useState('')
@@ -21,7 +21,7 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
   const [company, setCompany] = useState('')
   const [website, setWebsite] = useState(defaultWebsite)
   const [markets, setMarkets] = useState('')
-  const [details, setDetails] = useState('')
+  const [details, setDetails] = useState(defaultDetails)
   const [honeypot, setHoneypot] = useState('')
   const [consent, setConsent] = useState(false)
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
@@ -29,6 +29,7 @@ export function LeadForm({ service, defaultWebsite = '' }: { service: Service; d
   const [error, setError] = useState('')
 
   useEffect(() => { if (defaultWebsite) setWebsite(defaultWebsite) }, [defaultWebsite])
+  useEffect(() => { if (defaultDetails) setDetails(current => current.trim() ? current : defaultDetails) }, [defaultDetails])
   useEffect(() => {
     if (service !== 'rebuild') return
     try {
