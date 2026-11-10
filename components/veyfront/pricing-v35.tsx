@@ -116,7 +116,7 @@ export function PricingTeaserV35() {
           <p className="mt-5 border-t border-ink/10 pt-4 text-sm text-ink/80">{t(plan.points[3])}</p>
         </article>)}
       </div>
-      <p className="mt-5 text-xs leading-relaxed text-ink/60">{zh ? '一次性标准项目参考价；正式报价、税务及服务范围签约前确认。V3.5商业方案目前处于预览审核阶段。' : 'Indicative one-off project prices; final quote, taxes and scope are confirmed before agreement. V3.5 is under commercial review.'}</p>
+      <p className="mt-5 text-xs leading-relaxed text-ink/60">{zh ? '一次性标准项目参考价；正式报价、税务及服务范围签约前确认。价格与税务条件以签约前确认的书面报价为准。' : 'Indicative one-off project prices; final quote, taxes and scope are confirmed before agreement. The written quote confirms scope and tax terms.'}</p>
     </div>
   </section>
 }
@@ -162,7 +162,7 @@ export function PricingV35() {
           <Link href={'/contact?plan=' + plan.id} className={'mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-md px-5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ' + (plan.featured ? 'bg-ink text-ivory hover:bg-ink/85' : 'border border-ink/25 bg-ivory text-ink hover:bg-mist')}>{zh ? '咨询' + t(plan.title) + '方案' : 'Ask about ' + t(plan.title)}<ArrowRight className="size-4"/></Link>
         </article>)}
       </div>
-      <p className="mt-5 text-sm leading-relaxed text-ink/65">{zh ? '三个方案都支持新建官网及标准范围的旧站升级。标准范围和第三方费用在签约前书面确认；V3.5当前为商业审核中的预览方案。' : 'All three plans support new builds and standard rebuilds. Scope and external costs are agreed in writing before signing; V3.5 remains a preview under commercial review.'}</p>
+      <p className="mt-5 text-sm leading-relaxed text-ink/65">{zh ? '三个方案都支持新建官网及标准范围的旧站升级。标准范围和第三方费用在签约前书面确认；具体交付范围、第三方费用与税务条件以签约前的书面确认为准。' : 'All three plans support new builds and standard rebuilds. Scope and external costs are agreed in writing before signing; Final deliverables, external costs and tax terms are confirmed in writing before signing.'}</p>
     </section>
 
     <section className="border-y border-ink/10 bg-mist/35" aria-labelledby="upgrade-value-title">
