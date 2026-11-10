@@ -5,19 +5,19 @@ import { Hero } from '@/components/home/hero'
 import { BuyerCapabilities } from '@/components/home/buyer-capabilities'
 import { Transformation } from '@/components/home/transformation'
 import { JourneySteps } from '@/components/veyfront/journey-steps'
-import { CommercialOffers } from '@/components/veyfront/commercial-offers'
+import { PricingTeaserV35 } from '@/components/veyfront/pricing-v35'
 import { Proof } from '@/components/home/proof'
 import { Invitation, SiteFooter } from '@/components/home/invitation'
 
 export async function generateMetadata() {
-  return localizedMetadata("/", "International B2B Website Design & Rebuild | VEYFRONT", "外贸独立站建设与旧站升级｜B2B企业网站服务 - VEYFRONT", "Launch or redesign your international B2B website with multilingual product pages, SEO foundations, verified inquiry paths and first-year hosting. Clear scope from ¥9,800.", "VEYFRONT为中国出口企业提供外贸独立站建设与旧网站升级：中英文产品展示、SEO基础、真实询盘接收及首年基础托管，标准参考价¥9,800。")
+  return localizedMetadata("/", "International B2B Website Design & Rebuild | VEYFRONT", "外贸独立站建设与旧站升级｜B2B企业网站服务 - VEYFRONT", "Bilingual B2B websites with verified inquiry paths, first-year hosting, and three months of services. Three indicative packages from ¥3,680.", "VEYFRONT为中国出海企业提供中英文海外官网建设与常规旧站升级，含真实询盘接收、首年基础托管及3个月服务权益，三档参考价¥3,680、¥6,680、¥9,680。")
 }
 export default function HomePage(){
  return <HomeDemoProvider>
   <SiteHeader tone="dark"/>
   <main>
    <Hero/>
-   <CommercialOffers/>
+   <PricingTeaserV35/>
    <BuyerCapabilities/>
    <Transformation/>
    <JourneySteps/>
