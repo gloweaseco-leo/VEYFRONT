@@ -20,11 +20,12 @@ Status: **PREVIEW / COMMERCIAL APPROVAL PENDING**.
 - `components/veyfront/pricing-v35.tsx` — new Chinese/English pricing page and homepage teaser, editorial brand layout, three plan cards, value upgrade, five comparison groups, three-month entitlement, research track alternatives, delivery evidence, hosting, FAQ and Launch/Rebuild CTAs.
 - `app/pricing/page.tsx` — switch to V3.5 and update localized SEO metadata.
 - `app/page.tsx` — switch homepage pricing teaser and localized SEO descriptions.
-- `components/veyfront/commercial-offers.tsx` — compatibility wrapper prevents legacy single-price copy reappearing when imported.
+- `components/veyfront/commercial-offers.tsx` — legacy W1.6 component retained for historical static guards; the active home/pricing routes import V3.5 directly and do not render it.
+- `components/veyfront/lead-form.tsx` and `intake-pages.tsx` — safe allowlisted package selection is shown and prefilled into the editable project inquiry text from the pricing-card URL.
 - No payment API, login, L2M diagnosis trigger, CRM, AI research runtime, external outreach or private customer data is added.
 
 ## Build evidence
-- Vercel Git Preview from branch: deployment SHA `e9ff63a5048126b86c751b5f4868cfe4a4ca68fb` was `READY` after TypeScript correction.
+- The initial V3.5 route build (SHA `e9ff63a5048126b86c751b5f4868cfe4a4ca68fb`) was `READY` after TypeScript correction. Later route refinements require their own build evidence; historic SEO guards prohibit removing the archived W1.6 component.
 - Vercel production target is not set; no production domain is assigned.
 - Build runs original checks: demo, brand, intake, ops, contact, SEO, security, Next.js compile, TypeScript and static routes.
 - Next.js compiled successfully; TypeScript finished; 19 static pages generated.
