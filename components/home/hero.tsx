@@ -44,7 +44,7 @@ export function Hero() {
        <span><span className="block text-xl">{zh?'我要升级旧网站':'Improve my current site'}</span><span className="mt-1 block text-sm font-normal text-ivory/70">{zh?'已有网站，保留有价值的内容':'Already have a site'}</span></span>
       </Link>
      </div>
-     <p className="text-sm text-ivory/60">{zh?'新建或常规旧站升级，标准方案参考价 ¥9,800；免费提交需求。':'Both paths start from the same ¥9,800 complete-site reference price. Inquiries are free.'}</p>
+     <p className="text-sm text-ivory/60">{zh?'新建和常规旧站升级均可选择三档方案，¥3,680起；提交咨询无需付款。':'Both new builds and standard rebuilds can choose from three plans starting at ¥3,680. Inquiries are free.'}</p>
     </div>
     <div ref={motionFrame} data-testid="hero-hybrid-panel" data-vf-motion={motionStarted?'started':'static'} data-vf-visible={motionVisible?'yes':'no'} className="vf-motion-frame relative isolate min-w-0 overflow-hidden rounded-xl border border-lime/25 bg-[#172e34] p-5 shadow-2xl shadow-black/20 sm:p-7">
       <div aria-hidden="true" className="vf-motion-ambient pointer-events-none absolute -right-12 top-24 h-80 w-80 rounded-full bg-lime/10 blur-[95px]"/>
@@ -129,7 +129,7 @@ export function Hero() {
       </div>
       <div className="relative z-10 flex flex-col gap-2 border-t border-ivory/15 pt-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs leading-relaxed text-ivory/60">{zh?'网站设计示意，非真实客户案例或增长数据。':'Illustrative concept, not a client delivery or measured result.'}</p>
-        <Link href="/pricing" className="inline-flex min-h-10 shrink-0 items-center gap-2 text-sm font-semibold text-lime underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-lime">{zh?'查看 ¥9,800 完整服务内容':'Explore the ¥9,800 package'} <ArrowUpRight aria-hidden="true" className="size-4"/></Link>
+        <Link href="/pricing" className="inline-flex min-h-10 shrink-0 items-center gap-2 text-sm font-semibold text-lime underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-lime">{zh?'查看三档服务与价格':'Explore plans and pricing'} <ArrowUpRight aria-hidden="true" className="size-4"/></Link>
       </div>
     </div>
    </div>
