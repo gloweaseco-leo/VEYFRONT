@@ -26,7 +26,7 @@ test('only canonical public paths are eligible for landing attribution', () => {
   assert.equal(safeAcquisitionLandingPage('/en/pricing'), '/en/pricing')
   assert.equal(safeAcquisitionLandingPage('/'), '/')
   assert.equal(safeAcquisitionLandingPage('/en'), '/en')
-  assert.equal(safeAcquisitionLandingPage('/zh/pricing'), null) // legacy redirect, not a canonical landing
+  assert.equal(safeAcquisitionLandingPage('/zh/pricing'), '/zh/pricing') // preserve historical attribution readback
   assert.equal(safeAcquisitionLandingPage('/api/leads'), null)
   assert.equal(safeAcquisitionLandingPage('/review/stage-1'), null)
   assert.equal(safeAcquisitionLandingPage('/contact?token=secret'), null)
