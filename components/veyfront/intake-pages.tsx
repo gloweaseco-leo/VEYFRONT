@@ -82,7 +82,7 @@ export function ContactPage() {
         <h2 className="mt-3 text-2xl font-semibold">{zh ? '提交项目需求' : 'Tell us about your project'}</h2>
         <p className="mb-7 mt-3 max-w-lg text-sm leading-relaxed text-ink/70">{zh ? '适合已有明确需求、希望获得建设方案与书面报价的客户。填写一种有效联系方式即可，成功提交后会获得咨询编号。' : 'Share your business goals and receive a reference after successful storage. You do not need to pay to inquire.'}</p>
         {selectedPlan && <p className="mb-5 rounded-lg border border-ink/20 bg-mist/45 p-4 text-sm leading-relaxed">
-          {zh ? '您选择咨询：' : 'Selected plan: '}<strong>{planName}</strong>。
+          {zh ? '您选择咨询：' : 'Selected plan: '}<strong>{planName}</strong>{zh ? '。' : '.'}
           {zh ? '已在需求栏预填方案名称，您可以自行修改。' : ' We have prefilled the plan name in your request. You can edit it.'}
         </p>}
         <LeadForm service="general" defaultDetails={prefill}/>
