@@ -1,10 +1,10 @@
 import { localizedMetadata } from '@/lib/locale-metadata'
 import { PageShell } from '@/components/site/page-shell'
-import { CommercialOffers } from '@/components/veyfront/commercial-offers'
+import { PricingV35 } from '@/components/veyfront/pricing-v35'
 
 export async function generateMetadata() {
-  return localizedMetadata("/pricing", "B2B Website Pricing: Build & Rebuild from ¥9,800 | VEYFRONT", "外贸网站建设报价｜¥9,800标准服务与价格 - VEYFRONT", "A complete B2B website from ¥9,800: professional design, SEO-Native foundation, structured product content, working inquiries and first-year basic hosting.", "B2B企业网站建设和常规升级标准参考价¥9,800，包含中英文网站、产品展示、在线询盘、搜索优化基础及首年托管。")
+  return localizedMetadata("/pricing", "B2B Website Packages & Pricing | VEYFRONT", "外贸网站建设服务与价格｜三档方案 - VEYFRONT", "Compare three B2B website packages from ¥3,680 to ¥9,680 with buyer trust, SEO-native content, first-year hosting and three months of professional services.", "比较VEYFRONT外贸独立站三档方案：¥3,680专业启航、¥6,680商业拓展、¥9,680增长领航，包含首年基础托管和3个月专业服务权益。")
 }
 export default function PricingPage() {
-  return <PageShell><CommercialOffers detail /></PageShell>
+  return <PageShell><PricingV35 /></PageShell>
 }
