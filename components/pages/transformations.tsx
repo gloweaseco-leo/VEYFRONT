@@ -78,7 +78,7 @@ function Stage({
           <p className="font-mono text-xs uppercase tracking-[0.18em] text-ink/60">{p.tr.stageEyebrow}</p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <h2 id="stage-title" className="text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
-              {DEMO_COMPANY.name}
+              {p.tr.stageTitle}
             </h2>
 
           </div>

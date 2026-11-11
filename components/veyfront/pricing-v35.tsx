@@ -262,7 +262,7 @@ export function PricingV35() {
               <p className="mt-3 text-sm leading-relaxed text-ink/65">{t(item.body as unknown as Pair)}</p>
             </article>)}
         </div>
-        <p className="mt-5 text-xs leading-relaxed text-ink/55">{zh ? '上述为交付成果结构示意；具体包含哪些成果取决于所选套餐，不代表已有真实客户增长案例。' : 'Illustrates deliverable types by plan; this is not a claim of historical customer results.'}</p>
+        <p className="mt-5 text-xs leading-relaxed text-ink/55">{zh ? '具体交付内容以所选套餐权益与双方确认的项目范围为准，完成后提供可核对的交付记录。' : 'Deliverables follow the selected plan and agreed scope, with inspectable completion records.'}</p>
       </div>
     </section>
 

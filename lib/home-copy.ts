@@ -30,7 +30,7 @@ const en = {
     pricing: '#what-you-get',
   },
   hero: {
-    caption: 'Illustrative design comparison for a fictional company; not a delivered client project.',
+    caption: 'Clearer product discovery, more useful purchase information, and a direct path to inquiry.',
     proofBefore: 'Before: a model-number list, specifications locked in a PDF, a generic contact page.',
     proofAfter: 'After: global buyers can find relevant products, check key specifications and send sales a clear inquiry.',
     inspect: 'Inspect what changed',
@@ -260,7 +260,7 @@ const zh: HomeCopy = {
   reviewLink: '第一阶段 A/B 评审',
   nav: en.nav,
   hero: {
-    caption: '设计效果对比示意，非真实客户交付案例。',
+    caption: '重点看三处改变：产品更容易找到、关键参数更容易核对、询盘入口更直接。',
     proofBefore: '改造前：只有型号列表，规格锁在 PDF 里，联系页只有通用信息。',
     proofAfter: '改造后：海外买家更容易找到合适的产品、核对关键技术参数，并向销售团队提出明确的采购需求。',
     inspect: '查看具体变化',
