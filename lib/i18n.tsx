@@ -60,7 +60,7 @@ const en = {
   },
   flagship: {
     eyebrow: 'The Transformation',
-    title: 'Same business. A completely different experience.',
+    title: 'Before and after: a more useful buyer experience.',
     altTitle: '还是同一家企业，但客户看到的体验已经不同。',
     lede: 'One company, the same pages and the same facts — reorganized around how a buyer discovers, evaluates and gets in touch.',
     before: 'Before',
@@ -176,7 +176,7 @@ const zh: Dict = {
   },
   flagship: {
     eyebrow: '升级体验对比',
-    title: '同一家企业，网站升级前后大不一样。',
+    title: '网站升级前后，海外买家的体验有什么变化？',
     altTitle: 'Same business. A completely different experience.',
     lede: '在不编造企业和产品事实的前提下，重新组织产品展示、采购评估与询盘路径。',
     before: '改造前',
