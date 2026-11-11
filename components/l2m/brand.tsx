@@ -15,7 +15,7 @@ export function Logo({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
       height={140}
       priority
       unoptimized
-      className="block h-auto w-[168px] shrink-0 select-none sm:w-[180px] xl:w-[194px]"
+      className="block h-auto w-[122px] shrink-0 select-none min-[360px]:w-[148px] sm:w-[180px] xl:w-[194px]"
       draggable={false}
     />
   )
