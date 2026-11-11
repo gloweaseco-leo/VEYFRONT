@@ -198,3 +198,12 @@
   [data-testid="hero-hybrid-panel"] *::before,
   [data-testid="hero-hybrid-panel"] *::after { animation:none!important;transition:none!important; }
 }
+
+/* Mobile V1: hide fixed actions during text entry, including WeChat in-app browsers. */
+@media (max-width: 767px) {
+  body:has(input:focus, textarea:focus, select:focus, [contenteditable="true"]:focus) .vf-mobile-nav-shell {
+    visibility: hidden;
+    pointer-events: none;
+  }
+  html { scroll-padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
+}
