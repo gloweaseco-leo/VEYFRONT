@@ -10,10 +10,11 @@ const stages=[
 ]
 export function JourneySteps({detail=false}:{detail?:boolean}){
  const {lang}=useLang(),zh=lang==='zh'
+ const HeadingTag = detail ? 'h1' : 'h2'
  return <section id="delivery-steps" aria-labelledby="delivery-steps-title" className="bg-ivory text-ink">
  <div className="mx-auto max-w-[1440px] px-5 py-16 md:px-10 lg:py-20">
   <p className="font-mono text-xs uppercase tracking-widest text-ink/60">{zh ? '合作流程 / 01—04' : 'HOW IT WORKS / 01—04'}</p>
-  <h2 id="delivery-steps-title" className="mt-3 max-w-4xl text-balance text-3xl font-semibold sm:text-[42px]">{zh?'从沟通需求到网站上线，四步完成合作。':'Four clear steps, from inquiry to launch.'}</h2>
+  <HeadingTag id="delivery-steps-title" className="mt-3 max-w-4xl text-balance text-3xl font-semibold sm:text-[42px]">{zh?'从沟通需求到网站上线，四步完成合作。':'Four clear steps, from inquiry to launch.'}</HeadingTag>
   <p className="mt-4 max-w-2xl leading-relaxed text-ink/70">{zh?'新建官网或升级旧站，我们都会提前确认需求、报价和验收方式。':'Launch and Rebuild follow the same clear engagement process. Submitting an inquiry never changes an existing website.'}</p>
   <ol className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
    {stages.map((s,i)=><li key={i} className="flex h-full flex-col gap-4 rounded-xl border border-ink/15 bg-mist/30 p-6">
