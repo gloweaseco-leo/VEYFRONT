@@ -37,14 +37,14 @@ export function LangToggle({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
       role="group"
       aria-label="Language / 语言"
       className={cn(
-        'flex items-center rounded-full border p-0.5 text-xs font-medium',
+        'inline-flex items-center rounded-full border p-0.5 text-xs font-medium',
         tone === 'dark' ? 'border-ivory/25' : 'border-ink/20',
       )}
     >
       {options.map((o) => {
         const active = lang === o.value
         const className = cn(
-          'min-h-8 min-w-10 rounded-full px-2.5 focus-visible:outline-2 focus-visible:outline-offset-1',
+          'inline-flex h-9 min-w-11 shrink-0 items-center justify-center rounded-full px-2.5 text-center leading-none focus-visible:outline-2 focus-visible:outline-offset-1',
           active
             ? tone === 'dark'
               ? 'bg-ivory text-ink'
