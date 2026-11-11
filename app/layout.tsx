@@ -8,6 +8,7 @@ import './globals.css'
 import { releaseRobots } from '@/lib/seo-release'
 import { brandKnowledgeGraph } from '@/lib/seo-schema'
 import { AcquisitionCapture } from '@/components/veyfront/acquisition-capture'
+import { MobileQuickNav } from '@/components/veyfront/mobile-quick-nav'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
@@ -62,7 +63,10 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(brandKnowledgeGraph).replace(/</g, '\\u003c') }}
         />
-        <LangProvider initialLang={initialLang}>{children}</LangProvider>
+        <LangProvider initialLang={initialLang}>
+          {children}
+          <MobileQuickNav />
+        </LangProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
         <SpeedInsights sampleRate={1} />
       </body>

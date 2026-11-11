@@ -25,17 +25,17 @@ export function Hero() {
  },[])
 
  return <section aria-labelledby="hero-title" className="bg-ink text-ivory">
-   <div className="mx-auto grid max-w-[1440px] gap-12 px-5 py-16 md:px-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)] lg:items-center lg:gap-16 lg:py-24">
+   <div className="mx-auto grid max-w-[1440px] gap-8 px-5 py-10 sm:gap-12 sm:py-16 md:px-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)] lg:items-center lg:gap-16 lg:py-24">
     <div className="flex flex-col gap-7">
      <p className="w-fit rounded-full border border-ivory/20 px-3 py-1 font-mono text-xs uppercase tracking-[0.17em] text-ivory/75">VEYFRONT / DIGITAL FRONTIERS</p>
-     <h1 id="hero-title" className="text-balance text-[36px] font-semibold leading-[1.13] tracking-tight sm:text-5xl xl:text-[58px]">
+     <h1 id="hero-title" className="text-balance text-[32px] font-semibold leading-[1.18] tracking-tight sm:text-5xl xl:text-[58px]">
       {zh?'让海外客户找到你、看懂你，并向你发起询盘。':'Building Digital Frontiers for Global Business.'}
      </h1>
-     <p className="max-w-2xl text-pretty text-lg leading-relaxed text-ivory/75">
+     <p className="max-w-2xl text-pretty text-base leading-relaxed text-ivory/75 sm:text-lg">
       {zh?'从零建设或升级面向海外采购商的 B2B 企业官网。专业设计、中英文产品展示、搜索优化基础与在线询盘，从建设到上线一次交付。':'Build a new international B2B website or improve your existing one. Professional design, SEO-Native foundations, buyer-ready content and real inquiry paths — delivered together.'}
      </p>
      <div className="grid gap-3 sm:grid-cols-2" aria-label={zh?'选择网站项目':'Choose a website project'}>
-      <Link href="/start/launch" className="group flex min-h-28 flex-col justify-between gap-3 rounded-lg bg-lime p-5 font-semibold text-ink transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-lime">
+      <Link href="/start/launch" className="group flex min-h-[100px] flex-col sm:min-h-28 justify-between gap-3 rounded-lg bg-lime p-5 font-semibold text-ink transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-lime">
        <span className="flex items-center justify-between text-xs uppercase tracking-wider"><Globe2 className="size-5"/> LAUNCH <ArrowUpRight className="size-5"/></span>
        <span><span className="block text-xl">{zh?'我要建立新网站':'Build a new website'}</span><span className="mt-1 block text-sm font-normal opacity-80">{zh?'还没有独立站，从零开始':'Start from scratch'}</span></span>
       </Link>

@@ -6,13 +6,13 @@ import { wecomQrPath, WECOM_CONTACT_URL } from '@/lib/wecom-config'
 import { track } from '@vercel/analytics'
 import { MessageCircle, ArrowUpRight, Download, ExternalLink } from 'lucide-react'
 
-export function recordWecomIntent(placement: 'contact' | 'header' | 'intake' | 'footer' | 'home') {
+export function recordWecomIntent(placement: 'contact' | 'header' | 'intake' | 'footer' | 'home' | 'mobile_nav') {
   // Counts interest only. No PII, visitor identifier, QR identity or chat content.
   try { track('wecom_contact_intent', { placement }) } catch { /* Analytics is optional. */ }
 }
 
 export function WecomContactCard({ placement = 'contact', compact = false }: {
-  placement?: 'contact' | 'header' | 'intake' | 'footer' | 'home'
+  placement?: 'contact' | 'header' | 'intake' | 'footer' | 'home' | 'mobile_nav'
   compact?: boolean
 }) {
   const { lang } = useLang()
@@ -26,8 +26,8 @@ export function WecomContactCard({ placement = 'contact', compact = false }: {
     <h2 className="mt-4 text-2xl font-semibold leading-snug">{zh ? '先聊聊您的网站计划' : 'Talk to VEYFRONT'}</h2>
     <p className="mt-3 text-sm leading-relaxed text-ink/75">{zh ? '还没想好选新建还是升级？可以先说明您在做什么业务、希望网站解决什么问题。' : 'Use the project form or email for a written project discussion.'}</p>
     {qr ? <>
-      <div id="vf-wecom-qr" className="mt-6">
-        <div className="inline-flex max-w-full flex-col items-center rounded-lg border border-ink/15 bg-white p-3">
+      <div id="vf-wecom-qr" className="mt-6 flex flex-col">
+        <div className="order-2 mt-4 inline-flex max-w-full flex-col items-center sm:order-1 sm:mt-0 rounded-lg border border-ink/15 bg-white p-3">
           {/* A real verified image is required. No placeholder QR and no automatic friend-add claim. */}
           <img src={qr} alt={zh ? 'VEYFRONT 企业微信联系二维码' : 'VEYFRONT WeCom contact QR code'}
             width={216} height={216} loading="lazy" className="aspect-square h-[216px] w-[216px] max-w-full object-contain"/>
@@ -38,10 +38,10 @@ export function WecomContactCard({ placement = 'contact', compact = false }: {
         </div>
         <a href={WECOM_CONTACT_URL} target="_blank" rel="noopener noreferrer"
           onClick={() => recordWecomIntent(placement)}
-          className="mt-4 inline-flex min-h-12 items-center gap-2 rounded-md bg-ink px-5 font-semibold text-ivory focus-visible:outline-2 focus-visible:outline-offset-2">
+          className="order-1 inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-ink px-5 text-center font-semibold text-ivory sm:order-2 sm:mt-4 focus-visible:outline-2 focus-visible:outline-offset-2">
           {zh ? '手机打开企业微信联系页' : 'Open WeCom contact page'} <ExternalLink className="size-4" aria-hidden="true"/>
         </a>
-        <p className="mt-3 max-w-xs text-xs leading-relaxed text-ink/65">
+        <p className="order-3 mt-3 max-w-xs text-xs leading-relaxed text-ink/65">
           {zh ? '电脑端可用微信扫描；手机端可点击联系页，或长按保存二维码再在微信中识别。页面跳转不等于已成功添加好友。' : 'Scan on desktop, or follow the official WeCom contact link on mobile. Opening a link is not proof that contact was established.'}
         </p>
       </div>

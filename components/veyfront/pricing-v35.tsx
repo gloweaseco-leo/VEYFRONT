@@ -1,12 +1,13 @@
 'use client'
 
 import Link from '@/components/l2m/localized-link'
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { ArrowRight, ArrowUpRight, Check, CheckCircle2, Globe2, Search, ShieldCheck, UsersRound } from 'lucide-react'
 import { useLang } from '@/lib/i18n'
 
 type Pair = readonly [string, string]
-type Plan = { id: string; title: Pair; price: string; subtitle: Pair; fit: Pair; points: Pair[]; featured?: boolean }
+type PlanId = 'start' | 'sales' | 'growth'
+type Plan = { id: PlanId; title: Pair; price: string; subtitle: Pair; fit: Pair; points: Pair[]; featured?: boolean }
 type CompareRow = { name: Pair; cells: readonly [Pair, Pair, Pair] }
 type CompareGroup = { title: Pair; rows: CompareRow[] }
 
@@ -93,8 +94,73 @@ const faqs: { q: Pair; a: Pair }[] = [
     a: ['可以。常规范围的新建或旧站升级均可选择三档，复杂CMS迁移、大型产品数据库或定制软件需求须在签约前单独确认，不会未经同意临时增项。', 'Yes. Each tier supports a standard new site or rebuild. Complex migrations, large databases and bespoke systems require separate written scoping before commitment.'] },
 ]
 
+
+/** Mobile visitors compare the three prices at once, then read one plan at a time. */
+function MobilePlanTabs({ value, onChange }: { value: PlanId; onChange: (value: PlanId) => void }) {
+  const { lang } = useLang()
+  const zh = lang === 'zh'
+  return <div role="group" aria-label={zh ? '切换查看三个套餐' : 'Compare three plans'} data-testid="mobile-plan-tabs"
+    className="grid grid-cols-3 gap-1.5 rounded-xl border border-ink/15 bg-white/75 p-1.5">
+    {plans.map(p => {
+      const active = p.id === value
+      return <button key={p.id} type="button" aria-pressed={active} onClick={() => onChange(p.id)}
+        className={'min-w-0 rounded-lg px-1.5 py-3 text-center focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ink ' +
+          (active ? 'bg-ink text-ivory' : 'text-ink hover:bg-mist/40')}>
+        <span className="block text-[11px] font-semibold leading-tight">{p.title[zh ? 0 : 1]}</span>
+        <span className={'mt-1 block text-[15px] font-bold tabular-nums tracking-tight ' + (active ? 'text-lime' : 'text-ink')}>¥{p.price}</span>
+      </button>
+    })}
+  </div>
+}
+
+function MobilePlanOverview({ value }: { value: PlanId }) {
+  const { lang } = useLang()
+  const zh = lang === 'zh'
+  const plan = plans.find(p => p.id === value)!
+  const t = (pair: Pair) => pair[zh ? 0 : 1]
+  return <article data-testid="mobile-plan-detail" className="mt-3 rounded-xl border border-ink/15 bg-white/90 p-5">
+    <p className="text-xs font-semibold text-ink/60">{zh ? '当前查看' : 'Selected plan'} · {t(plan.title)}</p>
+    <h3 className="mt-2 text-xl font-semibold">{t(plan.subtitle)}</h3>
+    <p className="mt-2 text-sm leading-relaxed text-ink/65">{t(plan.fit)}</p>
+    <ul className="mt-4 space-y-3 border-t border-ink/10 pt-4">
+      {plan.points.map((point, i) => <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-ink/85">
+        <Check className="mt-0.5 size-4 shrink-0" aria-hidden="true"/><span>{t(point)}</span>
+      </li>)}
+    </ul>
+    <Link href={'/contact?plan=' + plan.id}
+      className="mt-5 flex min-h-12 items-center justify-center gap-2 rounded-lg bg-ink px-4 text-sm font-semibold text-ivory focus-visible:outline-2 focus-visible:outline-offset-2">
+      {zh ? '咨询' + t(plan.title) + '方案' : 'Discuss ' + t(plan.title)} <ArrowRight className="size-4" aria-hidden="true"/>
+    </Link>
+    <p className="mt-3 text-xs leading-relaxed text-ink/60">{zh ? '提交咨询无需付款；实际范围及报价签约前确认。' : 'No payment to inquire. Scope and quote are confirmed first.'}</p>
+  </article>
+}
+
+function MobileServiceComparison({ value, onChange }: { value: PlanId; onChange: (id: PlanId) => void }) {
+  const { lang } = useLang()
+  const zh = lang === 'zh'
+  const t = (pair: Pair) => pair[zh ? 0 : 1]
+  const index = plans.findIndex(p => p.id === value)
+  return <div className="mt-7 md:hidden" data-testid="mobile-service-comparison">
+    <p className="mb-3 text-sm text-ink/70">{zh ? '选择套餐，下方逐项显示该方案的具体权益。点击分类可展开或收起。' : 'Select a plan to review its included services below.'}</p>
+    <MobilePlanTabs value={value} onChange={onChange}/>
+    <div className="mt-4 space-y-2.5">
+      {groups.map((group, i) => <details key={group.title[0]} open={i === 0 ? true : undefined}
+        className="group rounded-xl border border-ink/15 bg-white/80">
+        <summary className="cursor-pointer px-4 py-4 text-sm font-semibold leading-relaxed marker:text-ink/60">{t(group.title)}</summary>
+        <dl className="border-t border-ink/10 px-4">
+          {group.rows.map(row => <div key={row.name[0]} className="flex items-start justify-between gap-3 border-b border-ink/10 py-3.5 last:border-b-0">
+            <dt className="min-w-0 flex-1 text-[13px] leading-relaxed text-ink/75">{t(row.name)}</dt>
+            <dd className="max-w-[48%] break-words text-right text-[13px] font-semibold leading-relaxed text-ink">{t(row.cells[index])}</dd>
+          </div>)}
+        </dl>
+      </details>)}
+    </div>
+  </div>
+}
+
 export function PricingTeaserV35() {
   const { lang } = useLang()
+  const [mobilePlan, setMobilePlan] = useState<PlanId>('sales')
   const zh = lang === 'zh'
   const t = (v: Pair) => v[zh ? 0 : 1]
   return <section id="commercial-offers" aria-labelledby="teaser-v35-title" className="border-t border-ink/15 bg-ivory text-ink">
@@ -107,7 +173,11 @@ export function PricingTeaserV35() {
         </div>
         <Link href="/pricing" className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-ink px-5 font-semibold text-ivory hover:bg-ink/85">{zh ? '比较全部服务' : 'Compare all plans'}<ArrowUpRight className="size-4"/></Link>
       </div>
-      <div className="mt-8 grid gap-4 md:grid-cols-3">
+      <div className="mt-8 md:hidden">
+        <MobilePlanTabs value={mobilePlan} onChange={setMobilePlan}/>
+        <MobilePlanOverview value={mobilePlan}/>
+      </div>
+      <div className="mt-8 hidden gap-4 md:grid md:grid-cols-3">
         {plans.map(plan => <article key={plan.id} className={'rounded-xl border p-6 ' + (plan.featured ? 'border-ink bg-mist/45' : 'border-ink/15 bg-white/65')}>
           <p className="text-sm font-semibold">{t(plan.title)}</p>
           <p className="mt-2 text-4xl font-semibold tabular-nums">¥{plan.price}</p>
@@ -123,6 +193,7 @@ export function PricingTeaserV35() {
 
 export function PricingV35() {
   const { lang } = useLang()
+  const [mobilePlan, setMobilePlan] = useState<PlanId>('sales')
   const zh = lang === 'zh'
   const t = (v: Pair) => v[zh ? 0 : 1]
   return <div className="bg-ivory text-ink">
@@ -146,7 +217,11 @@ export function PricingV35() {
         <h2 id="plan-list-title" className="text-2xl font-semibold md:text-3xl">{zh ? '选择您的商业发展阶段' : 'Choose your next business stage'}</h2>
         <p className="text-sm text-ink/60">{zh ? '标准项目 · 一次性参考价' : 'Standard project · one-off guide price'}</p>
       </div>
-      <div className="mt-7 grid items-stretch gap-4 lg:grid-cols-3">
+      <div className="mt-7 lg:hidden">
+        <MobilePlanTabs value={mobilePlan} onChange={setMobilePlan}/>
+        <MobilePlanOverview value={mobilePlan}/>
+      </div>
+      <div className="mt-7 hidden items-stretch gap-4 lg:grid lg:grid-cols-3">
         {plans.map(plan => <article key={plan.id} className={'relative flex flex-col rounded-xl border px-5 pb-6 pt-7 shadow-sm md:px-7 ' + (plan.featured ? 'border-ink bg-mist/45 ring-1 ring-ink' : 'border-ink/15 bg-white/85')}>
           {plan.featured && <span className="absolute -top-3 left-6 rounded-md bg-lime px-3 py-1 text-xs font-semibold text-ink">{zh ? '推荐 · 适合已有外贸团队' : 'Recommended for export teams'}</span>}
           <p className="font-mono text-xs uppercase tracking-widest text-ink/45">{plan.id === 'start' ? '01 / START' : plan.id === 'sales' ? '02 / EXPAND' : '03 / GROW'}</p>
@@ -190,8 +265,8 @@ export function PricingV35() {
         <h2 id="comparison-title" className="mt-3 text-3xl font-semibold md:text-[40px]">{zh ? '每一项权益，都有明确交付范围。' : 'Every benefit, clearly defined.'}</h2>
         <p className="mt-4 leading-relaxed text-ink/65">{zh ? '三档共同的专业网站质量不打折；区别在于产品内容、销售支持和增长研究深度。' : 'Every tier gets a credible, working site. The difference is in content depth, sales support and growth research.'}</p>
       </div>
-      <p className="mt-7 text-xs text-ink/55 md:hidden">{zh ? '表格可左右滑动，查看三档对比。' : 'Scroll sideways to compare the plans.'}</p>
-      <div className="mt-3 overflow-x-auto rounded-xl border border-ink/15 bg-white/75">
+      <MobileServiceComparison value={mobilePlan} onChange={setMobilePlan}/>
+      <div className="mt-7 hidden overflow-x-auto rounded-xl border border-ink/15 bg-white/75 md:block">
         <table className="w-full min-w-[760px] border-collapse text-left text-sm">
           <thead><tr className="border-b border-ink/15 bg-ink text-ivory"><th scope="col" className="w-[34%] px-5 py-5 font-semibold">{zh ? '具体服务权益' : 'Included services'}</th>{plans.map(p=><th key={p.id} scope="col" className="w-[22%] px-4 py-5 font-semibold">{t(p.title)}<span className="mt-1 block text-ivory/70">¥{p.price}</span></th>)}</tr></thead>
           <tbody>{groups.map(group=><Fragment key={group.title[0]}><tr key={group.title[0]} className="border-y border-ink/10 bg-mist/65"><th scope="rowgroup" colSpan={4} className="px-5 py-3 text-sm font-semibold">{t(group.title)}</th></tr>{group.rows.map(row=><tr key={group.title[0] + row.name[0]} className="border-t border-ink/10 align-top"><th scope="row" className="px-5 py-4 font-medium leading-relaxed">{t(row.name)}</th>{row.cells.map((cell,i)=><td key={i} className={'px-4 py-4 leading-relaxed ' + (i===1 ? 'bg-mist/20' : '')}>{t(cell)}</td>)}</tr>)}</Fragment>)}</tbody>

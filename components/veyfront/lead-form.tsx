@@ -40,7 +40,7 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
   }, [service])
 
 
-  const field = 'min-h-12 w-full rounded-md border border-ink/25 bg-white px-4 text-ink outline-offset-2 focus-visible:outline-2 focus-visible:outline-ink'
+  const field = 'min-h-12 w-full rounded-md border border-ink/25 bg-white px-4 text-base text-ink outline-offset-2 focus-visible:outline-2 focus-visible:outline-ink'
   const requiresWebsite = service === 'rebuild'
 
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -98,16 +98,14 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
   }
 
   return <form onSubmit={submit} className="flex flex-col gap-5">
-    <div className="grid gap-5 sm:grid-cols-2">
-      <div>
-        <label htmlFor="vf-name" className="mb-2 block text-sm font-medium">{zh ? '联系人姓名 *' : 'Your name *'}</label>
-        <input id="vf-name" name="name" autoComplete="name" required minLength={2} maxLength={100} className={field} value={name} onChange={e => setName(e.target.value)}/>
-      </div>
-      <div>
-        <label htmlFor="vf-email" className="mb-2 block text-sm font-medium">{service === 'privacy' ? (zh ? '核验邮箱 *' : 'Verification email *') : (zh ? '电子邮箱（选填）' : 'Email (optional)')}</label>
-        <input id="vf-email" name="email" type="email" autoComplete="email" required={service === 'privacy'} maxLength={254} className={field} value={email} onChange={e => setEmail(e.target.value)}/>
-      </div>
+    <div>
+      <label htmlFor="vf-name" className="mb-2 block text-sm font-medium">{zh ? '联系人姓名 *' : 'Your name *'}</label>
+      <input id="vf-name" name="name" autoComplete="name" required minLength={2} maxLength={100} className={field} value={name} onChange={e => setName(e.target.value)}/>
     </div>
+    {service === 'privacy' && <div>
+      <label htmlFor="vf-email" className="mb-2 block text-sm font-medium">{zh ? '核验邮箱 *' : 'Verification email *'}</label>
+      <input id="vf-email" name="email" type="email" inputMode="email" autoComplete="email" required maxLength={254} className={field} value={email} onChange={e => setEmail(e.target.value)}/>
+    </div>}
     {service !== 'privacy' && <fieldset className="rounded-lg border border-ink/15 bg-mist/30 p-4">
       <legend className="px-2 text-sm font-semibold">{zh ? '希望我们如何联系您？' : 'How should we contact you?'}</legend>
       <p className="mb-3 text-xs text-ink/70">{zh ? '微信号、手机号、邮箱至少填写一种；可同时填写多种。' : 'Provide at least one: WeChat ID, phone, or email.'}</p>
@@ -131,13 +129,17 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
       </div>
       <p className="mt-3 text-xs text-ink/65">{zh ? '留下微信号不代表已经添加好友。我们仅在处理本次咨询时使用。' : 'Providing a WeChat ID does not mean a connection has been established.'}</p>
     </fieldset>}
+    {service !== 'privacy' && <div>
+      <label htmlFor="vf-email" className="mb-2 block text-sm font-medium">{zh ? '电子邮箱（选填）' : 'Email (optional)'}</label>
+      <input id="vf-email" name="email" type="email" inputMode="email" autoComplete="email" maxLength={254} className={field} value={email} onChange={e => setEmail(e.target.value)}/>
+    </div>}
     <div>
       <label htmlFor="vf-company" className="mb-2 block text-sm font-medium">{zh ? '公司名称（选填）' : 'Company (optional)'}</label>
       <input id="vf-company" name="company" autoComplete="organization" maxLength={160} className={field} value={company} onChange={e => setCompany(e.target.value)}/>
     </div>
     {(service === 'rebuild' || service === 'general') && <div>
       <label htmlFor="vf-website" className="mb-2 block text-sm font-medium">{zh ? '现有网站网址' : 'Current website URL'}{requiresWebsite ? ' *' : ''}</label>
-      <input id="vf-website" type="url" name="website" placeholder="https://your-company.com" required={requiresWebsite} maxLength={500} className={field} value={website} onChange={e => setWebsite(e.target.value)}/>
+      <input id="vf-website" type="url" inputMode="url" autoCapitalize="none" spellCheck={false} name="website" placeholder="https://your-company.com" required={requiresWebsite} maxLength={500} className={field} value={website} onChange={e => setWebsite(e.target.value)}/>
       {requiresWebsite && <p className="mt-1 text-xs text-ink/65">{zh ? '仅记录网址，不会自动抓取或修改网站。' : 'Your URL is recorded only; no crawling or modification occurs.'}</p>}
     </div>}
     {service === 'launch' && <div>
@@ -146,7 +148,7 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
     </div>}
     <div>
       <label htmlFor="vf-details" className="mb-2 block text-sm font-medium">{service === 'privacy' ? (zh ? '需要查阅、更正或删除什么信息？ *' : 'Your data request *') : (zh ? '项目需求与目标 *' : 'Project brief and goals *')}</label>
-      <textarea id="vf-details" name="details" required minLength={20} maxLength={3000} rows={5} className={field + ' py-3'} placeholder={zh ? (service === 'privacy' ? '请说明您希望查阅、更正或删除的资料（至少20字），请勿填写密码或身份证件。' : '例如：主营产品、目标国家、希望展示的内容及需要解决的问题（至少20字）。') : 'Describe your goals or request in at least 20 characters.'} value={details} onChange={e => setDetails(e.target.value)}/>
+      <textarea id="vf-details" name="details" required minLength={20} maxLength={3000} rows={4} className={field + ' py-3'} placeholder={zh ? (service === 'privacy' ? '请说明您希望查阅、更正或删除的资料（至少20字），请勿填写密码或身份证件。' : '例如：主营产品、目标国家、希望展示的内容及需要解决的问题（至少20字）。') : 'Describe your goals or request in at least 20 characters.'} value={details} onChange={e => setDetails(e.target.value)}/>
     </div>
     {/* Accessible honeypot: never expose this field to keyboard or screen reader users. */}
     <div className="hidden" aria-hidden="true">
@@ -158,7 +160,7 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
       <span>{zh ? '我同意 VEYFRONT 为处理本次需求而保存以上联系与项目资料，并已阅读' : 'I agree that VEYFRONT may store this contact and project information to respond to my request. I have read the'}{' '}<Link href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">{zh ? '隐私说明' : 'Privacy Notice'}</Link>{zh ? '。' : '.'}</span>
     </label>
     {status === 'error' && <p role="alert" className="flex items-start gap-2 rounded-md border border-red-300 p-3 text-sm text-red-800"><AlertCircle className="mt-0.5 size-4 shrink-0"/>{error}</p>}
-    <button disabled={status === 'sending'} type="submit" className="inline-flex min-h-12 w-fit items-center gap-2 rounded-md bg-ink px-6 font-semibold text-ivory disabled:opacity-65">
+    <button disabled={status === 'sending'} type="submit" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-ink px-6 font-semibold text-ivory disabled:opacity-65 sm:w-fit">
       {status === 'sending' ? <LoaderCircle className="size-4 animate-spin"/> : <ArrowUpRight className="size-4"/>}
       {status === 'sending' ? (zh ? '正在安全提交…' : 'Saving your request…') : (service === 'privacy' ? (zh ? '提交隐私请求' : 'Send privacy request') : (zh ? '提交建站咨询' : 'Send project inquiry'))}
     </button>

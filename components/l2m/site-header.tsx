@@ -74,7 +74,7 @@ export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark
 
   return (
     <header className={cn('relative', dark ? 'bg-ink text-ivory' : 'border-b border-ink/10 bg-ivory text-ink')}>
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-5 py-4 md:px-10">
+      <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-2 px-4 py-3 sm:gap-4 sm:px-5 sm:py-4 md:px-10">
         <Link href="/" aria-label="VEYFRONT — Home" className="inline-flex min-h-11 items-center focus-visible:outline-2 focus-visible:outline-offset-4">
           <Logo tone={tone} />
         </Link>
@@ -88,7 +88,7 @@ export function SiteHeader({ tone = 'light', inputId }: { tone?: 'light' | 'dark
             )
           })}
         </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           <LangToggle tone={tone} />
           {analyze}
           <button
