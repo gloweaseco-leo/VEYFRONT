@@ -366,7 +366,7 @@ export function PricingV35() {
     <section className="bg-ink text-ivory" aria-labelledby="last-cta-v35">
       <div className="mx-auto flex max-w-[1360px] flex-col justify-between gap-8 px-5 py-16 md:px-10 lg:flex-row lg:items-end lg:py-20">
         <div className="max-w-3xl">
-          <p className="font-mono text-xs tracking-[.2em] text-lime">{zh ? '下一步 · 咨询网站方案' : 'LET'S BUILD YOUR FRONTIER'}</p>
+          <p className="font-mono text-xs tracking-[.2em] text-lime">{zh ? '下一步 · 咨询网站方案' : "LET'S BUILD YOUR FRONTIER"}</p>
           <h2 id="last-cta-v35" className="mt-4 text-balance text-3xl font-semibold leading-tight md:text-[44px]">{zh ? '告诉我们您想建什么网站，一起确定方案和报价。' : 'Tell us your goal. We will confirm the right scope.'}</h2>
           <p className="mt-4 leading-relaxed text-ivory/75">{zh ? '新建官网或升级旧站，均从项目咨询和范围确认开始。不会未经同意修改现有网站，也不会自动收费。' : 'New build or rebuild: start with a project inquiry and written scope. No changes or payment happen without your approval.'}</p>
         </div>
