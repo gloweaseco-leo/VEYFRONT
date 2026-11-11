@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import {readFileSync, existsSync} from 'node:fs'
 const read=p=>readFileSync(p,'utf8')
-// W1.6 JSON is retained for historical contract integrity; runtime V3.5 is checked separately.
+// W1.6 JSON is retained for historical contract integrity; active published pricing is in lib/public-offers.json.
 const c=JSON.parse(read('lib/commercial-offers.json'))
 assert.match(c.version,/W1\.6-one-price-preview/)
 assert.equal(c.status,'PENDING_COMMERCIAL_LEGAL_TAX_COST_HOSTING_APPROVAL')
@@ -52,7 +52,7 @@ assert.doesNotMatch(read('components/l2m/site-header.tsx'),/href: '\/services'/)
 assert.doesNotMatch(read('components/home/hero.tsx'),/UrlAnalyzer|DemoViewport/)
 assert.doesNotMatch(read('components/home/invitation.tsx'),/UrlAnalyzer/)
 const ui=read('components/veyfront/pricing-v35.tsx')
-for (const term of ['SEO','50','首年','3个月','href="/start/launch"','href="/start/rebuild"','Frontier Run','V3.5','9,680'])assert.ok(ui.toLowerCase().includes(term.toLowerCase()),term)
+for (const term of ['SEO','50','首年','3个月','href="/start/launch"','href="/start/rebuild"','Frontier Run','publicOffers.plans.growth.priceDisplay'])assert.ok(ui.toLowerCase().includes(term.toLowerCase()),term)
 assert.doesNotMatch(ui,/additional designed page|records10|revision round|language version \(from\)|other scoped add-ons|\+¥5,000|12,800|26,800|36,800|FICTIONAL DEMO/i)
 assert.doesNotMatch(ui,/offers\.migration|offers\.contentEnhancement/)
 assert.match(read('app/api/leads/route.ts'),/access: 'private'/)

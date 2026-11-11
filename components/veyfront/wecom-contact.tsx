@@ -23,8 +23,8 @@ export function WecomContactCard({ placement = 'contact', compact = false }: {
     <p className="flex items-center gap-2 font-mono text-xs font-semibold tracking-[0.14em] text-ink/70">
       <MessageCircle className="size-4" aria-hidden="true"/> {zh ? '微信咨询 / WECOM' : 'WECOM / CHINA'}
     </p>
-    <h2 className="mt-4 text-2xl font-semibold leading-snug">{zh ? '先聊聊您的网站计划' : 'Talk to VEYFRONT'}</h2>
-    <p className="mt-3 text-sm leading-relaxed text-ink/75">{zh ? '还没想好选新建还是升级？可以先说明您在做什么业务、希望网站解决什么问题。' : 'Use the project form or email for a written project discussion.'}</p>
+    <h2 className="mt-4 text-2xl font-semibold leading-snug">{zh ? '先聊聊您的外贸网站需求' : 'Talk to VEYFRONT'}</h2>
+    <p className="mt-3 text-sm leading-relaxed text-ink/75">{zh ? '不确定需要新建网站还是改版升级？告诉我们您的产品和目标市场，可以先聊聊。' : 'Use the project form or email for a written project discussion.'}</p>
     {qr ? <>
       <div id="vf-wecom-qr" className="mt-6 flex flex-col">
         <div className="order-2 mt-4 inline-flex max-w-full flex-col items-center sm:order-1 sm:mt-0 rounded-lg border border-ink/15 bg-white p-3">
@@ -39,7 +39,7 @@ export function WecomContactCard({ placement = 'contact', compact = false }: {
         <a href={WECOM_CONTACT_URL} target="_blank" rel="noopener noreferrer"
           onClick={() => recordWecomIntent(placement)}
           className="order-1 inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-ink px-5 text-center font-semibold text-ivory sm:order-2 sm:mt-4 focus-visible:outline-2 focus-visible:outline-offset-2">
-          {zh ? '手机打开企业微信联系页' : 'Open WeCom contact page'} <ExternalLink className="size-4" aria-hidden="true"/>
+          {zh ? '打开企业微信联系页面' : 'Open WeCom contact page'} <ExternalLink className="size-4" aria-hidden="true"/>
         </a>
         <p className="order-3 mt-3 max-w-xs text-xs leading-relaxed text-ink/65">
           {zh ? '电脑端可用微信扫描；手机端可点击联系页，或长按保存二维码再在微信中识别。页面跳转不等于已成功添加好友。' : 'Scan on desktop, or follow the official WeCom contact link on mobile. Opening a link is not proof that contact was established.'}
