@@ -102,7 +102,7 @@ const faqs: { q: Pair; a: Pair }[] = [
   { q: ["产品应用介绍或选型指南是什么？","What is an application or product-selection guide?"],
     a: ["这是一份围绕真实采购问题的专业网页，整理已核实的应用需求、关键参数、相关产品、供应商能力证明和询价入口，并不是替客户提供工程选型或设计服务。","It is a focused page built around real buyer questions, organizing verified applications, key specifications, related products, supplier evidence and inquiry options. It is not an engineering selection or design service."] },
   { q: ["20家潜在买家等于20个有采购意向的客户吗？","Are 20 researched companies confirmed buyers?"],
-    a: ["不是。领航版选择目标买家专项时，研究最多20家有公开来源的候选企业，并对其中最多5家进一步核查匹配理由。不承诺对方正在采购、提供有效联系人、获得回复或订单。","No. The Growth plan's target-buyer track reviews up to 20 source-backed candidates and further evaluates up to five. We do not promise active purchase intent, valid contacts, replies or orders."] },
+    a: ["不是。领航版选择目标买家专项时，研究最多20家有公开来源的候选企业，并对其中最多5家进一步核查匹配理由。不代表对方正在采购，也不承诺获得联系人、回复或订单。","No. The Growth plan's target-buyer track reviews up to 20 source-backed candidates and further evaluates up to five. We do not promise active purchase intent, valid contacts, replies or orders."] },
   { q: ["SEO与AI搜索优化能保证排名或询盘吗？","Does SEO or AI-search optimization guarantee leads or rankings?"],
     a: ["不能保证。我们提供约定的网站搜索技术基础、专业内容整理和优化记录；Google收录、AI搜索引用、访客询盘及成交受外部因素影响，不作排名或订单保证。","No. We deliver the agreed technical search foundation, specialist content and documented improvements. Google indexing, AI citations, inquiries and orders depend on external factors and are not guaranteed."] },
   { q: ["新建官网和旧站升级，都可以选择三档方案吗？","Are all three plans available for new builds and rebuilds?"],
