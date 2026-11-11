@@ -51,13 +51,13 @@ export function Hero() {
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.10]" style={{backgroundImage:'linear-gradient(rgba(184,240,107,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(184,240,107,.18) 1px,transparent 1px)',backgroundSize:'36px 36px'}}/>
       <div className="relative z-10 flex flex-wrap items-start justify-between gap-2 border-b border-ivory/15 pb-4">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.17em] text-lime">{zh?'网站升级 / 买家体验示意':'INTELLIGENT CONVERSION / CONCEPT'}</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.17em] text-lime">{zh?'网站升级 / 买家体验':'BUYER EXPERIENCE / BEFORE & AFTER'}</p>
           <p className="mt-1 text-sm text-ivory/80">{zh?'产品更好找 · 网站更好懂 · 询盘更容易':'Clearer websites × buyer-action signals'}</p>
         </div>
-        <span className="rounded-full border border-ivory/20 px-2 py-1 text-[10px] text-ivory/60">{zh?'概念展示':'ILLUSTRATIVE'}</span>
+        <span className="rounded-full border border-ivory/20 px-2 py-1 text-[10px] text-ivory/60">{zh?'体验对比':'BEFORE / AFTER'}</span>
       </div>
 
-      <div data-testid="hero-hybrid-visual" role="img" aria-label={zh?'非真实客户案例：从信息杂乱的网站到清晰的工业产品网站，周围连接搜索发现、买家评估、有效询盘与持续改善四个信号节点。':'Illustrative comparison, not a real client case: a clearer industrial product website with discover, evaluate, inquire and improve signals.'} className="relative z-10 mx-auto mt-3 h-[340px] max-w-[560px] sm:h-[375px]">
+      <div data-testid="hero-hybrid-visual" role="img" aria-label={zh?'工业B2B网站的页面体验对比：由产品信息、采购评估、在线询盘到持续优化的四个环节。':'Industrial B2B website experience comparison across product discovery, buyer evaluation, inquiries and ongoing improvement.'} className="relative z-10 mx-auto mt-3 h-[340px] max-w-[560px] sm:h-[375px]">
         <svg aria-hidden="true" viewBox="0 0 560 370" preserveAspectRatio="xMidYMid meet" className="pointer-events-none absolute inset-0 h-full w-full">
           <defs>
             <linearGradient id="vf-hybrid-path" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#b8f06b" stopOpacity=".10"/><stop offset=".55" stopColor="#b8f06b" stopOpacity=".88"/><stop offset="1" stopColor="#b8f06b" stopOpacity=".10"/></linearGradient>
@@ -128,7 +128,7 @@ export function Hero() {
         </div>
       </div>
       <div className="relative z-10 flex flex-col gap-2 border-t border-ivory/15 pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs leading-relaxed text-ivory/60">{zh?'网站设计示意，非真实客户案例或增长数据。':'Illustrative concept, not a client delivery or measured result.'}</p>
+        <p className="text-xs leading-relaxed text-ivory/60">{zh?'围绕海外采购路径，优化产品展示、关键信息和询盘入口。':'Make product details clearer and the next buyer action easier to find.'}</p>
         <Link href="/pricing" className="inline-flex min-h-10 shrink-0 items-center gap-2 text-sm font-semibold text-lime underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-lime">{zh?'查看三档服务与价格':'Explore plans and pricing'} <ArrowUpRight aria-hidden="true" className="size-4"/></Link>
       </div>
     </div>
