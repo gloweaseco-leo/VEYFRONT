@@ -5,6 +5,7 @@ const read = path => readFileSync(new URL('../' + path, import.meta.url), 'utf8'
 const nav = read('components/veyfront/mobile-quick-nav.tsx')
 const layout = read('app/layout.tsx')
 const price = read('components/veyfront/pricing-v35.tsx')
+const publicOffers = JSON.parse(read('lib/public-offers.json'))
 const hero = read('components/home/hero.tsx')
 const header = read('components/l2m/site-header.tsx')
 const brand = read('components/l2m/brand.tsx')
@@ -42,7 +43,8 @@ check('contact actions remain grounded in real WeCom URL or contact form', () =>
   assert.match(contact, /order-1 inline-flex/)
 })
 check('mobile plan switcher keeps all 3 fixed offer prices and maps to lead handoff', () => {
-  for (const priceValue of ['3,680','6,680','9,680']) assert.ok(price.includes(priceValue), priceValue)
+  for (const [plan,value] of [['start',3680],['sales',6680],['growth',9680]]) assert.equal(publicOffers.plans[plan].price,value)
+  assert.match(price, /publicOffers\.plans\./)
   assert.match(price, /data-testid="mobile-plan-tabs"/)
   assert.match(price, /data-testid="mobile-plan-detail"/)
   assert.match(price, /'\/contact\?plan=' \+ plan\.id/)

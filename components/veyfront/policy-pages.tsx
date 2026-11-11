@@ -2,6 +2,7 @@
 import Link from '@/components/l2m/localized-link'
 import { PageShell } from '@/components/site/page-shell'
 import { useLang } from '@/lib/i18n'
+import publicOffers from '@/lib/public-offers.json'
 
 const updated='2026-11-09'
 const pzh:[string,string][]=[
@@ -10,7 +11,7 @@ const pzh:[string,string][]=[
  ['为何使用','仅为接收、管理和回复咨询，核对项目范围、安排后续沟通，以及处理隐私请求。客户主动发起的企业微信沟通，如实际建立联系，商务人员可人工记录最小线索与跟进状态。网页点击二维码不代表已添加好友。未经允许不会对旧网站实施修改。'],
  ['存储及跨境处理','咨询记录使用受服务端权限控制的 Vercel 私有存储。若启用咨询确认邮件且您填写了邮箱，邮件地址与咨询编号将由邮件服务商用于发送确认通知；相关基础设施可能涉及跨境处理。咨询完整内容不会公开展示。'],
  ['保留与请求','记录按处理咨询及必要业务记录的需求保留，尚未启用自动到期删除。你可以请求查阅、更正或删除，或拒绝后续联系；我们会核实请求并依法处理。'],
- ['联系','如有隐私或数据请求，可使用网站的数据请求入口或发送邮件至 hello@veyfront.com。正式运营法律主体及适用司法辖区的法定披露仍须在商业签约前核实。']
+ ['联系','如有隐私或数据请求，可使用网站的数据请求入口或发送邮件至 hello@veyfront.com。正式签约主体、适用法律及必要信息将在签约前核实，并以正式文件为准。']
 ]
 const pen:[string,string][]=[
  ['Scope','This notice covers project inquiries, general contact and privacy requests made through VEYFRONT. Submitting a form does not initiate automated website analysis, site generation or a purchase.'],
@@ -21,16 +22,16 @@ const pen:[string,string][]=[
  ['Contact','For privacy or data requests, use the privacy-request form or hello@veyfront.com. The legal operating entity and required jurisdiction-specific disclosures still need verification before formal commercial contracting.']
 ]
 const tzh:[string,string][]=[
- ['网站与服务','VEYFRONT 展示面向国际 B2B 企业的 Launch（新建）与 Rebuild（常规重建）服务，以及可选的 Frontier Run 持续改善服务，并接收项目咨询。'],
- ['价格与签约','¥9,800 是正常规模网站的参考完整价，包含网站建设和首年基础运行。是否适用、具体内容、税费、特殊项目、续费条件与付款安排，必须在合同签署前书面确认；提交咨询不构成订单或付款。'],
+ ['网站与服务','VEYFRONT 为中国制造业和B2B外贸企业提供海外官网新建、常规旧站升级，以及可选的网站维护与内容优化服务，并接受客户咨询。'],
+ ['价格与签约',`官网公开的三档标准项目参考价分别为：${publicOffers.plans.start.titleZh} ¥${publicOffers.plans.start.priceDisplay}、${publicOffers.plans.sales.titleZh} ¥${publicOffers.plans.sales.priceDisplay}、${publicOffers.plans.growth.titleZh} ¥${publicOffers.plans.growth.priceDisplay}。均包含约定网站建设、首年基础托管及3个月服务。实际交付范围、税费、特殊需求、续费和付款安排以双方签约前确认的书面报价和合同为准。提交咨询不代表签约或付款。`],
  ['展示示例','Hartwell 是明确标注的虚构工业网站设计示例，不是真实客户案例，也不是自动生成或真实诊断结果。搜索排名、流量或成交均不作保证。'],
  ['网站及素材权利','VEYFRONT 的品牌标识和展示素材受适用权利约束。客户网站的域名控制、约定源码和素材移交、第三方许可及可迁移条件，在签约时明确。'],
- ['基础托管与可选运营','标准建站参考范围包含首年基础托管，Frontier Run 是另外的可选内容与商业改善服务。正常续费费用及资源范围须事前约定，不以购买 Run 作为续费或迁移的前提。'],
+ ['基础托管与可选运营','三档标准方案均包含首年基础托管。3个月服务结束后，客户可按需另行购买维护或运营支持；续费费用与服务范围事前确认，不以购买后续运营服务作为续费或迁移的条件。'],
  ['联系与法律条款','正式购买与交付受签署的项目合同约束；运营主体信息及适用法律应在成交前确认。问题可发送至 hello@veyfront.com。']
 ]
 const ten:[string,string][]=[
  ['Website services','VEYFRONT presents Launch (new B2B websites), Rebuild (regular site improvements) and optional Frontier Run ongoing improvements, and accepts project inquiries.'],
- ['Pricing and agreement','¥9,800 is an indicative complete-site price for a normal-size project, including first-year basic hosting. Applicable scope, taxes, exceptions, renewal, payment and delivery are confirmed in a written agreement before work. An inquiry is not a purchase or payment.'],
+ ['Pricing and agreement',`Current standard project guide prices are ¥${publicOffers.plans.start.priceDisplay}, ¥${publicOffers.plans.sales.priceDisplay}, and ¥${publicOffers.plans.growth.priceDisplay}. Each includes the agreed website, first-year basic hosting and three months of defined services. Scope, taxes, exceptions, renewal and payment are agreed in writing before work. An inquiry is not a purchase.`],
  ['Design examples','Hartwell is a clearly labeled fictional website design example, not a real customer delivery or automated website analysis. Search rankings, traffic and business results are not guaranteed.'],
  ['Rights and handover','VEYFRONT branding and display assets retain their applicable rights. Client domain control, agreed source/asset handover, third-party licensing and transfer conditions are defined in the project agreement.'],
  ['Basic hosting and optional care','The standard package references first-year basic hosting. Frontier Run is separate optional content and business improvement. Normal renewal pricing and resource terms must be agreed upfront; Run is not required for portability or renewal.'],

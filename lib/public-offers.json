@@ -1,0 +1,32 @@
+{
+  "version": "public-commercial-2026-11-11",
+  "status": "PUBLISHED_REFERENCE_PRICES",
+  "currency": "CNY",
+  "plans": {
+    "start": {
+      "titleZh": "专业启航",
+      "price": 3680,
+      "priceDisplay": "3,680",
+      "productRecordCap": 10
+    },
+    "sales": {
+      "titleZh": "商业拓展",
+      "price": 6680,
+      "priceDisplay": "6,680",
+      "productRecordCap": 30
+    },
+    "growth": {
+      "titleZh": "增长领航",
+      "price": 9680,
+      "priceDisplay": "9,680",
+      "productRecordCap": 50
+    }
+  },
+  "hostingMonthsIncluded": 12,
+  "serviceMonthsIncluded": 3,
+  "ongoingService": {
+    "publishedPrice": null,
+    "status": "QUOTE_REQUIRED"
+  },
+  "notice": "Signed written quote controls. Historical lib/commercial-offers.json (W1.6) is not the active customer offer."
+}

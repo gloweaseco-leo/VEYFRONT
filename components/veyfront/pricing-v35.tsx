@@ -4,6 +4,7 @@ import Link from '@/components/l2m/localized-link'
 import { Fragment, useState } from 'react'
 import { ArrowRight, ArrowUpRight, Check, CheckCircle2, Globe2, Search, ShieldCheck, UsersRound } from 'lucide-react'
 import { useLang } from '@/lib/i18n'
+import publicOffers from '@/lib/public-offers.json'
 
 type Pair = readonly [string, string]
 type PlanId = 'start' | 'sales' | 'growth'
@@ -12,69 +13,69 @@ type CompareRow = { name: Pair; cells: readonly [Pair, Pair, Pair] }
 type CompareGroup = { title: Pair; rows: CompareRow[] }
 
 const plans: Plan[] = [
-  { id: 'start', title: ['专业启航', 'Professional Start'], price: '3,680',
-    subtitle: ['建立可信的海外商业入口', 'Build a credible global presence'],
+  { id: 'start', title: [publicOffers.plans.start.titleZh, 'Professional Start'], price: publicOffers.plans.start.priceDisplay,
+    subtitle: ['建一个能清楚展示企业和产品的外贸官网', 'Build a credible global presence'],
     fit: ['适合刚开始建设海外官网的企业', 'For businesses establishing their first global website'],
     points: [
-      ['专业中英文官网与采购询盘', 'Bilingual website with working inquiries'],
-      ['供应商实力与产品展示', 'Supplier credibility and product presentation'],
-      ['Google原生SEO技术基础', 'Google SEO-native foundation'],
+      ['中英文外贸官网、产品展示与在线询盘', 'Bilingual website with working inquiries'],
+      ['工厂实力、产品与资质展示', 'Supplier credibility and product presentation'],
+      ['Google等搜索引擎的基础SEO设置', 'Google SEO-native foundation'],
       ['赠3个月网站维护与启用服务', '3 months of website launch support included'],
     ] },
-  { id: 'sales', title: ['商业拓展', 'Sales Expansion'], price: '6,680',
-    subtitle: ['让现有海外销售更有效', 'Make existing export sales more effective'],
+  { id: 'sales', title: [publicOffers.plans.sales.titleZh, 'Sales Expansion'], price: publicOffers.plans.sales.priceDisplay,
+    subtitle: ['为外贸业务员提供网站与英文推广资料', 'Make existing export sales more effective'],
     fit: ['适合已有产品及外贸销售渠道的企业', 'For teams already selling to overseas buyers'],
     points: [
-      ['包含启航版基础建设与维护权益', 'Includes the core website and care services'],
-      ['采购需求研究及1个选型专题', 'Buyer research and one product-selection guide'],
-      ['1套英文销售推广素材', 'English sales outreach content pack'],
-      ['赠3个月销售推广支持', '3 months of sales-enablement support included'],
+      ['包含启航版的网站建设与维护服务', 'Includes the core website and care services'],
+      ['重点产品采购调研及1个选型指南网页', 'Buyer research and one product-selection guide'],
+      ['1套英文产品推广资料', 'English sales outreach content pack'],
+      ['含3个月约定的销售推广支持', '3 months of sales-enablement support included'],
     ], featured: true },
-  { id: 'growth', title: ['增长领航', 'Growth Navigator'], price: '9,680',
-    subtitle: ['研究新的海外客户机会', 'Explore new overseas buyer opportunities'],
+  { id: 'growth', title: [publicOffers.plans.growth.titleZh, 'Growth Navigator'], price: publicOffers.plans.growth.priceDisplay,
+    subtitle: ['在建站基础上增加海外市场与潜在客户调研', 'Explore new overseas buyer opportunities'],
     fit: ['适合计划开拓新市场和客户的企业', 'For businesses entering new markets and buyer segments'],
     points: [
       ['包含专业网站及销售推广权益', 'Includes website and sales-enablement benefits'],
-      ['2个产品应用与采购选型专题', 'Two application and buyer-selection guides'],
-      ['搜索增长或目标买家研究二选一', 'Choose search growth or target-buyer research'],
-      ['赠3个月专项增长服务', '3 months of focused growth service included'],
+      ['2个产品应用介绍或选型指南网页', 'Two application and buyer-selection guides'],
+      ['搜索内容优化或海外潜在客户调研，二选一', 'Choose search growth or target-buyer research'],
+      ['含3个月约定的增长研究服务', '3 months of focused growth service included'],
     ] },
 ]
 
 const groups: CompareGroup[] = [
-  { title: ['01 · 海外商业门户', '01 · Global B2B website'], rows: [
+  { title: ['01 · 外贸企业官网', '01 · Global B2B website'], rows: [
     { name: ['专业中英文官网、移动端适配', 'Bilingual responsive business website'], cells: [['包含','Included'],['包含','Included'],['包含','Included']] },
     { name: ['产品分类、详情与在线询盘', 'Product catalogue, details and inquiries'], cells: [['包含','Included'],['包含','Included'],['包含','Included']] },
-    { name: ['结构化产品资料整理（标准上限）', 'Structured product records (standard cap)'], cells: [['最多10条','Up to 10'],['最多30条','Up to 30'],['最多50条','Up to 50']] },
-    { name: ['供应商实力与采购信任内容', 'Supplier proof and buyer trust'], cells: [['企业与制造能力','Company & manufacturing'],['质量、认证、定制能力','Quality, certification, custom work'],['技术、应用、项目证据','Technical, application & case evidence']] },
+    { name: ['产品资料整理与录入（标准数量上限）', 'Structured product records (standard cap)'], cells: [['最多' + publicOffers.plans.start.productRecordCap + '条','Up to 10'],['最多' + publicOffers.plans.sales.productRecordCap + '条','Up to 30'],['最多' + publicOffers.plans.growth.productRecordCap + '条','Up to 50']] },
+    { name: ['工厂实力、资质及制造能力展示', 'Supplier proof and buyer trust'], cells: [['企业与制造能力','Company & manufacturing'],['质量、认证、定制能力','Quality, certification, custom work'],['技术、应用、项目证据','Technical, application & case evidence']] },
     { name: ['新站建设或常规旧站升级', 'New build or standard website rebuild'], cells: [['包含','Included'],['包含','Included'],['包含','Included']] },
   ] },
-  { title: ['02 · 采购内容与搜索', '02 · Buyer content and search'], rows: [
-    { name: ['Google原生SEO建设', 'SEO-native implementation'], cells: [['技术与页面基础','Technical foundation'],['采购搜索意图优化','Buyer-search intent'],['专业主题搜索布局','Topic-based search planning']] },
-    { name: ['产品应用与采购选型专题', 'Application and buyer-selection guides'], cells: [['—','—'],['1个','1 guide'],['2个','2 guides']] },
-    { name: ['企业与产品知识整理', 'Verified company & product knowledge'], cells: [['基础资料','Core facts'],['重点采购问答','Buyer FAQs'],['技术选型与应用知识','Technical buyer knowledge']] },
-    { name: ['AI搜索内容适配', 'AI-search content readiness'], cells: [['基础结构化内容','Structured core content'],['重点产品知识优化','Product knowledge optimization'],['主题知识与可见性研究','Topic knowledge and visibility research']] },
+  { title: ['02 · 产品内容与搜索优化', '02 · Buyer content and search'], rows: [
+    { name: ['网站SEO基础及搜索内容优化', 'SEO-native implementation'], cells: [['技术与页面基础','Technical foundation'],['采购搜索意图优化','Buyer-search intent'],['专业主题搜索布局','Topic-based search planning']] },
+    { name: ['产品应用介绍或选型指南', 'Application and buyer-selection guides'], cells: [['—','—'],['1个','1 guide'],['2个','2 guides']] },
+    { name: ['企业介绍、产品参数及常见采购问题', 'Verified company & product knowledge'], cells: [['基础资料','Core facts'],['重点采购问答','Buyer FAQs'],['技术选型与应用知识','Technical buyer knowledge']] },
+    { name: ['优化产品信息结构，方便AI搜索工具理解', 'AI-search content readiness'], cells: [['基础结构化内容','Structured core content'],['重点产品知识优化','Product knowledge optimization'],['主题知识与可见性研究','Topic knowledge and visibility research']] },
   ] },
   { title: ['03 · 海外销售与市场研究', '03 · Sales and market research'], rows: [
     { name: ['英文企业介绍', 'English company introduction'], cells: [['包含','Included'],['包含','Included'],['包含','Included']] },
-    { name: ['重点产品采购需求研究', 'Buyer-needs research for one product'], cells: [['—','—'],['1个方向','One product focus'],['1个方向','One product focus']] },
-    { name: ['英文产品销售推广包', 'English product sales content pack'], cells: [['—','—'],['1套','One pack'],['1套','One pack']] },
-    { name: ['已有海外销售渠道适配', 'Existing sales-channel adaptation'], cells: [['基础使用指导','Basic use guide'],['1条渠道','One channel'],['1条渠道','One channel']] },
-    { name: ['专业增长研究专项', 'Focused growth research project'], cells: [['—','—'],['—','—'],['搜索或目标买家研究（二选一）','Search or target-buyer research']] },
+    { name: ['重点产品海外采购需求调研', 'Buyer-needs research for one product'], cells: [['—','—'],['1个方向','One product focus'],['1个方向','One product focus']] },
+    { name: ['英文产品推广资料', 'English product sales content pack'], cells: [['—','—'],['1套','One pack'],['1套','One pack']] },
+    { name: ['为现有销售渠道准备推广资料和链接', 'Existing sales-channel adaptation'], cells: [['基础使用指导','Basic use guide'],['1条渠道','One channel'],['1条渠道','One channel']] },
+    { name: ['海外搜索优化或潜在客户调研', 'Focused growth research project'], cells: [['—','—'],['—','—'],['搜索或目标买家研究（二选一）','Search or target-buyer research']] },
   ] },
   { title: ['04 · 赠送3个月专业服务', '04 · Three months of included services'], rows: [
-    { name: ['网站与询盘运行巡检', 'Website and inquiry health checks'], cells: [['3次','3 checks'],['3次','3 checks'],['3次','3 checks']] },
-    { name: ['网页小范围内容修改', 'Small edits to existing content'], cells: [['最多3处','Up to 3'],['最多3处','Up to 3'],['最多3处','Up to 3']] },
-    { name: ['Google基础搜索检查', 'Google search basics check'], cells: [['1次','One'],['1次','One'],['1次','One']] },
-    { name: ['英文销售推广素材制作', 'English sales outreach assets'], cells: [['基础推广说明','Basic sharing guide'],['1套','One pack'],['1套','One pack']] },
-    { name: ['重点产品或询盘页优化', 'Priority page or inquiry improvement'], cells: [['—','—'],['1处','One page'],['按选定专项实施2轮','Two scoped improvement cycles']] },
-    { name: ['可核查的专项研究成果', 'Evidence-backed research deliverables'], cells: [['—','—'],['采购关注点摘要','Buyer-needs summary'],['一份增长专项成果包','One growth research deliverable']] },
-    { name: ['服务成果清单与总结', 'Service completion record & summary'], cells: [['包含','Included'],['包含','Included'],['包含','Included']] },
+    { name: ['网站运行及询盘接收检查', 'Website and inquiry health checks'], cells: [['3次','3 checks'],['3次','3 checks'],['3次','3 checks']] },
+    { name: ['网页少量内容修改', 'Small edits to existing content'], cells: [['最多3处','Up to 3'],['最多3处','Up to 3'],['最多3处','Up to 3']] },
+    { name: ['Google搜索基础检查', 'Google search basics check'], cells: [['1次','One'],['1次','One'],['1次','One']] },
+    { name: ['英文产品推广资料制作', 'English sales outreach assets'], cells: [['基础推广说明','Basic sharing guide'],['1套','One pack'],['1套','One pack']] },
+    { name: ['重点产品网页或询盘页面优化', 'Priority page or inquiry improvement'], cells: [['—','—'],['1处','One page'],['按选定专项实施2轮','Two scoped improvement cycles']] },
+    { name: ['附有来源的调研成果', 'Evidence-backed research deliverables'], cells: [['—','—'],['采购关注点摘要','Buyer-needs summary'],['一份增长专项成果包','One growth research deliverable']] },
+    { name: ['服务完成记录与总结', 'Service completion record & summary'], cells: [['包含','Included'],['包含','Included'],['包含','Included']] },
   ] },
-  { title: ['05 · 首年托管与交付保障', '05 · Hosting and delivery'], rows: [
+  { title: ['05 · 网站托管与交付保障', '05 · Hosting and delivery'], rows: [
     { name: ['首年基础网站托管、HTTPS', 'First-year commercial hosting & HTTPS'], cells: [['包含','Included'],['包含','Included'],['包含','Included']] },
-    { name: ['实际询盘接收验证', 'Verified inquiry receipt'], cells: [['包含','Included'],['包含','Included'],['包含','Included']] },
-    { name: ['源码及约定网站资产移交', 'Agreed source and asset handover'], cells: [['包含','Included'],['包含','Included'],['包含','Included']] },
+    { name: ['实际测试询盘提交和接收', 'Verified inquiry receipt'], cells: [['包含','Included'],['包含','Included'],['包含','Included']] },
+    { name: ['交付约定的网站源码与素材', 'Agreed source and asset handover'], cells: [['包含','Included'],['包含','Included'],['包含','Included']] },
     { name: ['交付后30天缺陷保障', '30-day delivery defect coverage'], cells: [['包含','Included'],['包含','Included'],['包含','Included']] },
   ] },
 ]
@@ -84,7 +85,7 @@ const faqs: { q: Pair; a: Pair }[] = [
     a: ['可以。3个月是服务权益有效期，不是按月排定的交付进度。资料与授权齐全后，约定的销售素材、内容修改或研究可以提前启动并交付；持续运行检查则在有效期内合理分布。', 'Yes. Three months is the benefit validity period, not a fixed delivery schedule. Once materials and approvals are ready, fixed deliverables can start immediately; ongoing checks are spread across the service term.'] },
   { q: ['网站建设、托管和3个月服务是同一笔费用吗？', 'Are build, hosting and three-month services included?'],
     a: ['三档标准价格均包含约定建设交付、首年基础托管及上线后的3个月服务权益。第二年托管及特殊第三方费用会在签约前书面明确，持续增长服务不强制购买。', 'Each standard package includes the agreed website, first-year basic hosting and three months of defined services. Year-two hosting and exceptional third-party costs are disclosed in writing before signing; ongoing growth services are optional.'] },
-  { q: ['产品应用与采购选型专题是什么？', 'What is an application and buyer-selection guide?'],
+  { q: ['产品应用介绍或选型指南是什么？', 'What is an application and buyer-selection guide?'],
     a: ['它是一份围绕具体采购问题的专业网页，组织已核实的应用需求、参数、相关产品、供应商能力证明和询价入口；不是替客户设计工程方案。', 'A focused page explaining a real application, buyer decision criteria, relevant products, verified supplier evidence and inquiry options. It is not an engineering design service.'] },
   { q: ['20家潜在买家等于20个有采购意向的客户吗？', 'Are 20 researched companies 20 confirmed buyers?'],
     a: ['不是。领航版选择目标买家专项时，研究最多20家具有公开来源的候选企业，并对其中最多5家进一步核查匹配理由。并不承诺其正在采购、提供有效联系人或产生回复与订单。', 'No. In the target-buyer track, we research up to 20 source-backed candidate companies and further evaluate up to five. This does not guarantee buying intent, contacts, responses or orders.'] },
@@ -168,10 +169,10 @@ export function PricingTeaserV35() {
       <p className="font-mono text-xs tracking-[.2em] text-ink/55">VEYFRONT / BUILD · REBUILD · GROW</p>
       <div className="mt-4 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
         <div className="max-w-[820px]">
-          <h2 id="teaser-v35-title" className="text-balance text-3xl font-semibold tracking-tight sm:text-[42px]">{zh ? '从专业官网，到海外销售与新客户机会。' : 'From a credible website to stronger sales and new buyer opportunities.'}</h2>
+          <h2 id="teaser-v35-title" className="text-balance text-3xl font-semibold tracking-tight sm:text-[42px]">{zh ? '不只建好网站，还要让外贸业务用得上。' : 'From a credible website to stronger sales and new buyer opportunities.'}</h2>
           <p className="mt-3 max-w-2xl leading-relaxed text-ink/70">{zh ? '三档标准方案，均含中英文网站、首年基础托管和上线后3个月专业服务。' : 'Three clear packages, each with a bilingual website, first-year hosting and three months of professional service.'}</p>
         </div>
-        <Link href="/pricing" className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-ink px-5 font-semibold text-ivory hover:bg-ink/85">{zh ? '比较全部服务' : 'Compare all plans'}<ArrowUpRight className="size-4"/></Link>
+        <Link href="/pricing" className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-ink px-5 font-semibold text-ivory hover:bg-ink/85">{zh ? '查看完整服务与价格' : 'Compare all plans'}<ArrowUpRight className="size-4"/></Link>
       </div>
       <div className="mt-8 md:hidden">
         <MobilePlanTabs value={mobilePlan} onChange={setMobilePlan}/>
@@ -186,7 +187,7 @@ export function PricingTeaserV35() {
           <p className="mt-5 border-t border-ink/10 pt-4 text-sm text-ink/80">{t(plan.points[3])}</p>
         </article>)}
       </div>
-      <p className="mt-5 text-xs leading-relaxed text-ink/60">{zh ? '一次性标准项目参考价；正式报价、税务及服务范围签约前确认。价格与税务条件以签约前确认的书面报价为准。' : 'Indicative one-off project prices; final quote, taxes and scope are confirmed before agreement. The written quote confirms scope and tax terms.'}</p>
+      <p className="mt-5 text-xs leading-relaxed text-ink/60">{zh ? '以上为一次性标准项目参考价，正式交付范围、税费与总价以双方签约前的书面报价为准。' : 'Indicative one-off project prices; final quote, taxes and scope are confirmed before agreement. The written quote confirms scope and tax terms.'}</p>
     </div>
   </section>
 }
@@ -201,7 +202,7 @@ export function PricingV35() {
       <div className="pointer-events-none absolute -right-20 top-2 h-80 w-80 rotate-[24deg] rounded-full border border-lime/20 md:right-8" aria-hidden="true"/>
       <div className="pointer-events-none absolute right-8 top-16 h-52 w-52 rounded-full border border-lime/10" aria-hidden="true"/>
       <div className="relative mx-auto max-w-[1360px] px-5 pb-12 pt-12 md:px-10 md:pb-14 md:pt-16">
-        <p className="font-mono text-xs uppercase tracking-[.2em] text-lime">VEYFRONT / SERVICES & PRICING · V3.5</p>
+        <p className="font-mono text-xs uppercase tracking-[.2em] text-lime">{zh ? 'VEYFRONT · 服务与价格' : 'VEYFRONT / SERVICES & PRICING'}</p>
         <h1 id="pricing-v35-title" className="mt-5 max-w-[980px] text-balance text-[34px] font-semibold leading-tight tracking-tight md:text-[54px] lg:text-[62px]">{zh ? '让海外采购商看得懂、信得过、愿意联系。' : 'Help global buyers understand, trust and contact your business.'}</h1>
         <p className="mt-5 max-w-3xl text-base leading-relaxed text-ivory/75 md:text-lg">{zh ? '从建立专业海外官网，到帮助现有销售推广产品，再到研究新的海外市场与客户机会。选择适合企业当前阶段的方案。' : 'Build a credible B2B website, give your export team stronger sales assets, and explore new markets and buyer opportunities. Choose the service that fits your stage.'}</p>
         <div className="mt-7 flex flex-wrap gap-x-7 gap-y-3 border-t border-ivory/20 pt-5 text-sm text-ivory/85">
@@ -214,7 +215,7 @@ export function PricingV35() {
 
     <section className="mx-auto max-w-[1360px] px-5 pb-16 pt-9 md:px-10 md:pt-12" aria-labelledby="plan-list-title">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 id="plan-list-title" className="text-2xl font-semibold md:text-3xl">{zh ? '选择您的商业发展阶段' : 'Choose your next business stage'}</h2>
+        <h2 id="plan-list-title" className="text-2xl font-semibold md:text-3xl">{zh ? '选择适合企业当前需求的方案' : 'Choose your next business stage'}</h2>
         <p className="text-sm text-ink/60">{zh ? '标准项目 · 一次性参考价' : 'Standard project · one-off guide price'}</p>
       </div>
       <div className="mt-7 lg:hidden">
@@ -237,13 +238,13 @@ export function PricingV35() {
           <Link href={'/contact?plan=' + plan.id} className={'mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-md px-5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ' + (plan.featured ? 'bg-ink text-ivory hover:bg-ink/85' : 'border border-ink/25 bg-ivory text-ink hover:bg-mist')}>{zh ? '咨询' + t(plan.title) + '方案' : 'Ask about ' + t(plan.title)}<ArrowRight className="size-4"/></Link>
         </article>)}
       </div>
-      <p className="mt-5 text-sm leading-relaxed text-ink/65">{zh ? '三个方案都支持新建官网及标准范围的旧站升级。标准范围和第三方费用在签约前书面确认；具体交付范围、第三方费用与税务条件以签约前的书面确认为准。' : 'All three plans support new builds and standard rebuilds. Scope and external costs are agreed in writing before signing; Final deliverables, external costs and tax terms are confirmed in writing before signing.'}</p>
+      <p className="mt-5 text-sm leading-relaxed text-ink/65">{zh ? '三个方案都支持新建外贸官网及常规旧站升级。超出标准范围的需求及第三方费用，签约前会另行说明。' : 'All three plans support new builds and standard rebuilds. Scope and external costs are agreed in writing before signing; Final deliverables, external costs and tax terms are confirmed in writing before signing.'}</p>
     </section>
 
     <section className="border-y border-ink/10 bg-mist/35" aria-labelledby="upgrade-value-title">
       <div className="mx-auto max-w-[1360px] px-5 py-14 md:px-10 lg:py-20">
         <p className="font-mono text-xs tracking-widest text-ink/55">WHY UPGRADE</p>
-        <h2 id="upgrade-value-title" className="mt-3 max-w-3xl text-balance text-3xl font-semibold md:text-[40px]">{zh ? '多投入¥3,000，具体多获得什么？' : 'What does the next tier actually add?'}</h2>
+        <h2 id="upgrade-value-title" className="mt-3 max-w-3xl text-balance text-3xl font-semibold md:text-[40px]">{zh ? '不同套餐多出的服务，具体是什么？' : 'What does the next tier actually add?'}</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           <article className="rounded-lg border border-ink/15 bg-ivory p-6 md:p-8">
             <div className="flex flex-wrap items-baseline justify-between gap-3"><p className="font-semibold">{zh ? '启航 → 拓展' : 'Start → Expansion'}</p><p className="text-2xl font-semibold tabular-nums">+¥3,000</p></div>
@@ -262,7 +263,7 @@ export function PricingV35() {
     <section className="mx-auto max-w-[1360px] px-5 py-16 md:px-10" aria-labelledby="comparison-title">
       <div className="max-w-3xl">
         <p className="font-mono text-xs tracking-widest text-ink/55">FULL COMPARISON</p>
-        <h2 id="comparison-title" className="mt-3 text-3xl font-semibold md:text-[40px]">{zh ? '每一项权益，都有明确交付范围。' : 'Every benefit, clearly defined.'}</h2>
+        <h2 id="comparison-title" className="mt-3 text-3xl font-semibold md:text-[40px]">{zh ? '三档方案的服务内容和交付数量，逐项对比。' : 'Every benefit, clearly defined.'}</h2>
         <p className="mt-4 leading-relaxed text-ink/65">{zh ? '三档共同的专业网站质量不打折；区别在于产品内容、销售支持和增长研究深度。' : 'Every tier gets a credible, working site. The difference is in content depth, sales support and growth research.'}</p>
       </div>
       <MobileServiceComparison value={mobilePlan} onChange={setMobilePlan}/>
@@ -280,7 +281,7 @@ export function PricingV35() {
         <p className="font-mono text-xs tracking-[.2em] text-lime">3 MONTHS OF INCLUDED SERVICES</p>
         <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_0.76fr] lg:items-end">
           <h2 id="service-3m-title" className="max-w-3xl text-balance text-[32px] font-semibold leading-tight md:text-[46px]">{zh ? '网站上线后，再送您3个月真正用得上的专业服务。' : 'Three months of real services after your site goes live.'}</h2>
-          <p className="text-base leading-relaxed text-ivory/75">{zh ? '您购买的是可使用的服务权益，不是固定的第一、第二、第三个月排期。只要资料与授权齐全，销售素材、内容修改、研究专项都可以提前启动。' : 'These are usable benefits—not a rigid month-by-month schedule. Once materials are ready, fixed deliverables can start immediately.'}</p>
+          <p className="text-base leading-relaxed text-ivory/75">{zh ? '三档均包含3个月约定服务。网站检查在服务期内安排；资料和授权齐全后，约定的推广资料制作、网页修改和调研可以提前开展。' : 'These are usable benefits—not a rigid month-by-month schedule. Once materials are ready, fixed deliverables can start immediately.'}</p>
         </div>
         <div className="mt-9 grid gap-4 lg:grid-cols-3">
           <article className="rounded-xl border border-ivory/20 bg-ivory/5 p-6">
@@ -299,7 +300,7 @@ export function PricingV35() {
             <p className="mt-2 text-sm leading-relaxed text-ivory/70">{zh ? '包含维护与销售支持，再选一个搜索或目标买家研究专项，完成2轮专项优化并交付成果。' : 'Website and sales support plus one search or target-buyer research track, with two scoped improvement cycles.'}</p>
           </article>
         </div>
-        <div className="mt-7 rounded-lg border border-lime/30 px-5 py-4 text-sm leading-relaxed text-ivory/80"><strong className="text-ivory">{zh ? '三个月是权益有效期，不是分月领取。' : 'Three months means validity, not installments.'}</strong> {zh ? '持续巡检与问题受理覆盖服务期；定额内容、研究和优化可以按需求提前交付。所有完成项目都有可查看的成果或记录。' : 'Continuous support remains available during the term; scoped content and research can be delivered early. Completed work has inspectable evidence.'}</div>
+        <div className="mt-7 rounded-lg border border-lime/30 px-5 py-4 text-sm leading-relaxed text-ivory/80"><strong className="text-ivory">{zh ? '3个月是服务有效期，不按月限制可交付内容。' : 'Three months means validity, not installments.'}</strong> {zh ? '持续巡检与问题受理覆盖服务期；定额内容、研究和优化可以按需求提前交付。所有完成项目都有可查看的成果或记录。' : 'Continuous support remains available during the term; scoped content and research can be delivered early. Completed work has inspectable evidence.'}</div>
       </div>
     </section>
 
@@ -309,13 +310,13 @@ export function PricingV35() {
       <div className="mt-8 grid gap-5 md:grid-cols-2">
         <article className="rounded-xl border border-ink/15 bg-white/85 p-6 md:p-8">
           <Search className="size-8 text-ink" aria-hidden="true"/>
-          <h3 className="mt-4 text-2xl font-semibold">{zh ? 'A · Google与AI搜索增长' : 'A · Search growth research'}</h3>
+          <h3 className="mt-4 text-2xl font-semibold">{zh ? 'A · Google与AI搜索内容优化' : 'A · Search growth research'}</h3>
           <p className="mt-3 leading-relaxed text-ink/70">{zh ? '研究8–12个与重点产品相关的采购问题，形成内容机会与优化清单，完成两轮约定范围的页面改进。' : 'Study 8–12 buyer-search questions, identify content opportunities and complete two scoped rounds of page improvement.'}</p>
           <p className="mt-5 border-t border-ink/10 pt-4 text-sm font-medium">{zh ? '交付：搜索研究清单 + 优化前后记录 + 下一步建议' : 'Deliverables: research list, before/after changes and next actions'}</p>
         </article>
         <article className="rounded-xl border border-ink/15 bg-white/85 p-6 md:p-8">
           <UsersRound className="size-8 text-ink" aria-hidden="true"/>
-          <h3 className="mt-4 text-2xl font-semibold">{zh ? 'B · 海外目标买家研究' : 'B · Overseas target-buyer research'}</h3>
+          <h3 className="mt-4 text-2xl font-semibold">{zh ? 'B · 海外潜在客户调研' : 'B · Overseas target-buyer research'}</h3>
           <p className="mt-3 leading-relaxed text-ink/70">{zh ? '围绕一个重点市场，研究最多20家有公开来源的候选企业，对其中最多5家进一步核查匹配度，完成两轮专项内容或目标匹配优化。' : 'For one target market, research up to 20 source-backed candidate companies, further assess up to five, and complete two scoped refinement cycles.'}</p>
           <p className="mt-5 border-t border-ink/10 pt-4 text-sm font-medium">{zh ? '交付：市场研究 + 企业来源与匹配说明 + 开发优先级建议' : 'Deliverables: market review, company evidence and outreach priorities'}</p>
         </article>
@@ -326,7 +327,7 @@ export function PricingV35() {
     <section className="border-y border-ink/10 bg-mist/35" aria-labelledby="proof-title">
       <div className="mx-auto max-w-[1360px] px-5 py-16 md:px-10">
         <p className="font-mono text-xs tracking-[.2em] text-ink/55">WHAT YOU RECEIVE</p>
-        <h2 id="proof-title" className="mt-3 max-w-3xl text-balance text-3xl font-semibold md:text-[40px]">{zh ? '买的不只是承诺，而是可以核对的交付成果。' : 'Not vague promises—work you can inspect.'}</h2>
+        <h2 id="proof-title" className="mt-3 max-w-3xl text-balance text-3xl font-semibold md:text-[40px]">{zh ? '网站、推广资料和调研结果，交付时都能核对。' : 'Not vague promises—work you can inspect.'}</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {[{num:'01',title:['专业网站与询盘','Website and inquiries'],body:['网站、产品页面、已核实的供应商能力、实际表单测试及交付验收记录。','Live site, products, verified supplier information, tested inquiry and acceptance record.']},
           {num:'02',title:['销售推广内容','Sales outreach assets'],body:['重点产品介绍、英文开发与跟进素材、推广链接，以及已修改页面的前后对照。','Product introduction, English outreach assets, links and documented page improvements.']},
@@ -343,15 +344,15 @@ export function PricingV35() {
 
     <section className="mx-auto max-w-[1360px] px-5 py-16 md:px-10" aria-labelledby="scope-title">
       <p className="font-mono text-xs tracking-[.2em] text-ink/55">TRANSPARENT TERMS</p>
-      <h2 id="scope-title" className="mt-3 text-3xl font-semibold md:text-[40px]">{zh ? '费用清楚、交付清楚，客户始终掌握网站。' : 'Clear fees, clear scope, your site stays yours.'}</h2>
+      <h2 id="scope-title" className="mt-3 text-3xl font-semibold md:text-[40px]">{zh ? '费用与交付事先说清楚，网站资产由客户掌控。' : 'Clear fees, clear scope, your site stays yours.'}</h2>
       <div className="mt-8 grid gap-4 lg:grid-cols-3">
         <div className="rounded-lg border border-ink/15 p-6"><h3 className="text-lg font-semibold">{zh ? '首年托管与运行保障' : 'First-year hosting'}</h3><p className="mt-3 text-sm leading-relaxed text-ink/70">{zh ? '三档均含首年基础商业托管、HTTPS和约定的网站运行保障。资源上限、域名注册及第二年续费在签约前确认。' : 'All plans include first-year basic commercial hosting, HTTPS and agreed technical support. Limits, domains and renewal terms are disclosed before signing.'}</p></div>
         <div className="rounded-lg border border-ink/15 p-6"><h3 className="text-lg font-semibold">{zh ? '客户资产与迁移权利' : 'Ownership and portability'}</h3><p className="mt-3 text-sm leading-relaxed text-ink/70">{zh ? '域名由客户控制，交付约定源码和资产。客户可以选择符合条件的其他托管方，无须强制购买持续运营服务。' : 'You control your domain and receive agreed source and assets. Compatible hosting can be changed; continued marketing is optional.'}</p></div>
         <div className="rounded-lg border border-ink/15 p-6"><h3 className="text-lg font-semibold">{zh ? '复杂项目提前确认' : 'Complex work is scoped upfront'}</h3><p className="mt-3 text-sm leading-relaxed text-ink/70">{zh ? '复杂CMS迁移、大型数据整理、特殊技术翻译、广告费用和定制软件均须另行书面确认。无未经同意的中途增项。' : 'Complex migrations, large data work, special translation, advertising costs and bespoke systems are separately agreed in writing.'}</p></div>
       </div>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-5 rounded-lg border border-ink/15 bg-mist/35 p-6">
-        <div className="max-w-3xl"><h3 className="text-xl font-semibold">Frontier Run · {zh ? '后续持续维护（可选）' : 'Optional ongoing service'}</h3><p className="mt-2 text-sm leading-relaxed text-ink/70">{zh ? '三个月赠送服务到期后，如需继续进行内容维护、询盘检查及定期业务复盘，可咨询年度服务。基础托管续费与增长运营分别计价。' : 'After the included services, optional ongoing content care, inquiry checks and business reviews are available. Hosting renewal and growth services are priced separately.'}</p></div>
-        <div><p className="text-2xl font-semibold tabular-nums">¥6,800<span className="ml-1 text-sm font-normal text-ink/60">{zh ? '/年 · 候选参考价' : '/year · indicative'}</span></p><Link href="/contact" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold underline underline-offset-4">{zh ? '了解持续服务' : 'Ask about ongoing care'}<ArrowUpRight className="size-4"/></Link></div>
+        <div className="max-w-3xl"><h3 className="text-xl font-semibold">Frontier Run · {zh ? '后续持续维护（可选）' : 'Optional ongoing service'}</h3><p className="mt-2 text-sm leading-relaxed text-ink/70">{zh ? '3个月服务结束后，可按需继续委托网站维护、询盘检查和内容优化。网站托管续费与后续运营服务分别报价。' : 'After the included services, optional ongoing content care, inquiry checks and business reviews are available. Hosting renewal and growth services are priced separately.'}</p></div>
+        <div><p className="text-sm font-semibold text-ink/80">{zh ? '后续服务根据实际需求另行报价' : 'Ongoing service is quoted separately'}</p><Link href="/contact" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold underline underline-offset-4">{zh ? '了解持续服务' : 'Ask about ongoing care'}<ArrowUpRight className="size-4"/></Link></div>
       </div>
     </section>
 
@@ -366,7 +367,7 @@ export function PricingV35() {
       <div className="mx-auto flex max-w-[1360px] flex-col justify-between gap-8 px-5 py-16 md:px-10 lg:flex-row lg:items-end lg:py-20">
         <div className="max-w-3xl">
           <p className="font-mono text-xs tracking-[.2em] text-lime">LET'S BUILD YOUR FRONTIER</p>
-          <h2 id="last-cta-v35" className="mt-4 text-balance text-3xl font-semibold leading-tight md:text-[44px]">{zh ? '先确认您的业务目标，再确定最适合的方案。' : 'Tell us your goal. We will confirm the right scope.'}</h2>
+          <h2 id="last-cta-v35" className="mt-4 text-balance text-3xl font-semibold leading-tight md:text-[44px]">{zh ? '告诉我们您想建什么网站，一起确定方案和报价。' : 'Tell us your goal. We will confirm the right scope.'}</h2>
           <p className="mt-4 leading-relaxed text-ivory/75">{zh ? '新建官网或升级旧站，均从项目咨询和范围确认开始。不会未经同意修改现有网站，也不会自动收费。' : 'New build or rebuild: start with a project inquiry and written scope. No changes or payment happen without your approval.'}</p>
         </div>
         <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
