@@ -10,13 +10,13 @@ export async function localizedMetadata(
   englishDescription: string, chineseDescription: string,
   robots: Metadata['robots'] = releaseRobots,
 ): Promise<Metadata> {
-  const chinese = (await headers()).get('x-vf-page-locale') === 'zh'
+  const chinese = (await headers()).get('x-vf-page-locale') !== 'en'
   const suffix = path === '/' ? '' : path
-  const canonical = origin + (chinese ? '/zh' : '') + suffix
+  const canonical = origin + (chinese ? '' : '/en') + suffix
   const title = chinese ? chineseTitle : englishTitle
   const description = chinese ? chineseDescription : englishDescription
-  const english = origin + suffix
-  const zh = origin + '/zh' + suffix
+  const english = origin + '/en' + suffix
+  const zh = origin + suffix
   const image = origin + '/opengraph-image'
   return {
     title,
@@ -24,7 +24,7 @@ export async function localizedMetadata(
     robots,
     alternates: {
       canonical,
-      languages: { en: english, 'zh-CN': zh, 'x-default': english },
+      languages: { en: english, 'zh-CN': zh, 'x-default': zh },
     },
     openGraph: {
       type: 'website',

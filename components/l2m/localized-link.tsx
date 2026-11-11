@@ -8,8 +8,9 @@ export default function LocalizedLink(props: ComponentProps<typeof NextLink>) {
   const href = props.href
   const internal = typeof href === 'string' && href.startsWith('/') &&
     !href.startsWith('/zh/') && href !== '/zh' &&
+    !href.startsWith('/en/') && href !== '/en' &&
     !href.startsWith('/api/') && !href.startsWith('/review/') &&
     !href.startsWith('/a/') && !href.startsWith('/b/')
-  const localized = lang === 'zh' && internal ? '/zh' + (href === '/' ? '' : href) : href
+  const localized = lang === 'en' && internal ? '/en' + (href === '/' ? '' : href) : href
   return <NextLink {...props} href={localized} />
 }

@@ -13,7 +13,7 @@ const PUBLIC_PATHS = [
   '/start/launch', '/start/rebuild', '/privacy', '/terms',
 ]
 const NON_INDEXABLE = [
-  '/transformations', '/zh/transformations', '/contact/privacy', '/zh/contact/privacy',
+  '/transformations', '/en/transformations', '/contact/privacy', '/en/contact/privacy',
 ]
 const INTERNAL_REVIEW_PATHS = ['/a', '/b', '/review/stage-1']
 const report = { version: 'SEO-LIVE-V3', checkedAt: new Date().toISOString(),
@@ -66,13 +66,13 @@ async function page(path, indexable) {
   }
   const canonicalPath = path === '/' ? '' : path
   const canonical = ORIGIN + canonicalPath
-  const suffix = path === '/zh' ? '' : path.startsWith('/zh/') ? path.slice(3) : path === '/' ? '' : path
-  const expectedEn = ORIGIN + suffix
-  const expectedZh = ORIGIN + '/zh' + suffix
-  const lang = path === '/zh' || path.startsWith('/zh/') ? 'zh-CN' : 'en'
+  const suffix = path === '/en' ? '' : path.startsWith('/en/') ? path.slice(3) : path === '/' ? '' : path
+  const expectedEn = ORIGIN + '/en' + suffix
+  const expectedZh = ORIGIN + suffix
+  const lang = path === '/en' || path.startsWith('/en/') ? 'en' : 'zh-CN'
   const languageAnchors = tags(body, 'a')
-  const enHref = suffix || '/'
-  const zhHref = '/zh' + suffix
+  const enHref = '/en' + suffix
+  const zhHref = suffix || '/'
   verify(languageAnchors.some(a => a.href === enHref && a.hreflang === 'en'), path + ' crawlable EN link', enHref)
   verify(languageAnchors.some(a => a.href === zhHref && a.hreflang === 'zh-CN'), path + ' crawlable ZH link', zhHref)
   const htmlLang = attributes((body.match(/<html\b[^>]*>/i) ?? [''])[0]).lang
@@ -90,7 +90,7 @@ async function page(path, indexable) {
   verify(canonicalValue === canonical, path + ' self canonical', canonicalValue)
   verify(hreflang.en === expectedEn, path + ' en hreflang', hreflang.en)
   verify(hreflang['zh-CN'] === expectedZh, path + ' zh-CN hreflang', hreflang['zh-CN'])
-  verify(hreflang['x-default'] === expectedEn, path + ' default hreflang', hreflang['x-default'])
+  verify(hreflang['x-default'] === expectedZh, path + ' default hreflang', hreflang['x-default'])
   verify(indexable ? !robots.includes('noindex') : robots.includes('noindex'),
     path + ' index policy', robots)
   verify(headValue(body, 'meta', 'property', 'og:title', 'content') === title,
@@ -98,7 +98,7 @@ async function page(path, indexable) {
   verify(headValue(body, 'meta', 'property', 'og:image', 'content') === ORIGIN + '/opengraph-image',
     path + ' branded OG image')
   verify(Boolean(body.match(/<h1\b/i)), path + ' semantic H1')
-  if (path === '/' || path === '/zh') {
+  if (path === '/' || path === '/en') {
     verify(body.includes('https://schema.org') && body.includes('"@type":"Organization"'),
       path + ' published Organization structured data')
   }
@@ -129,14 +129,24 @@ async function main() {
     verify(new Set(urls).size === urls.length, 'public sitemap URLs unique')
     for (const base of PUBLIC_PATHS) {
       const path = base === '/' ? '' : base
-      verify(urls.includes(ORIGIN + path), 'sitemap EN ' + path)
-      verify(urls.includes(ORIGIN + '/zh' + path), 'sitemap ZH ' + path)
+      verify(urls.includes(ORIGIN + path), 'sitemap ZH ' + path)
+      verify(urls.includes(ORIGIN + '/en' + path), 'sitemap EN ' + path)
     }
     for (const path of PUBLIC_PATHS) {
       await page(path, true)
-      await page('/zh' + (path === '/' ? '' : path), true)
+      await page('/en' + (path === '/' ? '' : path), true)
     }
     for (const path of NON_INDEXABLE) await page(path, false)
+    // Old Chinese URLs are 308 redirects, never canonical pages after migration.
+    for (const base of PUBLIC_PATHS) {
+      const suffix = base === '/' ? '' : base
+      const legacy = '/zh' + suffix
+      const response = await fetch(ORIGIN + legacy, { redirect: 'manual', cache: 'no-store', signal: AbortSignal.timeout(20000) })
+      const location = response.headers.get('location')
+      report.results.push({ path: legacy, status: response.status, redirectTarget: location })
+      verify(response.status === 308, legacy + ' permanent redirect', response.status)
+      verify(new URL(location ?? '/', ORIGIN).pathname === (suffix || '/'), legacy + ' Chinese destination', location)
+    }
     for (const path of INTERNAL_REVIEW_PATHS) await reviewNoindex(path)
     // Old public links must remain canonicalized to the single commercial pricing route.
     const oldServices = await fetch(ORIGIN + '/services', {

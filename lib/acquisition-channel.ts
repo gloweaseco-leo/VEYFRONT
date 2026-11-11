@@ -6,13 +6,18 @@
 export const ACQUISITION_SESSION_KEY = 'vf:acquisition-channel-v1'
 export const LANDING_PAGE_SESSION_KEY = 'vf:first-public-landing-v1'
 const canonicalPaths = [
-  '/', '/zh', '/pricing', '/zh/pricing', '/how-it-works', '/zh/how-it-works',
-  '/contact', '/zh/contact', '/start/launch', '/zh/start/launch',
-  '/start/rebuild', '/zh/start/rebuild', '/privacy', '/zh/privacy',
-  '/terms', '/zh/terms',
+  '/', '/en', '/pricing', '/en/pricing', '/how-it-works', '/en/how-it-works',
+  '/contact', '/en/contact', '/start/launch', '/en/start/launch',
+  '/start/rebuild', '/en/start/rebuild', '/privacy', '/en/privacy',
+  '/terms', '/en/terms',
+] as const
+// Historical /zh records remain valid for readback; public requests to these paths now 308 to Chinese canonical.
+const legacyLandingPaths = [
+  '/zh', '/zh/pricing', '/zh/how-it-works', '/zh/contact',
+  '/zh/start/launch', '/zh/start/rebuild', '/zh/privacy', '/zh/terms',
 ] as const
 export function safeAcquisitionLandingPage(value: unknown): string | null {
-  return typeof value === 'string' && (canonicalPaths as readonly string[]).includes(value)
+  return typeof value === 'string' && ((canonicalPaths as readonly string[]).includes(value) || (legacyLandingPaths as readonly string[]).includes(value))
     ? value
     : null
 }

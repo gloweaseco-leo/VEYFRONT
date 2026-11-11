@@ -24,7 +24,7 @@ export function Logo({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
 export function LangToggle({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
   const { lang, setLang } = useLang()
   const pathname = usePathname()
-  const cleanPath = pathname.startsWith('/zh/') ? pathname.slice(3) : pathname === '/zh' ? '/' : pathname
+  const cleanPath = pathname.startsWith('/en/') ? pathname.slice(3) : pathname === '/en' ? '/' : pathname.startsWith('/zh/') ? pathname.slice(3) : pathname === '/zh' ? '/' : pathname
   const publicPaths = new Set(['/', '/pricing', '/transformations', '/how-it-works', '/contact', '/start/launch', '/start/rebuild', '/privacy', '/terms', '/contact/privacy'])
   const isPublicPath = publicPaths.has(cleanPath)
   const options: { value: Lang; label: string }[] = [
@@ -58,7 +58,7 @@ export function LangToggle({ tone = 'light' }: { tone?: 'light' | 'dark' }) {
         if (isPublicPath) {
           // Native anchors expose both language URLs in server-rendered HTML to crawlers.
           // A full document navigation also refreshes rewrite-derived canonical/hreflang metadata.
-          const href = o.value === 'zh' ? '/zh' + (cleanPath === '/' ? '' : cleanPath) : cleanPath
+          const href = o.value === 'en' ? '/en' + (cleanPath === '/' ? '' : cleanPath) : cleanPath
           return (
             <a key={o.value} href={href} hrefLang={o.value === 'zh' ? 'zh-CN' : 'en'} aria-current={active ? 'page' : undefined} className={className}>
               {o.label}

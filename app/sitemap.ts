@@ -11,11 +11,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
   if (!isPublicRelease) return []
   return publicSitemapPaths.flatMap(path => {
     const suffix = path === '/' ? '' : path
-    const english = 'https://veyfront.com' + suffix
-    const chinese = 'https://veyfront.com/zh' + suffix
-    const alternates = { languages: { en: english, 'zh-CN': chinese, 'x-default': english } }
+    const english = 'https://veyfront.com/en' + suffix
+    const chinese = 'https://veyfront.com' + suffix
+    const alternates = { languages: { en: english, 'zh-CN': chinese, 'x-default': chinese } }
     // Do not synthesize update dates or assign priority/changeFrequency: Google's crawl
     // systems derive these from content/history, not declarations of desired ranking.
-    return [{ url: english, alternates }, { url: chinese, alternates }]
+    return [{ url: chinese, alternates }, { url: english, alternates }]
   })
 }

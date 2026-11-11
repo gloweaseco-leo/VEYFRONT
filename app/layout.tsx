@@ -49,7 +49,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const initialLang = (await headers()).get('x-vf-page-locale') === 'zh' ? 'zh' : 'en'
+  const initialLang = (await headers()).get('x-vf-page-locale') === 'en' ? 'en' : 'zh'
   return (
     <html
       lang={initialLang === "zh" ? "zh-CN" : "en"}

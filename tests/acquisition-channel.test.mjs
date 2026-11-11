@@ -23,9 +23,10 @@ test('missing, malformed, internal or unrecognized sources never pretend to be o
 })
 
 test('only canonical public paths are eligible for landing attribution', () => {
-  assert.equal(safeAcquisitionLandingPage('/zh/pricing'), '/zh/pricing')
+  assert.equal(safeAcquisitionLandingPage('/en/pricing'), '/en/pricing')
   assert.equal(safeAcquisitionLandingPage('/'), '/')
-  assert.equal(safeAcquisitionLandingPage('/zh'), '/zh')
+  assert.equal(safeAcquisitionLandingPage('/en'), '/en')
+  assert.equal(safeAcquisitionLandingPage('/zh/pricing'), '/zh/pricing') // preserve historical attribution readback
   assert.equal(safeAcquisitionLandingPage('/api/leads'), null)
   assert.equal(safeAcquisitionLandingPage('/review/stage-1'), null)
   assert.equal(safeAcquisitionLandingPage('/contact?token=secret'), null)
