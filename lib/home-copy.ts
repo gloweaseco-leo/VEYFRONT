@@ -260,16 +260,16 @@ const zh: HomeCopy = {
   reviewLink: '第一阶段 A/B 评审',
   nav: en.nav,
   hero: {
-    caption: '重点看三处改变：产品更容易找到、关键参数更容易核对、询盘入口更直接。',
+    caption: '看三个变化：找产品更方便、参数更清楚、客户询价更直接。',
     proofBefore: '改造前：只有型号列表，规格锁在 PDF 里，联系页只有通用信息。',
     proofAfter: '改造后：海外买家更容易找到合适的产品、核对关键技术参数，并向销售团队提出明确的采购需求。',
     inspect: '查看具体变化',
     viewLabel: '预览版本',
   },
   transformation: {
-    notesHeading: '产品展示和询盘体验有哪些变化',
-    synced: '切换升级前后版本，看看产品查找、规格评估和询盘入口如何改善。',
-    exploreNote: '了解设计变化，欢迎讨论你的网站升级方向。',
+    notesHeading: '网站升级后，海外客户能更方便地做什么？',
+    synced: '切换查看改版前后，比较产品查找、参数展示和询价方式。',
+    exploreNote: '看看网站改版能改进哪些客户体验。',
     fromTo: '改造前 → 改造后',
   },
   journey: {

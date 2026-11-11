@@ -14,10 +14,10 @@ const lang = read('components/l2m/brand.tsx')
 for (const [surface, source] of [['homepage visual', hero], ['pricing', pricing]]) {
   assert.doesNotMatch(source, /非真实客户案例|非真实客户交付案例|Illustrative concept, not a client|ILLUSTRATIVE|不代表已有真实客户增长案例/i, surface)
 }
-assert.match(hero, /网站升级 \/ 买家体验/)
-assert.match(homeCopy, /caption: '重点看三处改变：产品更容易找到/)
+assert.match(hero, /网站升级前后对比/)
+assert.match(homeCopy, /caption: '看三个变化：找产品更方便/)
 assert.doesNotMatch(homeCopy, /caption: '设计效果对比示意|caption: 'Illustrative design comparison/)
-assert.match(pageCopy, /stageTitle: '工业B2B网站 · 产品与询盘体验'/)
+assert.match(pageCopy, /stageTitle: '工业企业官网 · 改版前后对比'/)
 assert.match(pageCopy, /stageTitle: 'Industrial B2B · Product & Inquiry Journey'/)
 assert.doesNotMatch(pageCopy, /stageMeta: '.*非真实客户交付案例|lede: '.*这不是已交付客户案例/)
 assert.match(transformations, /\{p\.tr\.stageTitle\}/)
