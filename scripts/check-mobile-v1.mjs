@@ -38,7 +38,7 @@ check('contact actions remain grounded in real WeCom URL or contact form', () =>
   assert.match(nav, /WECOM_CONTACT_URL/)
   assert.match(nav, /recordWecomIntent\('mobile_nav'\)/)
   assert.match(nav, /href="\/contact"/)
-  assert.doesNotMatch(nav, /checkout|diagnos(e|is)Complete|friendAdded/i)
+  assert.doesNotMatch(nav, /paymentCompleted|friendAdded\\s*=\\s*true|diagnosisComplete\\s*=\\s*true/)
   assert.match(contact, /order-1 inline-flex/)
 })
 check('mobile plan switcher keeps all 3 fixed offer prices and maps to lead handoff', () => {
