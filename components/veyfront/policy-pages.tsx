@@ -4,7 +4,7 @@ import { PageShell } from '@/components/site/page-shell'
 import { useLang } from '@/lib/i18n'
 import publicOffers from '@/lib/public-offers.json'
 
-const updated='2026-11-09'
+const updated='2026-11-10'
 const pzh:[string,string][]=[
  ['适用范围','本说明适用于 VEYFRONT 网站上的项目需求、一般联系和隐私请求。填写表单不会自动诊断网站、生成网站或创建订单。'],
  ['收集哪些信息','根据咨询类型，我们收集你主动提交的姓名、微信号、联系电话、邮箱（至少一种联系方式）、偏好联系渠道、公司、目标市场、现有网站网址和需求描述，以及受理编号与提交时间。为了判断咨询的大致来源，网站可能在当前浏览器会话中保存一个粗粒度来源类别（如 Google、Bing、百度、外部引荐或未知）及站内入口页面路径，并在你同意提交项目咨询后随咨询记录保存；不保存原始引荐网址、搜索词或浏览器指纹。隐私请求不记录此来源类别。请勿提交密码、机密合同或身份证件。'],

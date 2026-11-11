@@ -80,7 +80,7 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
       setReference(data.reference)
       setStatus('success')
     } catch {
-      setError(zh ? '提交未完成，需求未确认保存。请稍后重试。' : 'Submission failed; your request was not confirmed saved. Please try again.')
+      setError(zh ? '提交失败，请重试；如果多次失败，可以通过微信联系我们。' : 'Submission failed; your request was not confirmed saved. Please try again.')
       setStatus('error')
     }
   }
@@ -108,7 +108,7 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
     </div>}
     {service !== 'privacy' && <fieldset className="rounded-lg border border-ink/15 bg-mist/30 p-4">
       <legend className="px-2 text-sm font-semibold">{zh ? '希望我们如何联系您？' : 'How should we contact you?'}</legend>
-      <p className="mb-3 text-xs text-ink/70">{zh ? '微信号、手机号、邮箱至少填写一种；可同时填写多种。' : 'Provide at least one: WeChat ID, phone, or email.'}</p>
+      <p className="mb-3 text-xs text-ink/70">{zh ? '微信号、手机号、邮箱任选一种即可，也可以多留几种方便联系。' : 'Provide at least one: WeChat ID, phone, or email.'}</p>
       <div className="flex flex-wrap gap-x-5 gap-y-2">
         {([
           ['any', zh ? '任意方式' : 'Any method'],
@@ -127,7 +127,7 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
         <div><label htmlFor="vf-phone" className="mb-2 block text-sm font-medium">{zh ? '手机 / 联系电话' : 'Phone number'}</label>
           <input id="vf-phone" name="phone" type="tel" autoComplete="tel" maxLength={32} className={field} value={phone} onChange={e=>setPhone(e.target.value)} placeholder="+86"/></div>
       </div>
-      <p className="mt-3 text-xs text-ink/65">{zh ? '留下微信号不代表已经添加好友。我们仅在处理本次咨询时使用。' : 'Providing a WeChat ID does not mean a connection has been established.'}</p>
+      <p className="mt-3 text-xs text-ink/65">{zh ? '我们只会使用您留下的联系方式沟通本次咨询。' : 'Providing a WeChat ID does not mean a connection has been established.'}</p>
     </fieldset>}
     {service !== 'privacy' && <div>
       <label htmlFor="vf-email" className="mb-2 block text-sm font-medium">{zh ? '电子邮箱（选填）' : 'Email (optional)'}</label>
@@ -147,8 +147,8 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
       <input id="vf-markets" name="markets" placeholder={zh ? '例如：欧洲、北美' : 'e.g. Europe, North America'} maxLength={240} className={field} value={markets} onChange={e => setMarkets(e.target.value)}/>
     </div>}
     <div>
-      <label htmlFor="vf-details" className="mb-2 block text-sm font-medium">{service === 'privacy' ? (zh ? '需要查阅、更正或删除什么信息？ *' : 'Your data request *') : (zh ? '项目需求与目标 *' : 'Project brief and goals *')}</label>
-      <textarea id="vf-details" name="details" required minLength={20} maxLength={3000} rows={4} className={field + ' py-3'} placeholder={zh ? (service === 'privacy' ? '请说明您希望查阅、更正或删除的资料（至少20字），请勿填写密码或身份证件。' : '例如：主营产品、目标国家、希望展示的内容及需要解决的问题（至少20字）。') : 'Describe your goals or request in at least 20 characters.'} value={details} onChange={e => setDetails(e.target.value)}/>
+      <label htmlFor="vf-details" className="mb-2 block text-sm font-medium">{service === 'privacy' ? (zh ? '需要查阅、更正或删除什么信息？ *' : 'Your data request *') : (zh ? '您希望网站解决什么问题？ *' : 'Project brief and goals *')}</label>
+      <textarea id="vf-details" name="details" required minLength={service === 'privacy' ? 20 : 6} maxLength={3000} rows={4} className={field + ' py-3'} placeholder={zh ? (service === 'privacy' ? '请说明您希望查阅、更正或删除的资料（至少20字），请勿填写密码或身份证件。' : '例如：想做英文外贸官网、展示工业零件并接收海外询盘（至少6字）。') : 'Describe your goals or request in at least 20 characters.'} value={details} onChange={e => setDetails(e.target.value)}/>
     </div>
     {/* Accessible honeypot: never expose this field to keyboard or screen reader users. */}
     <div className="hidden" aria-hidden="true">
@@ -162,8 +162,8 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
     {status === 'error' && <p role="alert" className="flex items-start gap-2 rounded-md border border-red-300 p-3 text-sm text-red-800"><AlertCircle className="mt-0.5 size-4 shrink-0"/>{error}</p>}
     <button disabled={status === 'sending'} type="submit" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-ink px-6 font-semibold text-ivory disabled:opacity-65 sm:w-fit">
       {status === 'sending' ? <LoaderCircle className="size-4 animate-spin"/> : <ArrowUpRight className="size-4"/>}
-      {status === 'sending' ? (zh ? '正在安全提交…' : 'Saving your request…') : (service === 'privacy' ? (zh ? '提交隐私请求' : 'Send privacy request') : (zh ? '提交建站咨询' : 'Send project inquiry'))}
+      {status === 'sending' ? (zh ? '正在提交…' : 'Saving your request…') : (service === 'privacy' ? (zh ? '提交隐私请求' : 'Send privacy request') : (zh ? '提交网站咨询' : 'Send project inquiry'))}
     </button>
-    <p className="text-xs leading-relaxed text-ink/65">{service === 'privacy' ? (zh ? '成功提交后会显示申请编号；如需补充信息，可以邮件联系 hello@veyfront.com。' : 'A reference will appear after successful submission. Email us to follow up.') : (zh ? '成功提交后会显示咨询编号。联系方式仅用于本次项目沟通；建设内容及价格以签约前书面确认为准。' : 'A reference is shown after secure storage. Sending an inquiry does not create a contract or quotation.')}</p>
+    <p className="text-xs leading-relaxed text-ink/65">{service === 'privacy' ? (zh ? '成功提交后会显示申请编号；如需补充信息，可以邮件联系 hello@veyfront.com。' : 'A reference will appear after successful submission. Email us to follow up.') : (zh ? '提交成功后会显示咨询编号。我们会通过您填写的联系方式沟通，正式报价与服务内容以书面确认为准。' : 'A reference is shown after secure storage. Sending an inquiry does not create a contract or quotation.')}</p>
   </form>
 }

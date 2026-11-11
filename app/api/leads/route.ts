@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
   if (email === null || phone === null || wechat === null || preferredContact === null) return reject('Contact field too long.', 422)
   const contactError = validateContactDetails({ email, phone, wechat, preferredContact }, category === 'privacy')
   if (contactError) return reject(contactError, 422)
-  if (!details || details.length < 20) return reject('Please describe your request in at least 20 characters.', 422)
+  if (!details || details.length < (category === 'privacy' ? 20 : 6)) return reject(category === 'privacy' ? 'Please describe your request in at least 20 characters.' : 'Please briefly describe your website needs (at least 6 characters).', 422)
   if (data.consent !== true) return reject('Consent is required.', 422)
   if (company === null || website === null || markets === null) return reject('One of the fields is too long.', 422)
   if (category === 'rebuild') {

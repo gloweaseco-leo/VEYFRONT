@@ -12,7 +12,7 @@ export function BuyerCapabilities(){
  return <section id="buyer-capabilities" aria-labelledby="buyer-capabilities-title" className="bg-mist/40 text-ink">
   <div className="mx-auto max-w-[1440px] px-5 py-16 md:px-10 lg:py-20">
    <div className="max-w-3xl">
-    <p className="font-mono text-xs uppercase tracking-wider text-ink/60">SEARCH · EVALUATE · INQUIRE · IMPROVE</p>
+    <p className="font-mono text-xs uppercase tracking-wider text-ink/60">{zh ? '从产品展示到客户询盘' : 'SEARCH · EVALUATE · INQUIRE · IMPROVE'}</p>
     <h2 id="buyer-capabilities-title" className="mt-3 text-balance text-3xl font-semibold sm:text-[42px]">{zh?'不只把网站做漂亮，更要让海外客户找到产品、了解企业并方便联系。':'Designed around what your buyers need to do.'}</h2>
    </div>
    <div className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-4">

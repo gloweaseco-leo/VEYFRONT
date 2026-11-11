@@ -11,4 +11,6 @@ for(const p of ['components/veyfront/pricing-v35.tsx','components/veyfront/intak
 }
 assert.match(read('components/veyfront/pricing-v35.tsx'),/publicOffers\.plans\.start\.priceDisplay/)
 assert.match(read('components/veyfront/policy-pages.tsx'),/publicOffers\.plans\.growth\.priceDisplay/)
+assert.match(read('components/veyfront/lead-form.tsx'),/service === 'privacy' \? 20 : 6/)
+assert.match(read('app/api/leads/route.ts'),/category === 'privacy' \? 20 : 6/)
 console.log('VEYFRONT public commercial copy contract PASS')

@@ -10,7 +10,7 @@ export function Proof(){
  const {lang}=useLang(),zh=lang==='zh'
  return <section id="proof" aria-labelledby="proof-title" className="bg-mist/40 text-ink">
   <div className="mx-auto max-w-[1440px] px-5 py-16 md:px-10 lg:py-20">
-   <p className="font-mono text-xs uppercase tracking-widest text-ink/60">为什么选择我们</p>
+   <p className="font-mono text-xs uppercase tracking-widest text-ink/60">{zh ? '为什么选择我们' : 'DELIVERY PRINCIPLES'}</p>
    <h2 id="proof-title" className="mt-3 max-w-4xl text-balance text-3xl font-semibold sm:text-[42px]">{zh?'为什么选择 VEYFRONT？把交付质量和客户控制权落实到每一步。':'Clear work. Verifiable delivery. Your control.'}</h2>
    <div className="mt-8 grid gap-4 lg:grid-cols-3">
     {assurances.map(({icon:Icon,zh:z,en:e},i)=>{const c=zh?z:e;return <div key={i} className="flex flex-col gap-4 rounded-xl border border-ink/15 bg-ivory p-6"><Icon className="size-7" aria-hidden="true"/><h3 className="text-xl font-semibold">{c[0]}</h3><p className="leading-relaxed text-ink/70">{c[1]}</p></div>})}

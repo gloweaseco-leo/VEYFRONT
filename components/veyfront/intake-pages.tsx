@@ -22,7 +22,7 @@ export function IntakePage({ service }: { service: Service }) {
   return <PageShell>
     <section className="bg-ink text-ivory">
       <div className="mx-auto max-w-[1200px] px-5 py-14 md:px-10 lg:py-20">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-lime">VEYFRONT / {service.toUpperCase()}</p>
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-lime">{zh ? (service === 'launch' ? '新建外贸官网咨询' : service === 'rebuild' ? '现有网站升级咨询' : service === 'privacy' ? '个人信息申请' : '联系 VEYFRONT') : 'VEYFRONT / ' + service.toUpperCase()}</p>
         <h1 className="mt-5 max-w-4xl text-balance text-4xl font-semibold leading-tight sm:text-6xl">{titles[service]}</h1>
         <p className="mt-5 max-w-2xl text-base leading-relaxed text-ivory/75">{isPrivacy ? (zh ? '如需查阅、更正或删除此前提交的联系信息，请填写下面的申请。我们将在核实后按适用规定处理。' : 'Request access, correction or deletion of information you shared with us. We verify requests before handling them.') : (zh ? '告诉我们您做什么产品、面向哪些国家，以及希望网站有哪些功能。正式建设前会确认服务清单与报价，提交咨询不收费。' : 'Tell us what your business needs. We confirm the complete site scope and price upfront; no unexpected charges without your approval.')}</p>
       </div>
@@ -30,8 +30,8 @@ export function IntakePage({ service }: { service: Service }) {
     <section className="mx-auto grid max-w-[1200px] gap-10 px-5 py-14 md:px-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)] lg:py-20">
       <div>
         {!isPrivacy && zh && <p className="mb-6 rounded-lg border border-ink/15 bg-mist/40 p-4 text-sm leading-relaxed">
-          需要先沟通？<Link href={wecomQrPath() ? '/contact#wechat' : '/contact'} className="ml-2 font-semibold underline underline-offset-4">{wecomQrPath() ? '微信咨询' : '联系 VEYFRONT'}</Link>。
-          不必先填写邮箱或重复提交表单。
+          想先聊聊？<Link href={wecomQrPath() ? '/contact#wechat' : '/contact'} className="ml-2 font-semibold underline underline-offset-4">{wecomQrPath() ? '微信咨询' : '联系 VEYFRONT'}</Link>。
+          不必先填写表单。
         </p>}
         <LeadForm service={service}/>
       </div>
@@ -59,13 +59,13 @@ export function ContactPage() {
     : selectedPlan === 'sales' ? (zh ? publicOffers.plans.sales.titleZh + '版' : 'Sales Expansion')
     : selectedPlan === 'growth' ? (zh ? publicOffers.plans.growth.titleZh + '版' : 'Growth Navigator') : ''
   const prefill = selectedPlan
-    ? (zh ? '我想咨询 VEYFRONT ' + planName + '（标准项目参考价）。请联系我确认项目范围、交付权益和正式报价。'
-        : 'I would like to discuss the VEYFRONT ' + planName + ' package (current guide price). Please confirm the project scope and a written quotation.')
+    ? (zh ? '我想咨询 VEYFRONT ' + planName + '。请联系我确认项目范围、交付权益和正式报价。'
+        : 'I would like to discuss the VEYFRONT ' + planName + ' package. Please confirm the project scope and a written quotation.')
     : ''
   return <PageShell>
     <section className="bg-ink text-ivory">
       <div className="mx-auto max-w-[1200px] px-5 py-14 md:px-10 lg:py-20">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-lime">VEYFRONT / CONTACT</p>
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-lime">{zh ? '联系 VEYFRONT' : 'VEYFRONT / CONTACT'}</p>
         <h1 className="mt-5 max-w-4xl text-balance text-4xl font-semibold leading-tight sm:text-6xl">{zh ? '想建外贸官网或升级旧站？欢迎聊聊' : 'Start a conversation.'}</h1>
         <p className="mt-5 max-w-2xl leading-relaxed text-ivory/75">{zh ? '可以先通过微信咨询，也可以直接填写需求。告诉我们您的主营产品和目标市场，我们一起确认适合的服务与报价。' : 'Choose a project path or send a general inquiry. A reference is returned only when your request has been saved.'}</p>
       </div>
@@ -83,8 +83,8 @@ export function ContactPage() {
         <h2 className="mt-3 text-2xl font-semibold">{zh ? '提交项目需求' : 'Tell us about your project'}</h2>
         <p className="mb-7 mt-3 max-w-lg text-sm leading-relaxed text-ink/70">{zh ? '您可以简单介绍主营产品、目标国家和希望网站解决的问题。至少留下一种联系方式，方便我们沟通方案与报价。' : 'Share your business goals and receive a reference after successful storage. You do not need to pay to inquire.'}</p>
         {selectedPlan && <p className="mb-5 rounded-lg border border-ink/20 bg-mist/45 p-4 text-sm leading-relaxed">
-          {zh ? '您选择咨询：' : 'Selected plan: '}<strong>{planName}</strong>{zh ? '。' : '.'}
-          {zh ? '已在需求栏预填方案名称，您可以自行修改。' : ' We have prefilled the plan name in your request. You can edit it.'}
+          {zh ? '咨询方案：' : 'Selected plan: '}<strong>{planName}</strong>{zh ? '。' : '.'}
+          {zh ? '您可以在下方补充或修改需求。' : ' We have prefilled the plan name in your request. You can edit it.'}
         </p>}
         <LeadForm service="general" defaultDetails={prefill}/>
       </div>

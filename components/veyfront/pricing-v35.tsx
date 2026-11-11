@@ -120,7 +120,7 @@ function MobilePlanOverview({ value }: { value: PlanId }) {
   const plan = plans.find(p => p.id === value)!
   const t = (pair: Pair) => pair[zh ? 0 : 1]
   return <article data-testid="mobile-plan-detail" className="mt-3 rounded-xl border border-ink/15 bg-white/90 p-5">
-    <p className="text-xs font-semibold text-ink/60">{zh ? '当前查看' : 'Selected plan'} · {t(plan.title)}</p>
+    <p className="text-xs font-semibold text-ink/60">{zh ? '您正在查看' : 'Selected plan'} · {t(plan.title)}</p>
     <h3 className="mt-2 text-xl font-semibold">{t(plan.subtitle)}</h3>
     <p className="mt-2 text-sm leading-relaxed text-ink/65">{t(plan.fit)}</p>
     <ul className="mt-4 space-y-3 border-t border-ink/10 pt-4">
@@ -142,7 +142,7 @@ function MobileServiceComparison({ value, onChange }: { value: PlanId; onChange:
   const t = (pair: Pair) => pair[zh ? 0 : 1]
   const index = plans.findIndex(p => p.id === value)
   return <div className="mt-7 md:hidden" data-testid="mobile-service-comparison">
-    <p className="mb-3 text-sm text-ink/70">{zh ? '选择套餐，下方逐项显示该方案的具体权益。点击分类可展开或收起。' : 'Select a plan to review its included services below.'}</p>
+    <p className="mb-3 text-sm text-ink/70">{zh ? '点选套餐，查看每项具体包含什么服务。' : 'Select a plan to review its included services below.'}</p>
     <MobilePlanTabs value={value} onChange={onChange}/>
     <div className="mt-4 space-y-2.5">
       {groups.map((group, i) => <details key={group.title[0]} open={i === 0 ? true : undefined}
@@ -203,10 +203,10 @@ export function PricingV35() {
       <div className="pointer-events-none absolute right-8 top-16 h-52 w-52 rounded-full border border-lime/10" aria-hidden="true"/>
       <div className="relative mx-auto max-w-[1360px] px-5 pb-12 pt-12 md:px-10 md:pb-14 md:pt-16">
         <p className="font-mono text-xs uppercase tracking-[.2em] text-lime">{zh ? 'VEYFRONT · 服务与价格' : 'VEYFRONT / SERVICES & PRICING'}</p>
-        <h1 id="pricing-v35-title" className="mt-5 max-w-[980px] text-balance text-[34px] font-semibold leading-tight tracking-tight md:text-[54px] lg:text-[62px]">{zh ? '让海外采购商看得懂、信得过、愿意联系。' : 'Help global buyers understand, trust and contact your business.'}</h1>
-        <p className="mt-5 max-w-3xl text-base leading-relaxed text-ivory/75 md:text-lg">{zh ? '从建立专业海外官网，到帮助现有销售推广产品，再到研究新的海外市场与客户机会。选择适合企业当前阶段的方案。' : 'Build a credible B2B website, give your export team stronger sales assets, and explore new markets and buyer opportunities. Choose the service that fits your stage.'}</p>
+        <h1 id="pricing-v35-title" className="mt-5 max-w-[980px] text-balance text-[34px] font-semibold leading-tight tracking-tight md:text-[54px] lg:text-[62px]">{zh ? '让海外客户更容易了解您的产品和实力，主动联系您。' : 'Help global buyers understand, trust and contact your business.'}</h1>
+        <p className="mt-5 max-w-3xl text-base leading-relaxed text-ivory/75 md:text-lg">{zh ? '从外贸官网建设和旧站升级，到英文推广资料及海外市场调研，选择适合企业当前需求的服务。' : 'Build a credible B2B website, give your export team stronger sales assets, and explore new markets and buyer opportunities. Choose the service that fits your stage.'}</p>
         <div className="mt-7 flex flex-wrap gap-x-7 gap-y-3 border-t border-ivory/20 pt-5 text-sm text-ivory/85">
-          <span className="inline-flex items-center gap-2"><CheckCircle2 className="size-4 text-lime"/>{zh ? '中英文商业官网' : 'Bilingual B2B website'}</span>
+          <span className="inline-flex items-center gap-2"><CheckCircle2 className="size-4 text-lime"/>{zh ? '中英文外贸官网' : 'Bilingual B2B website'}</span>
           <span className="inline-flex items-center gap-2"><CheckCircle2 className="size-4 text-lime"/>{zh ? '首年基础托管' : 'First-year hosting'}</span>
           <span className="inline-flex items-center gap-2"><CheckCircle2 className="size-4 text-lime"/>{zh ? '赠3个月专业服务' : '3 months of services included'}</span>
         </div>
@@ -225,7 +225,7 @@ export function PricingV35() {
       <div className="mt-7 hidden items-stretch gap-4 lg:grid lg:grid-cols-3">
         {plans.map(plan => <article key={plan.id} className={'relative flex flex-col rounded-xl border px-5 pb-6 pt-7 shadow-sm md:px-7 ' + (plan.featured ? 'border-ink bg-mist/45 ring-1 ring-ink' : 'border-ink/15 bg-white/85')}>
           {plan.featured && <span className="absolute -top-3 left-6 rounded-md bg-lime px-3 py-1 text-xs font-semibold text-ink">{zh ? '推荐 · 适合已有外贸团队' : 'Recommended for export teams'}</span>}
-          <p className="font-mono text-xs uppercase tracking-widest text-ink/45">{plan.id === 'start' ? '01 / START' : plan.id === 'sales' ? '02 / EXPAND' : '03 / GROW'}</p>
+          <p className="font-mono text-xs uppercase tracking-widest text-ink/45">{zh ? (plan.id === 'start' ? '01 / 建站' : plan.id === 'sales' ? '02 / 销售支持' : '03 / 增长研究') : (plan.id === 'start' ? '01 / START' : plan.id === 'sales' ? '02 / EXPAND' : '03 / GROW')}</p>
           <h3 className="mt-4 text-2xl font-semibold">{t(plan.title)}</h3>
           <p className="mt-3 text-[42px] font-semibold leading-none tracking-tight tabular-nums md:text-[48px]"><span className="mr-1 text-2xl">¥</span>{plan.price}</p>
           <p className="mt-3 text-xs text-ink/55">{zh ? '标准项目一次性参考价' : 'One-off standard project guide price'}</p>
@@ -243,7 +243,7 @@ export function PricingV35() {
 
     <section className="border-y border-ink/10 bg-mist/35" aria-labelledby="upgrade-value-title">
       <div className="mx-auto max-w-[1360px] px-5 py-14 md:px-10 lg:py-20">
-        <p className="font-mono text-xs tracking-widest text-ink/55">WHY UPGRADE</p>
+        <p className="font-mono text-xs tracking-widest text-ink/55">{zh ? '各套餐差异' : 'WHY UPGRADE'}</p>
         <h2 id="upgrade-value-title" className="mt-3 max-w-3xl text-balance text-3xl font-semibold md:text-[40px]">{zh ? '不同套餐多出的服务，具体是什么？' : 'What does the next tier actually add?'}</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           <article className="rounded-lg border border-ink/15 bg-ivory p-6 md:p-8">
@@ -262,9 +262,9 @@ export function PricingV35() {
 
     <section className="mx-auto max-w-[1360px] px-5 py-16 md:px-10" aria-labelledby="comparison-title">
       <div className="max-w-3xl">
-        <p className="font-mono text-xs tracking-widest text-ink/55">FULL COMPARISON</p>
+        <p className="font-mono text-xs tracking-widest text-ink/55">{zh ? '服务明细对比' : 'FULL COMPARISON'}</p>
         <h2 id="comparison-title" className="mt-3 text-3xl font-semibold md:text-[40px]">{zh ? '三档方案的服务内容和交付数量，逐项对比。' : 'Every benefit, clearly defined.'}</h2>
-        <p className="mt-4 leading-relaxed text-ink/65">{zh ? '三档共同的专业网站质量不打折；区别在于产品内容、销售支持和增长研究深度。' : 'Every tier gets a credible, working site. The difference is in content depth, sales support and growth research.'}</p>
+        <p className="mt-4 leading-relaxed text-ink/65">{zh ? '三档都包含外贸官网建设、首年基础托管和3个月约定服务。区别在于产品内容数量、销售支持和市场研究范围。' : 'Every tier gets a credible, working site. The difference is in content depth, sales support and growth research.'}</p>
       </div>
       <MobileServiceComparison value={mobilePlan} onChange={setMobilePlan}/>
       <div className="mt-7 hidden overflow-x-auto rounded-xl border border-ink/15 bg-white/75 md:block">
@@ -278,7 +278,7 @@ export function PricingV35() {
 
     <section className="bg-ink text-ivory" aria-labelledby="service-3m-title">
       <div className="mx-auto max-w-[1360px] px-5 py-16 md:px-10 lg:py-20">
-        <p className="font-mono text-xs tracking-[.2em] text-lime">3 MONTHS OF INCLUDED SERVICES</p>
+        <p className="font-mono text-xs tracking-[.2em] text-lime">{zh ? '包含3个月专业服务' : '3 MONTHS OF INCLUDED SERVICES'}</p>
         <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_0.76fr] lg:items-end">
           <h2 id="service-3m-title" className="max-w-3xl text-balance text-[32px] font-semibold leading-tight md:text-[46px]">{zh ? '网站上线后，再送您3个月真正用得上的专业服务。' : 'Three months of real services after your site goes live.'}</h2>
           <p className="text-base leading-relaxed text-ivory/75">{zh ? '三档均包含3个月约定服务。网站检查在服务期内安排；资料和授权齐全后，约定的推广资料制作、网页修改和调研可以提前开展。' : 'These are usable benefits—not a rigid month-by-month schedule. Once materials are ready, fixed deliverables can start immediately.'}</p>
@@ -305,7 +305,7 @@ export function PricingV35() {
     </section>
 
     <section className="mx-auto max-w-[1360px] px-5 py-16 md:px-10" aria-labelledby="tracks-title">
-      <p className="font-mono text-xs tracking-[.2em] text-ink/55">FOCUSED GROWTH PROJECT</p>
+      <p className="font-mono text-xs tracking-[.2em] text-ink/55">{zh ? '专项服务说明' : 'FOCUSED GROWTH PROJECT'}</p>
       <h2 id="tracks-title" className="mt-3 max-w-3xl text-balance text-3xl font-semibold md:text-[40px]">{zh ? '领航版：两条增长路径，选择真正需要的一条。' : 'Growth Navigator: choose the research track you need.'}</h2>
       <div className="mt-8 grid gap-5 md:grid-cols-2">
         <article className="rounded-xl border border-ink/15 bg-white/85 p-6 md:p-8">
@@ -326,7 +326,7 @@ export function PricingV35() {
 
     <section className="border-y border-ink/10 bg-mist/35" aria-labelledby="proof-title">
       <div className="mx-auto max-w-[1360px] px-5 py-16 md:px-10">
-        <p className="font-mono text-xs tracking-[.2em] text-ink/55">WHAT YOU RECEIVE</p>
+        <p className="font-mono text-xs tracking-[.2em] text-ink/55">{zh ? '具体交付成果' : 'WHAT YOU RECEIVE'}</p>
         <h2 id="proof-title" className="mt-3 max-w-3xl text-balance text-3xl font-semibold md:text-[40px]">{zh ? '网站、推广资料和调研结果，交付时都能核对。' : 'Not vague promises—work you can inspect.'}</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {[{num:'01',title:['专业网站与询盘','Website and inquiries'],body:['网站、产品页面、已核实的供应商能力、实际表单测试及交付验收记录。','Live site, products, verified supplier information, tested inquiry and acceptance record.']},
@@ -343,7 +343,7 @@ export function PricingV35() {
     </section>
 
     <section className="mx-auto max-w-[1360px] px-5 py-16 md:px-10" aria-labelledby="scope-title">
-      <p className="font-mono text-xs tracking-[.2em] text-ink/55">TRANSPARENT TERMS</p>
+      <p className="font-mono text-xs tracking-[.2em] text-ink/55">{zh ? '费用与服务约定' : 'TRANSPARENT TERMS'}</p>
       <h2 id="scope-title" className="mt-3 text-3xl font-semibold md:text-[40px]">{zh ? '费用与交付事先说清楚，网站资产由客户掌控。' : 'Clear fees, clear scope, your site stays yours.'}</h2>
       <div className="mt-8 grid gap-4 lg:grid-cols-3">
         <div className="rounded-lg border border-ink/15 p-6"><h3 className="text-lg font-semibold">{zh ? '首年托管与运行保障' : 'First-year hosting'}</h3><p className="mt-3 text-sm leading-relaxed text-ink/70">{zh ? '三档均含首年基础商业托管、HTTPS和约定的网站运行保障。资源上限、域名注册及第二年续费在签约前确认。' : 'All plans include first-year basic commercial hosting, HTTPS and agreed technical support. Limits, domains and renewal terms are disclosed before signing.'}</p></div>
@@ -351,7 +351,7 @@ export function PricingV35() {
         <div className="rounded-lg border border-ink/15 p-6"><h3 className="text-lg font-semibold">{zh ? '复杂项目提前确认' : 'Complex work is scoped upfront'}</h3><p className="mt-3 text-sm leading-relaxed text-ink/70">{zh ? '复杂CMS迁移、大型数据整理、特殊技术翻译、广告费用和定制软件均须另行书面确认。无未经同意的中途增项。' : 'Complex migrations, large data work, special translation, advertising costs and bespoke systems are separately agreed in writing.'}</p></div>
       </div>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-5 rounded-lg border border-ink/15 bg-mist/35 p-6">
-        <div className="max-w-3xl"><h3 className="text-xl font-semibold">Frontier Run · {zh ? '后续持续维护（可选）' : 'Optional ongoing service'}</h3><p className="mt-2 text-sm leading-relaxed text-ink/70">{zh ? '3个月服务结束后，可按需继续委托网站维护、询盘检查和内容优化。网站托管续费与后续运营服务分别报价。' : 'After the included services, optional ongoing content care, inquiry checks and business reviews are available. Hosting renewal and growth services are priced separately.'}</p></div>
+        <div className="max-w-3xl"><h3 className="text-xl font-semibold">{zh ? '后续网站维护服务（可选）' : 'Frontier Run · Optional ongoing service'}</h3><p className="mt-2 text-sm leading-relaxed text-ink/70">{zh ? '3个月服务结束后，可按需继续委托网站维护、询盘检查和内容优化。网站托管续费与后续运营服务分别报价。' : 'After the included services, optional ongoing content care, inquiry checks and business reviews are available. Hosting renewal and growth services are priced separately.'}</p></div>
         <div><p className="text-sm font-semibold text-ink/80">{zh ? '后续服务根据实际需求另行报价' : 'Ongoing service is quoted separately'}</p><Link href="/contact" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold underline underline-offset-4">{zh ? '了解持续服务' : 'Ask about ongoing care'}<ArrowUpRight className="size-4"/></Link></div>
       </div>
     </section>
@@ -366,7 +366,7 @@ export function PricingV35() {
     <section className="bg-ink text-ivory" aria-labelledby="last-cta-v35">
       <div className="mx-auto flex max-w-[1360px] flex-col justify-between gap-8 px-5 py-16 md:px-10 lg:flex-row lg:items-end lg:py-20">
         <div className="max-w-3xl">
-          <p className="font-mono text-xs tracking-[.2em] text-lime">LET'S BUILD YOUR FRONTIER</p>
+          <p className="font-mono text-xs tracking-[.2em] text-lime">{zh ? '下一步 · 咨询网站方案' : 'LET'S BUILD YOUR FRONTIER'}</p>
           <h2 id="last-cta-v35" className="mt-4 text-balance text-3xl font-semibold leading-tight md:text-[44px]">{zh ? '告诉我们您想建什么网站，一起确定方案和报价。' : 'Tell us your goal. We will confirm the right scope.'}</h2>
           <p className="mt-4 leading-relaxed text-ivory/75">{zh ? '新建官网或升级旧站，均从项目咨询和范围确认开始。不会未经同意修改现有网站，也不会自动收费。' : 'New build or rebuild: start with a project inquiry and written scope. No changes or payment happen without your approval.'}</p>
         </div>
