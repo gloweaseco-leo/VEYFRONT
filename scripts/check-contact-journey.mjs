@@ -11,8 +11,9 @@ const ops = read('scripts/contact-ops.mjs')
 const qr = 'public/contact/veyfront-wecom-verified-20261118.png'
 assert.ok(existsSync(qr), 'Operator-provided WeCom QR is missing')
 assert.equal(createHash('sha256').update(readFileSync(qr)).digest('hex'), '558983336cd674cb9d637501a0858e43873b6880d2e387a02661800da6780f19', 'QR asset mismatch')
-assert.doesNotMatch(read('lib/wecom-config.ts'), /WECOM_CONTACT_URL|work\\.weixin\\.qq\\.com\\/u\\//)
-assert.match(read('lib/wecom-config.ts'), /contact\\/veyfront-wecom-verified-20261118\\.png/)
+assert.ok(!read('lib/wecom-config.ts').includes('WECOM_CONTACT_URL'))
+assert.ok(!read('lib/wecom-config.ts').includes('work.weixin.qq.com/u/'))
+assert.ok(read('lib/wecom-config.ts').includes('/contact/veyfront-wecom-verified-20261118.png'))
 assert.doesNotMatch(wecom, /WECOM_CONTACT_URL/)
 
 assert.match(api, /validateContactDetails/)
