@@ -184,7 +184,7 @@ export function PricingTeaserV35() {
       <div className="mt-4 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
         <div className="max-w-[820px]">
           <h2 id="teaser-v35-title" className="text-balance text-[27px] font-semibold leading-[1.25] tracking-tight sm:text-[42px]">{zh ? '不只建好网站，还要让外贸业务用得上。' : 'From a credible website to stronger sales and new buyer opportunities.'}</h2>
-          <p className="mt-3 max-w-2xl text-[15px] leading-[1.7] text-ink/70 sm:text-base>{zh ? '三档标准方案，均含中英文网站、首年基础托管和上线后3个月专业服务。' : 'Three clear packages, each with a bilingual website, first-year hosting and three months of professional service.'}</p>
+          <p className="mt-3 max-w-2xl text-[15px] leading-[1.7] text-ink/70 sm:text-base">{zh ? '三档标准方案，均含中英文网站、首年基础托管和上线后3个月专业服务。' : 'Three clear packages, each with a bilingual website, first-year hosting and three months of professional service.'}</p>
         </div>
         <Link href="/pricing" className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-ink px-5 font-semibold text-ivory hover:bg-ink/85">{zh ? '查看完整服务与价格' : 'Compare all plans'}<ArrowUpRight className="size-4"/></Link>
       </div>
