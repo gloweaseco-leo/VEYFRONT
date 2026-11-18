@@ -115,10 +115,14 @@ def run():
                                     toggle = page.locator('#wechat button[aria-controls="vf-wecom-qr"]')
                                     check(toggle.count() == 1, label + " mobile QR fallback")
                                     if toggle.count():
+                                        check(page.locator("#vf-wecom-qr").is_visible(),
+                                              label + " QR visible without extra tap")
+                                        toggle.click()
+                                        check(not page.locator("#vf-wecom-qr").is_visible(),
+                                              label + " QR collapse")
                                         toggle.click()
                                         check(page.locator("#vf-wecom-qr").is_visible(),
-                                              label + " QR expansion")
-                                        toggle.click()
+                                              label + " QR reopen")
                         if width in (390, 1440) and locale == "zh" and route in ("/", "/pricing", "/contact"):
                             page.screenshot(path=str(OUT / f"{width}_{route.strip('/').replace('/','_') or 'home'}_zh.png"),
                                             full_page=True, animations="disabled", timeout=30000)
