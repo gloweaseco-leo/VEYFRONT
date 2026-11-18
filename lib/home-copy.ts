@@ -20,7 +20,7 @@ const PDF_SIZE = DEMO_PRODUCT.datasheet.size
 const PRESSURE = demoSpec('pressure').value.en
 
 const en = {
-  proto: 'VEYFRONT · Interactive samples are illustrative · Hartwell is fictional',
+  proto: 'VEYFRONT · Hartwell website design example',
   reviewLink: 'Stage 1 A/B review',
   nav: {
     menu: 'Menu',
@@ -87,7 +87,7 @@ const en = {
     title: 'See what your website could do better.',
     lede: 'A diagnosis you can check: each finding points to the page it came from, explains why it matters and says what to upgrade. What can’t be judged is marked as such.',
     sample: 'SAMPLE REPORT',
-    sampleNote: 'Illustrative report for the fictional sample site. No real analysis was run.',
+    sampleNote: 'Sample report using example website data.',
     windowTitle: 'Website Report',
     scope: 'Scope',
     scopeAnalyzed: 'Analyzed',
@@ -256,7 +256,7 @@ const en = {
 export type HomeCopy = typeof en
 
 const zh: HomeCopy = {
-  proto: 'VEYFRONT · 网站改造演示为示例 · Hartwell 为虚构企业',
+  proto: 'VEYFRONT · Hartwell 网站改版示例',
   reviewLink: '第一阶段 A/B 评审',
   nav: en.nav,
   hero: {
@@ -317,7 +317,7 @@ const zh: HomeCopy = {
     title: '看看你的网站，哪里值得真正升级。',
     lede: '可核对的诊断：每条发现都指向来源页面，说明为何重要，并给出升级建议。无法判断的内容会明确标出。',
     sample: 'SAMPLE REPORT 示例报告',
-    sampleNote: '基于虚构示例网站的说明性报告，未进行任何真实分析。',
+    sampleNote: '报告示例使用预设的网站数据。',
     windowTitle: '网站诊断报告',
     scope: '诊断范围',
     scopeAnalyzed: '已分析',

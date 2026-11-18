@@ -24,7 +24,7 @@ const pen:[string,string][]=[
 const tzh:[string,string][]=[
  ['网站与服务','VEYFRONT 为中国制造业和B2B外贸企业提供海外官网新建、常规旧站升级，以及可选的网站维护与内容优化服务，并接受客户咨询。'],
  ['价格与签约',`官网公开的三档标准项目参考价分别为：${publicOffers.plans.start.titleZh} ¥${publicOffers.plans.start.priceDisplay}、${publicOffers.plans.sales.titleZh} ¥${publicOffers.plans.sales.priceDisplay}、${publicOffers.plans.growth.titleZh} ¥${publicOffers.plans.growth.priceDisplay}。均包含约定网站建设、首年基础托管及3个月服务。实际交付范围、税费、特殊需求、续费和付款安排以双方签约前确认的书面报价和合同为准。提交咨询不代表签约或付款。`],
- ['展示示例','Hartwell 是明确标注的虚构工业网站设计示例，不是真实客户案例，也不是自动生成或真实诊断结果。搜索排名、流量或成交均不作保证。'],
+ ['展示示例','Hartwell 为人工制作的工业网站设计示例，仅用于说明改版方式。搜索排名、流量或成交均不作保证。'],
  ['网站及素材权利','VEYFRONT 的品牌标识和展示素材受适用权利约束。客户网站的域名控制、约定源码和素材移交、第三方许可及可迁移条件，在签约时明确。'],
  ['基础托管与可选运营','三档标准方案均包含首年基础托管。3个月服务结束后，客户可按需另行购买维护或运营支持；续费费用与服务范围事前确认，不以购买后续运营服务作为续费或迁移的条件。'],
  ['联系与法律条款','正式购买与交付受签署的项目合同约束；运营主体信息及适用法律应在成交前确认。问题可发送至 hello@veyfront.com。']
@@ -32,7 +32,7 @@ const tzh:[string,string][]=[
 const ten:[string,string][]=[
  ['Website services','VEYFRONT presents Launch (new B2B websites), Rebuild (regular site improvements) and optional Frontier Run ongoing improvements, and accepts project inquiries.'],
  ['Pricing and agreement',`Current standard project guide prices are ¥${publicOffers.plans.start.priceDisplay}, ¥${publicOffers.plans.sales.priceDisplay}, and ¥${publicOffers.plans.growth.priceDisplay}. Each includes the agreed website, first-year basic hosting and three months of defined services. Scope, taxes, exceptions, renewal and payment are agreed in writing before work. An inquiry is not a purchase.`],
- ['Design examples','Hartwell is a clearly labeled fictional website design example, not a real customer delivery or automated website analysis. Search rankings, traffic and business results are not guaranteed.'],
+ ['Design examples','Hartwell is a hand-built example for illustrating industrial website redesigns. Search rankings, traffic and business results are not guaranteed.'],
  ['Rights and handover','VEYFRONT branding and display assets retain their applicable rights. Client domain control, agreed source/asset handover, third-party licensing and transfer conditions are defined in the project agreement.'],
  ['Basic hosting and optional care','The standard package references first-year basic hosting. Frontier Run is separate optional content and business improvement. Normal renewal pricing and resource terms must be agreed upfront; Run is not required for portability or renewal.'],
  ['Contact and legal terms','A signed project agreement governs actual services. The contracting legal operator and applicable governing terms must be confirmed before transacting. Contact hello@veyfront.com for questions.']

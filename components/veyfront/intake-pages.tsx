@@ -9,19 +9,15 @@ import { wecomQrPath } from '@/lib/wecom-config'
 import publicOffers from '@/lib/public-offers.json'
 import { DiagnosisEntry } from '@/components/veyfront/diagnosis/entry'
 
-export function IntakePage({ service, showDiagnosis = false, diagnosisInquiry = false, previewOnly = false }: {
+export function IntakePage({ service, showDiagnosis = false, previewOnly = false }: {
   service: Service
   showDiagnosis?: boolean
-  diagnosisInquiry?: boolean
   previewOnly?: boolean
 }) {
   const { lang } = useLang()
   const zh = lang === 'zh'
   const isRebuild = service === 'rebuild'
   const isPrivacy = service === 'privacy'
-  const diagnosisDetails = isRebuild && diagnosisInquiry
-    ? (zh ? '我想了解外贸网站专业诊断的范围和服务。' : 'I would like to discuss the scope of a professional B2B website diagnostic.')
-    : undefined
   const titles = {
     launch: zh ? '咨询新建外贸官网' : 'Launch your next B2B website',
     rebuild: zh ? '咨询现有网站升级' : 'Rebuild your existing website',
@@ -42,7 +38,9 @@ export function IntakePage({ service, showDiagnosis = false, diagnosisInquiry = 
           想先聊聊？<Link href={wecomQrPath() ? '/contact#wechat' : '/contact'} className="ml-2 font-semibold underline underline-offset-4">{wecomQrPath() ? '微信咨询' : '联系 VEYFRONT'}</Link>。
           不必先填写表单。
         </p>}
-        <LeadForm service={service} defaultDetails={diagnosisDetails} previewOnly={previewOnly}/>
+        <div id={isRebuild ? 'rebuild-inquiry' : undefined} className={isRebuild ? 'scroll-mt-5' : undefined}>
+          <LeadForm service={service} previewOnly={previewOnly}/>
+        </div>
       </div>
       <aside className="h-fit rounded-lg border border-ink/15 bg-mist/40 p-6">
         <p className="font-mono text-xs uppercase tracking-widest text-ink/60">{isPrivacy ? (zh ? '个人信息处理说明' : 'Privacy request information') : (zh ? '下一步怎么做' : 'Your next steps')}</p>
@@ -50,7 +48,7 @@ export function IntakePage({ service, showDiagnosis = false, diagnosisInquiry = 
         <p className="mt-4 text-sm leading-relaxed text-ink/75">{isPrivacy ? (zh ? '请使用此前咨询时的联系邮箱，说明希望查阅、更正或删除的信息。不要提交密码、机密合同或身份证件。' : 'Use the email linked to your earlier inquiry. Explain what you want to access, correct or delete, without sending credentials or identity documents.') : (zh ? '我们会核对您的业务目标与现有资料，在开工前书面确认交付清单和报价。' : 'We review your business goals and source materials, then agree a complete written scope and price with you before any work or payment.')}</p>
         {isRebuild && <p className="mt-3 text-sm text-ink/75">{zh ? '旧网站继续正常运行，不会因为提交需求而被更改。' : 'Your existing website is not modified when you inquire.'}</p>}
         <p className="mt-5 text-sm text-ink/75">{isPrivacy ? (zh ? '也可邮件申请：' : 'Or email your request: ') : (zh ? '也可以通过邮件联系：' : 'Prefer email? ')}<a href="mailto:hello@veyfront.com" className="font-semibold underline underline-offset-4">hello@veyfront.com</a></p>
-        {isRebuild && showDiagnosis && !diagnosisInquiry && <div className="mt-4"><DiagnosisEntry /></div>}
+        {isRebuild && showDiagnosis && <div className="mt-4"><DiagnosisEntry /></div>}
         {!isPrivacy && <Link href="/pricing" className="mt-4 inline-block font-semibold underline underline-offset-4">{zh ? '查看完整服务与价格' : 'Review full scope and pricing'}</Link>}
       </aside>
     </section>

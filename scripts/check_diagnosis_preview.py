@@ -70,10 +70,8 @@ def run():
                     with urllib.request.urlopen(BASE + prefix + path, timeout=10) as response:
                         html = response.read().decode()
                     check('data-testid="diagnosis-entry"' not in html, prefix + path + " no live diagnostic entry")
-                with urllib.request.urlopen(BASE + prefix + "/start/rebuild?intent=professional-diagnosis", timeout=10) as response:
+                with urllib.request.urlopen(BASE + prefix + "/start/rebuild", timeout=10) as response:
                     live_form = response.read().decode()
-                check("I would like to discuss the scope of a professional" not in live_form and
-                      "我想了解外贸网站专业诊断的范围和服务" not in live_form, prefix + " live form does not accept preview intent")
                 check('no crawling' in live_form or '不会自动抓取' in live_form,
                       prefix + " live form preserves no-crawl explanation")
 
@@ -151,7 +149,7 @@ def run():
                     check(page.evaluate("document.documentElement.scrollWidth <= innerWidth"), label + " no overflow with long evidence")
                     other = "EN" if locale == "zh" else "中文"
                     page.get_by_role("button", name=other, exact=True).click()
-                    expect(report).to_contain_text("Fictional report example" if locale == "zh" else "虚构报告示例")
+                    expect(report).to_contain_text("Sample report" if locale == "zh" else "报告示例")
                     expect(task).to_have_attribute("data-state", "completed")
                     page.get_by_role("button", name="中文" if locale == "zh" else "EN", exact=True).click()
                     choose.select_option("partial")
@@ -159,32 +157,40 @@ def run():
                     expect(report).to_contain_text("3 / 4" if locale == "zh" else "3 of 4")
                     if width in (390, 1440):
                         page.screenshot(path=str(ROOT / f"{width}-{locale}-report.png"), full_page=True)
+                    contact = page.locator('section[aria-labelledby="diagnosis-contact-title"]')
+                    cta = contact.get_by_role("link")
+                    expect(cta).to_have_count(1)
+                    expect(cta).to_have_text("咨询网站改版" if locale == "zh" else "Discuss a website redesign")
+                    expect(cta).to_have_attribute("href", prefix + "/start/rebuild#rebuild-inquiry")
+                    check(contact.get_by_role("button").count() == 0, label + " single redesign action after the report")
+                    check(not any(word in page.locator("main").inner_text().lower() for word in ("虚构", "fictional")),
+                          label + " uses example language throughout")
                     for terminal in ("failed", "expired", "unavailable", "access-ended"):
                         choose.select_option(terminal)
                         expect(task).to_have_attribute("data-state", terminal)
                         expect(report).to_have_count(0)
-                        expect(page.locator('section[aria-labelledby="diagnosis-contact-title"]')).to_be_visible()
+                        expect(cta).to_be_visible()
                     logged = page.request.post(BASE + "/api/leads", data={"service": "rebuild"})
                     check(logged.status == 403 and "no-store" in logged.headers["cache-control"], label + " preview writes fail closed")
 
-                    professional = page.locator('a[href="' + prefix + '/start/rebuild?intent=professional-diagnosis"]')
-                    professional.click()
-                    expect(page.locator("#vf-details")).to_have_value("我想了解外贸网站专业诊断的范围和服务。" if locale == "zh" else
-                                                                     "I would like to discuss the scope of a professional B2B website diagnostic.")
+                    cta.click()
+                    expect(page).to_have_url(BASE + prefix + "/start/rebuild#rebuild-inquiry")
+                    expect(page.locator("#vf-name")).to_be_in_viewport()
+                    expect(page.locator("#vf-details")).to_have_value("")
                     expect(page.locator("#vf-website")).to_have_value("")
                     expect(page.locator('a[href="https://veyfront.com' + prefix + '/start/rebuild"]')).to_be_visible()
                     page.locator("#vf-name").fill("Synthetic QA")
                     page.locator("#vf-email").fill("qa@example.com")
                     page.locator("#vf-website").fill("https://example.com")
+                    page.locator("#vf-details").fill("I want buyers to find our products more easily.")
                     page.locator("form input[type=checkbox]").press("Space")
                     page.get_by_role("button", name="验证试填信息" if locale == "zh" else "Validate sample fields").click()
                     expect(page.get_by_role("status").filter(has_text="没有发送" if locale == "zh" else "No information was sent")).to_be_visible()
                     check(not any(method == "POST" for method, _, _ in requests), label + " consulting form validates without posting")
                     page.goto(BASE + prefix + "/start/rebuild")
                     expect(page.get_by_test_id("diagnosis-entry")).to_be_visible()
-                    page.goto(BASE + prefix + PATH)
-                    wecom = page.locator('section[aria-labelledby="diagnosis-contact-title"] a[href="/contact#wechat"]')
-                    expect(wecom).to_be_visible()
+                    if locale == "zh":
+                        expect(page.locator('main a[href="/contact#wechat"]')).to_be_visible()
                     check(not errors, label + " no browser exceptions")
                     results.append({"check": label + " buyer journey and all statuses", "passed": True})
                     browser.close()

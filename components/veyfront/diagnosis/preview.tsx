@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, type FormEvent } from 'react'
-import { ArrowRight, CircleHelp, ClipboardCheck, Info } from 'lucide-react'
+import { ArrowRight, CircleHelp, Info } from 'lucide-react'
 import Link from '@/components/l2m/localized-link'
 import { PageShell } from '@/components/site/page-shell'
 import { useLang } from '@/lib/i18n'
@@ -96,15 +96,15 @@ function Walkthrough() {
     <section id="diagnosis-example" aria-labelledby="diagnosis-example-title" className="scroll-mt-5 border-t border-ink/10 bg-mist/25">
       <div className={sectionWidth + ' py-9 sm:py-14'}>
         <div className="max-w-3xl">
-          <p className="text-sm font-semibold text-ink/75">{zh ? '虚构示例' : 'Fictional example'}</p>
+          <p className="text-sm font-semibold text-ink/75">{zh ? '示例' : 'Example'}</p>
           <h2 id="diagnosis-example-title" className="mt-2 text-2xl font-semibold sm:text-3xl">{zh ? '看看一份采购体验报告' : 'Explore a buyer experience report'}</h2>
           <p className="mt-2 text-sm leading-relaxed text-ink/75">
-            {zh ? '示例使用虚构的工业阀门网站，演示排队、检查、报告和异常。示例与您输入的网址无关。' : 'A fictional valve manufacturer illustrates queuing, checks, reports and unavailable states. This example is independent of the address you enter.'}
+            {zh ? '以工业阀门网站为例，展示检查流程、报告和异常状态。报告使用独立的示例数据。' : 'Explore the check, report and unavailable states using a valve manufacturer as an example. The report uses its own sample data.'}
           </p>
         </div>
         <div className="mt-5 flex flex-wrap items-center gap-3">
           <button type="button" className={primary} onClick={() => setState('completed')} data-testid="diagnosis-open-report">
-            {zh ? '查看虚构报告' : 'Open sample report'}<ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+            {zh ? '查看报告示例' : 'View sample report'}<ArrowRight className="size-4 shrink-0" aria-hidden="true" />
           </button>
           <button type="button" className={secondary} onClick={() => setState('accepted')} data-testid="diagnosis-start-example">
             {zh ? '从申请开始演示' : 'Walk through from request'}
@@ -167,7 +167,6 @@ export function DiagnosisPreview() {
             <Link href="/privacy" className={textLink}>{zh ? '隐私政策' : 'Privacy policy'}</Link>
             <Link href="/terms" className={textLink}>{zh ? '服务条款' : 'Service terms'}</Link>
           </div>
-          <Link href="/start/rebuild" className={secondary + ' mt-5'}>{zh ? '直接咨询旧站改版' : 'Discuss a website rebuild'}</Link>
         </aside>
       </div>
 
@@ -175,12 +174,14 @@ export function DiagnosisPreview() {
 
       <section aria-labelledby="diagnosis-contact-title" className="border-t border-ink/10">
         <div className={sectionWidth + ' py-8 sm:py-12'}>
-          <h2 id="diagnosis-contact-title" className="flex items-start gap-2 text-xl font-semibold sm:text-2xl"><ClipboardCheck className="mt-0.5 size-5 shrink-0" aria-hidden="true" />{zh ? '想进一步了解怎么改？' : 'Want to discuss improvements?'}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink/75">{zh ? '可提交旧站改版需求，或咨询专业诊断的范围。两种方式均使用 VEYFRONT 已有咨询渠道。' : 'Use our existing inquiry channels to discuss a rebuild or ask about the scope of a professional diagnostic.'}</p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link href="/start/rebuild" className={primary}>{zh ? '咨询旧站改版' : 'Discuss a rebuild'}</Link>
-            <Link href="/start/rebuild?intent=professional-diagnosis" className={secondary}>{zh ? '提交专业诊断需求' : 'Ask about a professional diagnostic'}</Link>
-            <a href="/contact#wechat" className={secondary}>{zh ? '企业微信咨询' : 'WeCom contact (Chinese page)'}</a>
+          <div className="grid items-center gap-5 rounded-xl bg-ink p-5 text-ivory sm:p-8 md:grid-cols-[minmax(0,1fr)_auto]">
+            <div>
+              <h2 id="diagnosis-contact-title" className="text-balance text-xl font-semibold sm:text-2xl">{zh ? '您的网站，先改哪里？' : 'What should you improve first on your site?'}</h2>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-ivory/80">{zh ? '告诉我们现有网址和最想解决的问题，我们会和您一起梳理改版重点。' : 'Share your current website and the problem you’d most like to solve. We’ll help you decide what to improve first.'}</p>
+            </div>
+            <Link href="/start/rebuild#rebuild-inquiry" className={primary + ' w-full focus-visible:outline-lime sm:w-fit'}>
+              {zh ? '咨询网站改版' : 'Discuss a website redesign'}<ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+            </Link>
           </div>
         </div>
       </section>

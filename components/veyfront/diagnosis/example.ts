@@ -12,7 +12,7 @@ export function exampleReport(lang: Lang, partial: boolean): DiagnosisReportView
     kind: 'synthetic',
     targetUrl: site,
     checkedAt: '2026-11-18T10:00:00Z',
-    source: zh ? '人工编写的虚构页面与证据' : 'Hand-authored fictional pages and evidence',
+    source: zh ? '示例页面与证据' : 'Example pages and evidence',
     pages: [
       { url: site, label: zh ? '英文首页' : 'English homepage', outcome: 'reviewed' },
       { url: catalog, label: zh ? '产品分类页' : 'Product catalogue', outcome: 'reviewed' },

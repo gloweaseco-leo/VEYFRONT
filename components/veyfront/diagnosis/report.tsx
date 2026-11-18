@@ -38,7 +38,7 @@ export function DiagnosisReport({ report, lang }: { report: DiagnosisReportView;
   return (
     <article aria-labelledby="diagnosis-report-title" data-testid="diagnosis-report" className="mt-8 space-y-8">
       <header className="rounded-xl bg-ink p-5 text-ivory sm:p-7">
-        {example && <p className="text-xs font-semibold text-lime">{zh ? '虚构报告示例' : 'Fictional report example'}</p>}
+        {example && <p className="text-xs font-semibold text-lime">{zh ? '报告示例' : 'Sample report'}</p>}
         <h3 id="diagnosis-report-title" className="mt-2 text-2xl font-semibold sm:text-3xl">{zh ? '海外采购体验报告' : 'Overseas buyer experience report'}</h3>
         <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
           <div className="min-w-0"><dt className="font-semibold">{zh ? (example ? '示例网站' : '诊断网址') : (example ? 'Example site' : 'Website checked')}</dt><dd className={wrappingUrl + ' mt-1 text-ivory/80'}>{report.targetUrl}</dd></div>

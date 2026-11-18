@@ -8,6 +8,13 @@ const pageCopy = read('lib/pages-copy.ts')
 const pricing = read('components/veyfront/pricing-v35.tsx')
 const transformations = read('components/pages/transformations.tsx')
 const lang = read('components/l2m/brand.tsx')
+for (const source of [
+  homeCopy, pageCopy, read('lib/i18n.tsx'), read('components/veyfront/policy-pages.tsx'),
+  read('app/review/stage-1/page.tsx'),
+  ...['preview.tsx', 'report.tsx', 'example.ts'].map(file => read('components/veyfront/diagnosis/' + file)),
+]) {
+  assert.doesNotMatch(source, /虚构|\bfictional\b(?!:)/i, 'Use example language in customer-facing copy')
+}
 
 // Avoid displaying defensive "not a real case" paragraphs in the live sales funnel.
 // Keep source-level provenance for the fictional interaction specimen; never claim client delivery.
