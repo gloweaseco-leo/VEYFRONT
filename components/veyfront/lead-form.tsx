@@ -158,7 +158,7 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '', pr
     {(service === 'rebuild' || service === 'general') && <div>
       <label htmlFor="vf-website" className="mb-2 block text-sm font-medium">{zh ? '现有网站网址' : 'Current website URL'}{requiresWebsite ? ' *' : ''}</label>
       <input id="vf-website" type="url" inputMode="url" autoCapitalize="none" spellCheck={false} name="website" placeholder="https://your-company.com" required={requiresWebsite} maxLength={500} className={field} value={website} onChange={e => setWebsite(e.target.value)}/>
-      {requiresWebsite && <p className="mt-1 text-xs text-ink/65">{zh ? '仅记录网址，不会自动抓取或修改网站。' : 'Your URL is recorded only; no crawling or modification occurs.'}</p>}
+      {requiresWebsite && <p className="mt-1 text-xs text-ink/65">{previewOnly ? (zh ? '试填的网址只用于校验。正式咨询仅记录网址，不会自动抓取或修改网站。' : 'The sample URL is only checked for format. The live form records the URL without crawling or modifying the site.') : (zh ? '仅记录网址，不会自动抓取或修改网站。' : 'Your URL is recorded only; no crawling or modification occurs.')}</p>}
     </div>}
     {service === 'launch' && <div>
       <label htmlFor="vf-markets" className="mb-2 block text-sm font-medium">{zh ? '目标市场（选填）' : 'Target markets (optional)'}</label>
@@ -175,7 +175,7 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '', pr
     </div>
     <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed">
       <input type="checkbox" className="mt-1 size-4 shrink-0 accent-[#17262D]" required checked={consent} onChange={e => setConsent(e.target.checked)}/>
-      <span>{zh ? '我同意 VEYFRONT 为处理本次需求而保存以上联系与项目资料，并已阅读' : 'I agree that VEYFRONT may store this contact and project information to respond to my request. I have read the'}{' '}<Link href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">{zh ? '隐私说明' : 'Privacy Notice'}</Link>{zh ? '。' : '.'}</span>
+      <span>{previewOnly ? (zh ? '我了解这是试填，不会保存资料，并已阅读' : 'I understand this sample form stores no information. I have read the') : (zh ? '我同意 VEYFRONT 为处理本次需求而保存以上联系与项目资料，并已阅读' : 'I agree that VEYFRONT may store this contact and project information to respond to my request. I have read the')}{' '}<Link href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">{zh ? '隐私说明' : 'Privacy Notice'}</Link>{zh ? '。' : '.'}</span>
     </label>
     {previewValidated && <p role="status" className="text-sm font-semibold">{zh ? '试填校验通过。本次没有发送或保存资料。' : 'Sample fields passed validation. No information was sent or stored.'}</p>}
     {status === 'error' && <p role="alert" className="flex items-start gap-2 rounded-md border border-red-300 p-3 text-sm text-red-800"><AlertCircle className="mt-0.5 size-4 shrink-0"/>{error}</p>}

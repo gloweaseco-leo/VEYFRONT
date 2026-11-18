@@ -22,7 +22,7 @@ TARGET = "https://qa-domain.example.com/" + "long-public-path-" * 20
 def server(environment):
     with (ROOT / f"server-{environment}.log").open("w", encoding="utf-8") as log:
         with subprocess.Popen(
-            ["pnpm", "exec", "next", "start", "-p", "3101"],
+            ["pnpm", "exec", "next", "start", "-p", "3101", "-H", "127.0.0.1"],
             env={**os.environ, "VERCEL_ENV": environment}, stdout=log, stderr=subprocess.STDOUT,
         ) as process:
             try:
@@ -79,10 +79,10 @@ def run():
 
         executable = next((shutil.which(name) for name in ("google-chrome", "chromium") if shutil.which(name)), None)
         with server("preview"), sync_playwright() as playwright:
-            browser = playwright.chromium.launch(executable_path=executable, args=["--no-sandbox"])
             for width in (320, 375, 390, 1440):
                 for locale, prefix in (("zh", ""), ("en", "/en")):
                     label = f"{width}/{locale}"
+                    browser = playwright.chromium.launch(executable_path=executable, args=["--no-sandbox"])
                     context = browser.new_context(viewport={"width": width, "height": 900})
                     context.route("**/*", lambda route: route.continue_() if route.request.url.startswith(BASE + "/") else route.abort())
                     page = context.new_page()
@@ -100,6 +100,7 @@ def run():
                           label + " preview noindex")
                     check(page.locator('meta[name="referrer"]').get_attribute("content") == "no-referrer", label + " referrer suppressed")
                     check(page.locator("#diagnosis-address").get_attribute("name") is None, label + " address not serialized")
+                    requests.clear()
                     address = page.locator("#diagnosis-address")
                     feedback = page.locator("#diagnosis-feedback")
                     submit = page.get_by_test_id("diagnosis-address-form").get_by_role("button")
@@ -175,7 +176,7 @@ def run():
                     page.locator("#vf-name").fill("Synthetic QA")
                     page.locator("#vf-email").fill("qa@example.com")
                     page.locator("#vf-website").fill("https://example.com")
-                    page.locator("form input[type=checkbox]").check()
+                    page.locator("form input[type=checkbox]").press("Space")
                     page.get_by_role("button", name="验证试填信息" if locale == "zh" else "Validate sample fields").click()
                     expect(page.get_by_role("status").filter(has_text="没有发送" if locale == "zh" else "No information was sent")).to_be_visible()
                     check(not any(method == "POST" for method, _, _ in requests), label + " consulting form validates without posting")
@@ -186,8 +187,7 @@ def run():
                     expect(wecom).to_be_visible()
                     check(not errors, label + " no browser exceptions")
                     results.append({"check": label + " buyer journey and all statuses", "passed": True})
-                    context.close()
-            browser.close()
+                    browser.close()
     except Exception as error:
         results.append({"check": str(error), "passed": False})
         raise
