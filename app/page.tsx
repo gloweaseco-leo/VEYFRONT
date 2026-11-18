@@ -1,3 +1,4 @@
+import { diagnosisPreviewEnabled } from '@/lib/diagnosis-preview'
 import { localizedMetadata } from '@/lib/locale-metadata'
 import { SiteHeader } from '@/components/l2m/site-header'
 import { HomeDemoProvider } from '@/components/home/home-state'
@@ -17,7 +18,7 @@ export default function HomePage(){
  return <HomeDemoProvider>
   <SiteHeader tone="dark"/>
   <main>
-   <Hero/>
+   <Hero showDiagnosis={diagnosisPreviewEnabled}/>
    <CustomerScenarios/>
    <BuyerCapabilities/>
    <Transformation/>

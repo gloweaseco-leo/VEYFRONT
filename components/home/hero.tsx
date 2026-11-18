@@ -4,8 +4,9 @@ import Link from '@/components/l2m/localized-link'
 import { useEffect, useRef, useState } from 'react'
 import { ArrowUpRight, Search, ScanSearch, Send, ChartNoAxesCombined } from 'lucide-react'
 import { useLang } from '@/lib/i18n'
+import { DiagnosisEntry } from '@/components/veyfront/diagnosis/entry'
 
-export function Hero() {
+export function Hero({ showDiagnosis = false }: { showDiagnosis?: boolean }) {
  const {lang}=useLang()
  const zh=lang==='zh'
  const motionFrame=useRef<HTMLDivElement>(null)
@@ -46,6 +47,7 @@ export function Hero() {
        <span>{zh?'还没有独立站？':'Starting from scratch?'} <Link href="/start/launch" className="font-semibold text-lime underline underline-offset-4">{zh?'新建外贸官网':'Build a new site'}</Link></span>
        <span>{zh?'已有旧网站？':'Have a site already?'} <Link href="/start/rebuild" className="font-semibold text-lime underline underline-offset-4">{zh?'咨询改版升级':'Improve your site'}</Link></span>
      </div>
+     {showDiagnosis && <DiagnosisEntry home />}
      <p className="text-[13px] leading-relaxed text-ivory/70 sm:text-sm">{zh?'网站新建与常规旧站升级均有三档服务，¥3,680起。先咨询，不需要付款。':'Both new builds and standard rebuilds can choose from three plans starting at ¥3,680. Inquiries are free.'}</p>
     </div>
     <div ref={motionFrame} data-testid="hero-hybrid-panel" data-vf-motion={motionStarted?'started':'static'} data-vf-visible={motionVisible?'yes':'no'} className="vf-motion-frame relative isolate min-w-0 overflow-hidden rounded-xl border border-lime/30 bg-[#172e34] p-4 shadow-2xl sm:p-7 shadow-black/20 sm:p-7">

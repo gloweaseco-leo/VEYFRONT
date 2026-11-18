@@ -10,7 +10,12 @@ import { ACQUISITION_SESSION_KEY, LANDING_PAGE_SESSION_KEY, safeAcquisitionChann
 
 export type Service = 'launch' | 'rebuild' | 'general' | 'privacy'
 
-export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: { service: Service; defaultWebsite?: string; defaultDetails?: string }) {
+export function LeadForm({ service, defaultWebsite = '', defaultDetails = '', previewOnly = false }: {
+  service: Service
+  defaultWebsite?: string
+  defaultDetails?: string
+  previewOnly?: boolean
+}) {
   const { lang } = useLang()
   const zh = lang === 'zh'
   const [name, setName] = useState('')
@@ -27,6 +32,9 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
   const [reference, setReference] = useState('')
   const [error, setError] = useState('')
+  const [previewValidated, setPreviewValidated] = useState(false)
+  const formPath = service === 'privacy' ? '/contact/privacy' : service === 'general' ? '/contact' : '/start/' + service
+  const officialForm = 'https://veyfront.com' + (zh ? '' : '/en') + formPath
 
   useEffect(() => { if (defaultWebsite) setWebsite(defaultWebsite) }, [defaultWebsite])
   useEffect(() => { if (defaultDetails) setDetails(current => current.trim() ? current : defaultDetails) }, [defaultDetails])
@@ -46,6 +54,7 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (status === 'sending') return
+    setPreviewValidated(false)
     if (requiresWebsite && checkUrl(website).state !== 'valid') {
       setError(zh ? '请输入可访问的公开网站网址。' : 'Please provide a public website URL.')
       setStatus('error')
@@ -58,6 +67,11 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
       return
     }
     setError('')
+    if (previewOnly) {
+      setStatus('idle')
+      setPreviewValidated(true)
+      return
+    }
     // Never transmit raw referrer URLs, search queries or cookies; privacy requests are excluded.
     let acquisitionChannel: string | undefined
     let acquisitionLandingPage: string | null = null
@@ -97,7 +111,11 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
     )
   }
 
-  return <form onSubmit={submit} className="flex flex-col gap-5">
+  return <form onSubmit={submit} method="post" className="flex flex-col gap-5">
+    {previewOnly && <p className="rounded-lg border border-ink/15 bg-mist/40 p-3 text-sm leading-relaxed">
+      {zh ? '预览仅供试填，请使用示例信息。' : 'Use sample information to try this preview form.'}{' '}
+      <a href={officialForm} className="font-semibold underline underline-offset-4">{zh ? '前往正式官网办理' : 'Open the live form'}</a>
+    </p>}
     <div>
       <label htmlFor="vf-name" className="mb-2 block text-sm font-medium">{zh ? '联系人姓名 *' : 'Your name *'}</label>
       <input id="vf-name" name="name" autoComplete="name" required minLength={2} maxLength={100} className={field} value={name} onChange={e => setName(e.target.value)}/>
@@ -159,11 +177,12 @@ export function LeadForm({ service, defaultWebsite = '', defaultDetails = '' }: 
       <input type="checkbox" className="mt-1 size-4 shrink-0 accent-[#17262D]" required checked={consent} onChange={e => setConsent(e.target.checked)}/>
       <span>{zh ? '我同意 VEYFRONT 为处理本次需求而保存以上联系与项目资料，并已阅读' : 'I agree that VEYFRONT may store this contact and project information to respond to my request. I have read the'}{' '}<Link href="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-2">{zh ? '隐私说明' : 'Privacy Notice'}</Link>{zh ? '。' : '.'}</span>
     </label>
+    {previewValidated && <p role="status" className="text-sm font-semibold">{zh ? '试填校验通过。本次没有发送或保存资料。' : 'Sample fields passed validation. No information was sent or stored.'}</p>}
     {status === 'error' && <p role="alert" className="flex items-start gap-2 rounded-md border border-red-300 p-3 text-sm text-red-800"><AlertCircle className="mt-0.5 size-4 shrink-0"/>{error}</p>}
     <button disabled={status === 'sending'} type="submit" className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-ink px-6 font-semibold text-ivory disabled:opacity-65 sm:w-fit">
       {status === 'sending' ? <LoaderCircle className="size-4 animate-spin"/> : <ArrowUpRight className="size-4"/>}
-      {status === 'sending' ? (zh ? '正在提交…' : 'Saving your request…') : (service === 'privacy' ? (zh ? '提交隐私请求' : 'Send privacy request') : (zh ? '提交网站咨询' : 'Send project inquiry'))}
+      {previewOnly ? (zh ? '验证试填信息' : 'Validate sample fields') : status === 'sending' ? (zh ? '正在提交…' : 'Saving your request…') : (service === 'privacy' ? (zh ? '提交隐私请求' : 'Send privacy request') : (zh ? '提交网站咨询' : 'Send project inquiry'))}
     </button>
-    <p className="text-xs leading-relaxed text-ink/65">{service === 'privacy' ? (zh ? '成功提交后会显示申请编号；如需补充信息，可以邮件联系 hello@veyfront.com。' : 'A reference will appear after successful submission. Email us to follow up.') : (zh ? '提交成功后会显示咨询编号。我们会通过您填写的联系方式沟通，正式报价与服务内容以书面确认为准。' : 'A reference is shown after secure storage. Sending an inquiry does not create a contract or quotation.')}</p>
+    {!previewOnly && <p className="text-xs leading-relaxed text-ink/65">{service === 'privacy' ? (zh ? '成功提交后会显示申请编号；如需补充信息，可以邮件联系 hello@veyfront.com。' : 'A reference will appear after successful submission. Email us to follow up.') : (zh ? '提交成功后会显示咨询编号。我们会通过您填写的联系方式沟通，正式报价与服务内容以书面确认为准。' : 'A reference is shown after secure storage. Sending an inquiry does not create a contract or quotation.')}</p>}
   </form>
 }

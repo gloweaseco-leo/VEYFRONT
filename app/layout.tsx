@@ -1,3 +1,5 @@
+import { diagnosisPreviewEnabled } from '@/lib/diagnosis-preview'
+import { DiagnosisPreviewTelemetry } from '@/components/veyfront/diagnosis/preview-telemetry'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
@@ -67,8 +69,10 @@ export default async function RootLayout({
           {children}
           <MobileQuickNav />
         </LangProvider>
-        {process.env.NODE_ENV === 'production' && <Analytics />}
-        <SpeedInsights sampleRate={1} />
+        {diagnosisPreviewEnabled ? <DiagnosisPreviewTelemetry /> : <>
+          {process.env.NODE_ENV === 'production' && <Analytics />}
+          <SpeedInsights sampleRate={1} />
+        </>}
       </body>
     </html>
   )

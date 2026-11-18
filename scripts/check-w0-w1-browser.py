@@ -140,6 +140,8 @@ def run():
 if __name__ == "__main__":
     try:
         run()
+        from check_diagnosis_preview import run as check_diagnosis_preview
+        check_diagnosis_preview()
     except Exception as e:
         failures.append("Browser harness: " + repr(e))
     result = {"status": "PASS" if not failures else "FAIL",
