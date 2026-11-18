@@ -40,10 +40,12 @@ check('four stable mobile navigation actions survive form routes', () => {
   assert.match(nav, /role="dialog" aria-modal="true"/)
   assert.match(nav, /event.key === 'Escape'/)
 })
-check('real WeCom entry has mobile open-link first and QR fallback', () => {
-  assert.match(nav, /WECOM_CONTACT_URL/)
+check('verified WeCom QR opens in-site without old direct URL', () => {
+  assert.match(nav, /href="\/contact#wechat"/)
+  assert.doesNotMatch(nav, /WECOM_CONTACT_URL/)
   assert.match(nav, /recordWecomIntent\('mobile_nav'\)/)
-  assert.match(contact, /order-1 inline-flex/)
+  assert.match(contact, /useState\(true\)/)
+  assert.doesNotMatch(contact, /WECOM_CONTACT_URL/)
   assert.match(contact, /aria-expanded=\{showQr\}/)
   assert.match(contact, /setShowQr/)
   assert.match(contact, /vf-wecom-qr/)

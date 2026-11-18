@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ArrowUpRight, ClipboardList, Globe2, House, Layers3, MessageCircle, RefreshCw, X } from 'lucide-react'
 import { track } from '@vercel/analytics'
 import { useLang } from '@/lib/i18n'
-import { WECOM_CONTACT_URL, wecomQrPath } from '@/lib/wecom-config'
+import { wecomQrPath } from '@/lib/wecom-config'
 import { recordWecomIntent } from '@/components/veyfront/wecom-contact'
 
 /** Mobile-only sales journey. No fake checkout, diagnosis or direct chat claim. */
@@ -52,10 +52,10 @@ export function MobileQuickNav() {
   }
   const anchorClass = 'flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[12px] font-semibold leading-tight text-ink/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink'
   const contactLink = zh && Boolean(wecomQrPath())
-    ? <a href={WECOM_CONTACT_URL} target="_blank" rel="noopener noreferrer"
-        onClick={() => { record('wecom'); recordWecomIntent('mobile_nav') }}
+    ? <Link href="/contact#wechat"
+        onClick={() => { record('wecom_qr'); recordWecomIntent('mobile_nav') }}
         className="flex min-h-12 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-lime px-3 text-[13px] font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-        aria-label="打开企业微信联系页"><MessageCircle className="size-5" aria-hidden="true"/>微信咨询</a>
+        aria-label="查看微信联系二维码"><MessageCircle className="size-5" aria-hidden="true"/>微信咨询</Link>
     : <Link href="/contact" onClick={() => record('contact')}
         className="flex min-h-12 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-lime px-3 text-[13px] font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
         <MessageCircle className="size-5" aria-hidden="true"/>{zh ? '联系顾问' : 'Contact'}</Link>
