@@ -25,30 +25,30 @@ export function Hero() {
  },[])
 
  return <section aria-labelledby="hero-title" className="bg-ink text-ivory">
-   <div className="mx-auto grid max-w-[1440px] gap-8 px-5 py-10 sm:gap-12 sm:py-16 md:px-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)] lg:items-center lg:gap-16 lg:py-24">
-    <div className="flex flex-col gap-7">
-     <p className="w-fit rounded-full border border-ivory/20 px-3 py-1 font-mono text-xs uppercase tracking-[0.17em] text-ivory/75">VEYFRONT / DIGITAL FRONTIERS</p>
-     <h1 id="hero-title" className="text-balance text-[32px] font-semibold leading-[1.18] tracking-tight sm:text-5xl xl:text-[58px]">
+   <div className="mx-auto grid max-w-[1440px] gap-6 px-4 py-8 sm:gap-12 sm:px-5 sm:py-16 md:px-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(0,0.88fr)] lg:items-center lg:gap-16 lg:py-24">
+    <div className="flex flex-col gap-5 sm:gap-7">
+     <p className="w-fit rounded-full border border-ivory/20 px-3 py-1 font-mono text-[11px] uppercase sm:text-xs tracking-[0.17em] text-ivory/75">VEYFRONT / DIGITAL FRONTIERS</p>
+     <h1 id="hero-title" className="text-balance text-[30px] font-semibold leading-[1.2] tracking-tight sm:text-5xl xl:text-[58px]">
       {zh?'让海外客户更容易找到您的产品、了解您的实力，并向您发起询盘。':'Building Digital Frontiers for Global Business.'}
      </h1>
-     <p className="max-w-2xl text-pretty text-base leading-relaxed text-ivory/75 sm:text-lg">
+     <p className="max-w-2xl text-pretty text-[15px] leading-[1.75] text-ivory/80 sm:text-lg sm:leading-relaxed">
       {zh?'我们为中国制造业和B2B外贸企业新建、升级中英文官网，整合产品展示、企业实力、搜索基础与在线询盘，并提供首年托管和约定的后续服务。':'Build a new international B2B website or improve your existing one. Professional design, SEO-Native foundations, buyer-ready content and real inquiry paths — delivered together.'}
      </p>
-     <div className="flex flex-wrap gap-3" aria-label={zh?'咨询或查看网站升级效果':'Talk to us or explore the redesign'}>
-       <Link href="/contact" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-lime px-5 font-semibold text-ink transition-colors hover:bg-lime/90">
+     <div className="grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap sm:gap-3" aria-label={zh?'咨询或查看网站升级效果':'Talk to us or explore the redesign'}>
+       <Link href="/contact" className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-lg bg-lime px-2 text-[13px] font-semibold sm:gap-2 sm:rounded-md sm:px-5 sm:text-base text-ink transition-colors hover:bg-lime/90">
          {zh?'咨询我的网站':'Discuss my website'} <ArrowUpRight className="size-4" aria-hidden="true"/>
        </Link>
-       <Link href="/transformations" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md border border-ivory/40 px-5 font-semibold text-ivory transition-colors hover:bg-ivory/10">
+       <Link href="/transformations" className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-lg border border-ivory/40 px-2 text-[13px] font-semibold sm:gap-2 sm:rounded-md sm:px-5 sm:text-base text-ivory transition-colors hover:bg-ivory/10">
          {zh?'看看升级演示':'Explore a redesign'} <ArrowUpRight className="size-4" aria-hidden="true"/>
        </Link>
      </div>
-     <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-ivory/15 pt-5 text-sm text-ivory/80">
+     <div className="flex flex-col gap-2 border-t border-ivory/15 pt-4 text-[13px] text-ivory/85 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2 sm:pt-5 sm:text-sm">
        <span>{zh?'还没有独立站？':'Starting from scratch?'} <Link href="/start/launch" className="font-semibold text-lime underline underline-offset-4">{zh?'新建外贸官网':'Build a new site'}</Link></span>
        <span>{zh?'已有旧网站？':'Have a site already?'} <Link href="/start/rebuild" className="font-semibold text-lime underline underline-offset-4">{zh?'咨询改版升级':'Improve your site'}</Link></span>
      </div>
-     <p className="text-sm text-ivory/60">{zh?'网站新建与常规旧站升级均有三档服务，¥3,680起。先咨询，不需要付款。':'Both new builds and standard rebuilds can choose from three plans starting at ¥3,680. Inquiries are free.'}</p>
+     <p className="text-[13px] leading-relaxed text-ivory/70 sm:text-sm">{zh?'网站新建与常规旧站升级均有三档服务，¥3,680起。先咨询，不需要付款。':'Both new builds and standard rebuilds can choose from three plans starting at ¥3,680. Inquiries are free.'}</p>
     </div>
-    <div ref={motionFrame} data-testid="hero-hybrid-panel" data-vf-motion={motionStarted?'started':'static'} data-vf-visible={motionVisible?'yes':'no'} className="vf-motion-frame relative isolate min-w-0 overflow-hidden rounded-xl border border-lime/25 bg-[#172e34] p-5 shadow-2xl shadow-black/20 sm:p-7">
+    <div ref={motionFrame} data-testid="hero-hybrid-panel" data-vf-motion={motionStarted?'started':'static'} data-vf-visible={motionVisible?'yes':'no'} className="vf-motion-frame relative isolate min-w-0 overflow-hidden rounded-xl border border-lime/30 bg-[#172e34] p-4 shadow-2xl sm:p-7 shadow-black/20 sm:p-7">
       <div aria-hidden="true" className="vf-motion-ambient pointer-events-none absolute -right-12 top-24 h-80 w-80 rounded-full bg-lime/10 blur-[95px]"/>
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[0.10]" style={{backgroundImage:'linear-gradient(rgba(184,240,107,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(184,240,107,.18) 1px,transparent 1px)',backgroundSize:'36px 36px'}}/>
       <div className="relative z-10 flex flex-wrap items-start justify-between gap-2 border-b border-ivory/15 pb-4">
@@ -59,7 +59,7 @@ export function Hero() {
         <span className="rounded-full border border-ivory/20 px-2 py-1 text-[10px] text-ivory/60">{zh?'前后对比':'BEFORE / AFTER'}</span>
       </div>
 
-      <div data-testid="hero-hybrid-visual" role="img" aria-label={zh?'工业B2B网站的页面体验对比：由产品信息、采购评估、在线询盘到持续优化的四个环节。':'Industrial B2B website experience comparison across product discovery, buyer evaluation, inquiries and ongoing improvement.'} className="relative z-10 mx-auto mt-3 h-[340px] max-w-[560px] sm:h-[375px]">
+      <div data-testid="hero-hybrid-visual" role="img" aria-label={zh?'工业B2B网站的页面体验对比：由产品信息、采购评估、在线询盘到持续优化的四个环节。':'Industrial B2B website experience comparison across product discovery, buyer evaluation, inquiries and ongoing improvement.'} className="relative z-10 mx-auto mt-2 h-[245px] max-w-[560px] min-[400px]:h-[270px] sm:mt-3 sm:h-[375px]">
         <svg aria-hidden="true" viewBox="0 0 560 370" preserveAspectRatio="xMidYMid meet" className="pointer-events-none absolute inset-0 h-full w-full">
           <defs>
             <linearGradient id="vf-hybrid-path" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#b8f06b" stopOpacity=".10"/><stop offset=".55" stopColor="#b8f06b" stopOpacity=".88"/><stop offset="1" stopColor="#b8f06b" stopOpacity=".10"/></linearGradient>
@@ -80,9 +80,9 @@ export function Hero() {
           {icon:ScanSearch,zh:'了解参数',en:'Evaluate',pos:'right-0 top-0',motion:'vf-motion-node-2'},
           {icon:Send,zh:'提交询盘',en:'Inquire',pos:'bottom-0 left-0',motion:'vf-motion-node-3'},
           {icon:ChartNoAxesCombined,zh:'后续优化',en:'Improve',pos:'bottom-0 right-0',motion:'vf-motion-node-4'},
-        ].map(({icon:Icon,zh:cn,en,pos,motion})=><div key={pos} data-testid="hero-hybrid-signal" className={'vf-motion-node '+motion+' absolute z-30 flex min-h-11 w-[45%] items-center gap-2 rounded-lg border border-lime/35 bg-[#10262c]/95 px-3 py-2 shadow-lg shadow-black/20 '+pos}>
+        ].map(({icon:Icon,zh:cn,en,pos,motion})=><div key={pos} data-testid="hero-hybrid-signal" className={'vf-motion-node '+motion+' absolute z-30 flex min-h-9 w-[46%] items-center gap-1.5 rounded-lg border border-lime/35 bg-[#10262c]/95 px-2 py-1.5 sm:min-h-11 sm:w-[45%] sm:gap-2 sm:px-3 sm:py-2 shadow-lg shadow-black/20 '+pos}>
           <Icon className="size-4 shrink-0 text-lime sm:size-5" aria-hidden="true"/>
-          <span className="text-xs font-semibold sm:text-sm">{zh?cn:en}</span>
+          <span className="text-[11px] font-semibold sm:text-sm">{zh?cn:en}</span>
         </div>)}
 
         <span className="absolute left-[5%] top-[26%] z-20 rounded-full bg-ivory/25 px-2.5 py-1 text-[10px] font-semibold">{zh?'之前':'Before'}</span>
@@ -129,7 +129,7 @@ export function Hero() {
           ].map((label,i)=><div key={i} className="flex min-h-7 flex-col items-center justify-center gap-1 rounded border border-[#cad8d1] bg-[#f7faf6] px-1 py-1"><span className="h-1 w-6 rounded bg-[#9db7b0]"/><span className="text-[7px] font-semibold text-[#35514a]">{label}</span></div>)}</div>
         </div>
       </div>
-      <div className="relative z-10 flex flex-col gap-2 border-t border-ivory/15 pt-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative z-10 flex flex-col gap-2 border-t border-ivory/15 pt-3 sm:pt-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs leading-relaxed text-ivory/60">{zh?'让海外客户更方便地查找产品、核对参数，并向业务员询价。':'Make product details clearer and the next buyer action easier to find.'}</p>
         <Link href="/pricing" className="inline-flex min-h-10 shrink-0 items-center gap-2 text-sm font-semibold text-lime underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-lime">{zh?'查看三档服务与价格':'Explore plans and pricing'} <ArrowUpRight aria-hidden="true" className="size-4"/></Link>
       </div>

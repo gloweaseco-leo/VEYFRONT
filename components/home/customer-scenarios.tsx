@@ -26,21 +26,21 @@ export function CustomerScenarios() {
   const { lang } = useLang()
   const zh = lang === 'zh'
   return <section id="customer-needs" aria-labelledby="customer-needs-title" className="bg-ivory text-ink">
-    <div className="mx-auto max-w-[1440px] px-5 py-14 md:px-10 lg:py-20">
+    <div className="mx-auto max-w-[1440px] px-4 py-11 sm:px-5 sm:py-14 md:px-10 lg:py-20">
       <p className="text-xs font-semibold tracking-[0.12em] text-ink/60">{zh ? '先看看您属于哪种情况' : 'WHERE TO START'}</p>
-      <h2 id="customer-needs-title" className="mt-3 max-w-4xl text-balance text-3xl font-semibold leading-snug sm:text-[42px]">{zh ? '外贸网站遇到的问题，不同企业有不同的解法。' : 'A practical solution for your stage of international business.'}</h2>
-      <p className="mt-4 max-w-3xl leading-relaxed text-ink/70">{zh ? '您不需要先研究技术，也不必一开始就选套餐。看看哪一种情况最接近您的企业。' : 'Start with the challenge your team faces today.'}</p>
-      <div className="mt-8 grid gap-4 lg:grid-cols-3">
-        {scenarios.map(({ icon: Icon, number, href, zh: cn, en }) => {
+      <h2 id="customer-needs-title" className="mt-3 max-w-4xl text-balance text-[27px] font-semibold leading-[1.24] sm:text-[42px] sm:leading-snug">{zh ? '外贸网站遇到的问题，不同企业有不同的解法。' : 'A practical solution for your stage of international business.'}</h2>
+      <p className="mt-3 max-w-3xl text-[15px] leading-[1.75] text-ink/75 sm:mt-4 sm:text-base">{zh ? '您不需要先研究技术，也不必一开始就选套餐。看看哪一种情况最接近您的企业。' : 'Start with the challenge your team faces today.'}</p>
+      <div className="mt-6 grid gap-3 sm:mt-8 sm:gap-4 lg:grid-cols-3">
+        {scenarios.map(({ icon: Icon, number, href, zh: cn, en }, index) => {
           const c = zh ? cn : en
-          return <article key={number} className="group flex min-h-[310px] flex-col rounded-xl border border-ink/15 bg-mist/30 p-6 transition-colors hover:border-ink/45 hover:bg-mist/55 sm:p-7">
+          return <article key={number} data-testid="mobile-scenario-card" className={'group flex flex-col rounded-2xl border p-5 shadow-[0_8px_24px_rgba(23,38,45,0.04)] transition-colors sm:p-7 lg:min-h-[310px] ' + (index === 0 ? 'border-ink bg-ink text-ivory md:border-ink/15 md:bg-mist/30 md:text-ink md:hover:bg-mist/55' : index === 1 ? 'border-ink/15 bg-white text-ink md:bg-mist/30 md:hover:bg-mist/55' : 'border-ink/15 bg-mist/70 text-ink md:bg-mist/30 md:hover:bg-mist/55')}>
             <div className="flex items-center justify-between">
-              <span className="font-mono text-xs text-ink/50">{number} / {c.problem}</span>
-              <Icon aria-hidden="true" className="size-6 text-ink/70"/>
+              <span className={'font-mono text-xs ' + (index === 0 ? 'text-ivory/70 md:text-ink/50' : 'text-ink/60 md:text-ink/50')}>{number} / {c.problem}</span>
+              <Icon aria-hidden="true" className={'size-6 ' + (index === 0 ? 'text-lime md:text-ink/70' : 'text-ink/70')}/>
             </div>
-            <h3 className="mt-8 text-balance text-[22px] font-semibold leading-snug">{c.headline}</h3>
-            <p className="mt-4 flex-1 text-sm leading-7 text-ink/70">{c.service}</p>
-            <Link href={href} className="mt-6 inline-flex min-h-11 items-center gap-2 self-start border-b border-ink/60 text-sm font-semibold transition-colors hover:border-ink">{c.action}<ArrowUpRight className="size-4" aria-hidden="true"/></Link>
+            <h3 className="mt-5 text-balance text-[21px] font-semibold leading-[1.36] md:mt-8 md:text-[22px]">{c.headline}</h3>
+            <p data-testid="mobile-scenario-description" className={'mt-3 text-[15px] leading-[1.75] md:mt-4 md:flex-1 md:text-sm md:leading-7 ' + (index === 0 ? 'text-ivory/80 md:text-ink/70' : 'text-ink/70')}>{c.service}</p>
+            <Link href={href} data-testid="mobile-scenario-action" className={'mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 self-start rounded-lg px-4 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 md:mt-6 md:w-auto md:justify-start md:rounded-none md:border-b md:border-ink/60 md:bg-transparent md:px-0 md:text-ink md:hover:border-ink ' + (index === 0 ? 'bg-lime text-ink focus-visible:outline-lime' : 'bg-ink text-ivory focus-visible:outline-ink')}>{c.action}<ArrowUpRight className="size-4" aria-hidden="true"/></Link>
           </article>
         })}
       </div>

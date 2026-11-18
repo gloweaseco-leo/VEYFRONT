@@ -12,19 +12,19 @@ export function JourneySteps({detail=false}:{detail?:boolean}){
  const {lang}=useLang(),zh=lang==='zh'
  const HeadingTag = detail ? 'h1' : 'h2'
  return <section id="delivery-steps" aria-labelledby="delivery-steps-title" className="bg-ivory text-ink">
- <div className="mx-auto max-w-[1440px] px-5 py-16 md:px-10 lg:py-20">
+ <div className="mx-auto max-w-[1440px] px-4 py-11 sm:px-5 sm:py-16 md:px-10 lg:py-20">
   <p className="font-mono text-xs uppercase tracking-widest text-ink/60">{zh ? '合作流程 / 01—04' : 'HOW IT WORKS / 01—04'}</p>
-  <HeadingTag id="delivery-steps-title" className="mt-3 max-w-4xl text-balance text-3xl font-semibold sm:text-[42px]">{zh?'从沟通需求到网站上线，四步完成合作。':'Four clear steps, from inquiry to launch.'}</HeadingTag>
-  <p className="mt-4 max-w-2xl leading-relaxed text-ink/70">{zh?'新建官网或升级旧站，我们都会提前确认需求、报价和验收方式。':'Launch and Rebuild follow the same clear engagement process. Submitting an inquiry never changes an existing website.'}</p>
-  <ol className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-   {stages.map((s,i)=><li key={i} className="flex h-full flex-col gap-4 rounded-xl border border-ink/15 bg-mist/30 p-6">
-    <span className="font-mono text-2xl text-ink/55">0{i+1}</span>
-    <h3 className="text-xl font-semibold">{s.name[zh?0:1]}</h3>
-    <p className="text-sm leading-relaxed text-ink/70">{s.get[zh?0:1]}</p>
+  <HeadingTag id="delivery-steps-title" className="mt-3 max-w-4xl text-balance text-[27px] font-semibold leading-[1.25] sm:text-[42px]">{zh?'从沟通需求到网站上线，四步完成合作。':'Four clear steps, from inquiry to launch.'}</HeadingTag>
+  <p className="mt-3 max-w-2xl text-[15px] leading-[1.75] text-ink/70 sm:mt-4 sm:text-base">{zh?'新建官网或升级旧站，我们都会提前确认需求、报价和验收方式。':'Launch and Rebuild follow the same clear engagement process. Submitting an inquiry never changes an existing website.'}</p>
+  <ol className="mt-6 grid gap-3 sm:mt-9 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
+   {stages.map((s,i)=><li key={i} className="flex h-full items-start gap-4 rounded-xl border border-ink/15 bg-white p-4 sm:p-6 md:flex-col md:gap-4 md:bg-mist/30">
+    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-ink font-mono text-base font-semibold text-lime md:size-auto md:bg-transparent md:text-2xl md:text-ink/55">0{i+1}</span><div className="min-w-0 flex-1">
+    <h3 className="text-[18px] font-semibold leading-snug md:text-xl">{s.name[zh?0:1]}</h3>
+    <p className="mt-2 text-sm leading-[1.7] text-ink/75 md:mt-0">{s.get[zh?0:1]}</p>
     {detail && <div className="mt-2 space-y-3 border-t border-ink/15 pt-4 text-sm leading-relaxed">
       <p><strong>{zh?'你需要做：':'You:'}</strong> {s.you[zh?0:1]}</p>
       <p><strong>{zh?'VEYFRONT 负责：':'VEYFRONT:'}</strong> {s.we[zh?0:1]}</p>
-    </div>}
+    </div>}</div>
    </li>)}
   </ol>
   {detail && <section className="mt-10 rounded-xl border border-ink/15 bg-mist/30 p-6" aria-labelledby="prepare-materials">
