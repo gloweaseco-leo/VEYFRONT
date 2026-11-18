@@ -17,7 +17,6 @@ export function MobileQuickNav() {
   const path = pathname === '/en' ? '/' : pathname.replace(/^\/en(?=\/)/, '')
   const supported = path === '/' || path === '/pricing' || path === '/transformations' ||
     path === '/how-it-works' || path === '/contact' || path === '/start/launch' || path === '/start/rebuild'
-  const inForm = path === '/contact' || path.startsWith('/start/')
   const [open, setOpen] = useState(false)
   const sheetRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
@@ -51,29 +50,29 @@ export function MobileQuickNav() {
   const record = (item: string) => {
     try { track('mobile_nav_action', { item, locale: lang }) } catch { /* analytics must not block navigation */ }
   }
-  const anchorClass = 'flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[11px] font-medium leading-tight text-ink/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink'
+  const anchorClass = 'flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[12px] font-semibold leading-tight text-ink/75 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink'
   const contactLink = zh && Boolean(wecomQrPath())
     ? <a href={WECOM_CONTACT_URL} target="_blank" rel="noopener noreferrer"
         onClick={() => { record('wecom'); recordWecomIntent('mobile_nav') }}
-        className="flex min-h-12 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-lime px-3.5 text-[13px] font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+        className="flex min-h-12 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-lime px-3 text-[13px] font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         aria-label="打开企业微信联系页"><MessageCircle className="size-5" aria-hidden="true"/>微信咨询</a>
     : <Link href="/contact" onClick={() => record('contact')}
-        className="flex min-h-12 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-lime px-3.5 text-[13px] font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
+        className="flex min-h-12 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-lime px-3 text-[13px] font-semibold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
         <MessageCircle className="size-5" aria-hidden="true"/>{zh ? '联系顾问' : 'Contact'}</Link>
 
   return <>
     <div aria-hidden="true" className="h-[calc(76px+env(safe-area-inset-bottom))] md:hidden" data-testid="mobile-nav-spacer"/>
-    <div data-testid="mobile-quick-nav" className="vf-mobile-nav-shell fixed inset-x-0 bottom-0 z-[70] border-t border-ink/10 bg-ivory/95 px-3 pb-[calc(8px+env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_30px_rgba(23,38,45,.1)] backdrop-blur-xl md:hidden">
+    <div data-testid="mobile-quick-nav" className="vf-mobile-nav-shell fixed inset-x-0 bottom-0 z-[70] border-t border-ink/15 bg-white/95 px-3 pb-[calc(8px+env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_30px_rgba(23,38,45,.1)] backdrop-blur-xl md:hidden">
       <nav aria-label={zh ? '手机快捷导航' : 'Mobile quick navigation'} className="mx-auto flex max-w-[520px] items-center gap-1">
         <Link href="/" aria-current={path === '/' ? 'page' : undefined} onClick={() => record('home')}
           className={anchorClass + (path === '/' ? ' !text-ink' : '')}>
           <House className={'size-5 ' + (path === '/' ? 'stroke-[2.5]' : '')} aria-hidden="true"/>{zh ? '首页' : 'Home'}
         </Link>
-        {!inForm && <button type="button" ref={triggerRef} aria-expanded={open} aria-controls="vf-mobile-project-sheet"
+        <button type="button" ref={triggerRef} aria-expanded={open} aria-controls="vf-mobile-project-sheet"
             onClick={() => { record('project_menu'); setOpen(value => !value) }}
             className={anchorClass + (path.startsWith('/start/') ? ' !text-ink' : '')}>
             <Layers3 className="size-5" aria-hidden="true"/><span>{zh ? '建站/升级' : 'Services'}</span>
-          </button>}
+          </button>
         <Link href="/pricing" aria-current={path === '/pricing' ? 'page' : undefined} onClick={() => record('pricing')}
           className={anchorClass + (path === '/pricing' ? ' !text-ink' : '')}>
           <ClipboardList className={'size-5 ' + (path === '/pricing' ? 'stroke-[2.5]' : '')} aria-hidden="true"/>{zh ? '价格' : 'Pricing'}
@@ -81,7 +80,7 @@ export function MobileQuickNav() {
         {contactLink}
       </nav>
     </div>
-    {open && !inForm && <div className="fixed inset-0 z-[80] md:hidden">
+    {open && <div className="fixed inset-0 z-[80] md:hidden">
       <button type="button" className="absolute inset-0 bg-ink/65" aria-label={zh ? '关闭项目选择' : 'Close project choices'} onClick={() => setOpen(false)}/>
       <div id="vf-mobile-project-sheet" ref={sheetRef} tabIndex={-1} role="dialog" aria-modal="true"
         aria-labelledby="vf-mobile-project-title"

@@ -9,15 +9,15 @@ const items=[
 ]
 export function BuyerCapabilities(){
  const {lang}=useLang(), zh=lang==='zh'
- return <section id="buyer-capabilities" aria-labelledby="buyer-capabilities-title" className="bg-mist/40 text-ink">
-  <div className="mx-auto max-w-[1440px] px-5 py-16 md:px-10 lg:py-20">
+ return <section id="buyer-capabilities" aria-labelledby="buyer-capabilities-title" className="bg-mist/20 text-ink md:bg-mist/40">
+  <div className="mx-auto max-w-[1440px] px-4 py-11 sm:px-5 sm:py-16 md:px-10 lg:py-20">
    <div className="max-w-3xl">
     <p className="font-mono text-xs uppercase tracking-wider text-ink/60">{zh ? '从产品展示到客户询盘' : 'SEARCH · EVALUATE · INQUIRE · IMPROVE'}</p>
-    <h2 id="buyer-capabilities-title" className="mt-3 text-balance text-3xl font-semibold sm:text-[42px]">{zh?'不只把网站做漂亮，更要让海外客户找到产品、了解企业并方便联系。':'Designed around what your buyers need to do.'}</h2>
+    <h2 id="buyer-capabilities-title" className="mt-3 text-balance text-[27px] font-semibold leading-[1.25] sm:text-[42px]">{zh?'不只把网站做漂亮，更要让海外客户找到产品、了解企业并方便联系。':'Designed around what your buyers need to do.'}</h2>
    </div>
-   <div className="mt-9 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-    {items.map(({icon:Icon,zh:z,en:e},i)=>{const c=zh?z:e;return <article key={i} className="flex flex-col gap-4 rounded-xl border border-ink/15 bg-ivory p-6">
-     <Icon className="size-7" aria-hidden="true"/><h3 className="text-xl font-semibold">{c[0]}</h3><p className="leading-relaxed text-ink/70">{c[1]}</p>
+   <div className="mt-6 grid gap-3 sm:mt-9 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
+    {items.map(({icon:Icon,zh:z,en:e},i)=>{const c=zh?z:e;return <article key={i} className={'flex items-start gap-4 rounded-xl border border-ink/15 bg-white p-4 sm:p-6 md:flex-col md:bg-ivory ' + (i === 0 ? 'border-l-[3px] border-l-lime md:border-l' : '')}>
+     <Icon className="mt-0.5 size-6 shrink-0 text-ink md:mt-0 md:size-7" aria-hidden="true"/><div className="min-w-0"><h3 className="text-[18px] font-semibold leading-snug md:text-xl">{c[0]}</h3><p className="mt-2 text-[14px] leading-[1.75] text-ink/75 md:mt-4 md:text-base">{c[1]}</p></div>
     </article>})}
    </div>
   </div>

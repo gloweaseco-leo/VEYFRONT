@@ -17,12 +17,12 @@ export function Transformation() {
 
   return (
     <section id="transformation" aria-labelledby="transformation-title" className="scroll-mt-4 bg-ivory text-ink">
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-10 px-5 py-16 md:px-10 lg:py-24">
+      <div className="mx-auto flex max-w-[1440px] flex-col gap-6 px-4 py-11 sm:gap-10 sm:px-5 sm:py-16 md:px-10 lg:py-24">
         <SectionIntro id="transformation-title" eyebrow={t.flagship.eyebrow} title={t.flagship.title} lede={t.flagship.lede} />
 
-        <div className="flex flex-col gap-4 border-y border-ink/15 py-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-3 border-y border-ink/15 py-3 sm:gap-4 sm:py-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <Segmented
                 label={t.flagship.viewLabel}
                 value={view}
@@ -47,12 +47,12 @@ export function Transformation() {
           <PageTabs />
         </div>
 
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
           <div className="min-w-0">
             <DemoViewport
               view={view}
               device={device}
-              bodyHeight="h-[440px] md:h-[620px]"
+              bodyHeight="h-[330px] sm:h-[440px] md:h-[620px]" mobileBodyHeight="h-[380px] sm:h-[560px]"
               badgeLabel=""
               hotspots={{
                 showHotspots: true,
@@ -118,7 +118,7 @@ export function Transformation() {
           </aside>
         </div>
 
-        <div className="flex flex-col gap-6 border-t border-ink/15 pt-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex flex-col gap-4 border-t border-ink/15 pt-5 sm:gap-6 sm:pt-6 lg:flex-row lg:items-start lg:justify-between">
           <p className="max-w-2xl text-sm leading-relaxed text-ink/65">{h.hero.caption}</p>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
             <Link href="/transformations" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-ink px-5 font-semibold text-ivory">
