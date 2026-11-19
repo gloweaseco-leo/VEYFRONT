@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { createHash, X509Certificate } from 'node:crypto'
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:https'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -9,6 +9,7 @@ import { once } from 'node:events'
 import { test } from 'node:test'
 import { createG1Adapter, g1MediaType, g1Profile } from '../lib/vrae-g1-server.ts'
 import { GET, POST } from '../app/api/website-diagnosis/route.ts'
+import { localG1Enabled } from '../lib/vrae-g1-local.ts'
 
 const sourceSha = 'a'.repeat(40)
 const token = 'local-fixture-service-token'
@@ -43,9 +44,13 @@ function authority(i) {
   }
 }
 
-test('the browser API stays closed without accepting diagnostic input', async () => {
+test('the browser API stays closed outside local development', async () => {
+  const flags = { VF_B_OFFLINE_G1: '1', VF_B_OFFLINE_G1_FIXTURES: '/private/test' }
+  assert.equal(localG1Enabled({ ...flags, NODE_ENV: 'development' }), true)
+  assert.equal(localG1Enabled({ ...flags, NODE_ENV: 'production' }), false)
+  assert.equal(localG1Enabled({ ...flags, NODE_ENV: 'development', VERCEL_ENV: 'preview' }), false)
   for (const handler of [GET, POST]) {
-    const response = handler()
+    const response = await handler(new Request('http://127.0.0.1:3114/api/website-diagnosis'))
     assert.equal(response.status, 404)
     assert.equal(response.headers.get('cache-control'), 'no-store')
     assert.deepEqual(await response.json(), { status: 'unavailable' })
@@ -195,6 +200,48 @@ test('actual local TLS wire, two independently scoped invitations and private se
       assert.equal((await invalid.submit(authorized[0])).status, 503)
       assert.equal(wireCalls, before)
     })
+    if (process.env.VF_TEST_LOCAL_CHROMIUM === '1') {
+      await t.test('browser submits an approved fixture and reads its stage through the BFF', async () => {
+        const fixtureFile = join(dir, 'private-next-fixtures.json')
+        const codes = ['local-browser-test-code-one', 'local-browser-test-code-two']
+        writeFileSync(fixtureFile, JSON.stringify({
+          transport: config,
+          invitations: authorized.map((plan, i) => ({
+            codeSha256: createHash('sha256').update(codes[i]).digest('hex'),
+            expiresAt: new Date(Date.now() + 600_000).toISOString(),
+            authority: plan,
+            session: sessions.get(i + 1),
+          })),
+        }), { mode: 0o600 })
+        const base = 'http://127.0.0.1:3114'
+        const vf = spawn(process.execPath, ['node_modules/next/dist/bin/next', 'dev', '-H', '127.0.0.1', '-p', '3114', '--webpack'], {
+          env: { ...process.env, NODE_ENV: 'development', VF_B_OFFLINE_G1: '1', VF_B_OFFLINE_G1_FIXTURES: fixtureFile },
+          stdio: 'inherit',
+        })
+        try {
+          const started = Date.now()
+          while (Date.now() - started < 120_000) {
+            if (vf.exitCode !== null) throw new Error('Local VEYFRONT process exited')
+            try {
+              if ((await fetch(base + '/website-diagnosis', { signal: AbortSignal.timeout(15_000) })).ok) break
+            } catch {}
+            await new Promise(resolve => setTimeout(resolve, 500))
+          }
+          assert.ok(Date.now() - started < 120_000, 'Local VEYFRONT did not start')
+          const before = wireCalls
+          const browser = spawn('python', ['scripts/check-vf-b-browser.py', base], { stdio: 'inherit' })
+          const [exit] = await once(browser, 'exit')
+          assert.equal(exit, 0)
+          assert.equal(wireCalls - before, 4, 'Only two authorized submits and two reads call upstream')
+        } finally {
+          if (vf.exitCode === null) {
+            const exited = once(vf, 'exit')
+            vf.kill()
+            await exited
+          }
+        }
+      })
+    }
     assert.deepEqual(failures, [])
   } finally {
     if (server?.listening) await new Promise(resolve => server.close(resolve))
