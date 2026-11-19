@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import { DiagnosisPreview } from '@/components/veyfront/diagnosis/preview'
 import { diagnosisPreviewEnabled } from '@/lib/diagnosis-preview'
 import { localG1Enabled } from '@/lib/vrae-g1-local'
+import { previewConfig } from '@/lib/vrae-preview'
 
 export async function generateMetadata(): Promise<Metadata> {
   const en = (await headers()).get('x-vf-page-locale') === 'en'
@@ -16,5 +17,5 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function Page() {
   if (!diagnosisPreviewEnabled) notFound()
-  return <DiagnosisPreview offlineG1={localG1Enabled()} />
+  return <DiagnosisPreview offlineG1={localG1Enabled()} connectedPreview={Boolean(previewConfig())} />
 }

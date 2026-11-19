@@ -62,8 +62,27 @@ def run():
         except urllib.error.HTTPError as error:
             return error.code
 
+    def connected_api_closed():
+        request = urllib.request.Request(
+            BASE + "/api/website-diagnosis/v1",
+            data=b'{"action":"status"}',
+            headers={"Content-Type": "application/json", "Origin": BASE},
+            method="POST",
+        )
+        try:
+            urllib.request.urlopen(request, timeout=10).close()
+            return False
+        except urllib.error.HTTPError as error:
+            with error:
+                return (
+                    error.code == 404
+                    and "no-store" in error.headers.get("Cache-Control", "")
+                    and json.load(error) == {"state": "closed"}
+                )
+
     try:
         with server("production"):
+            check(connected_api_closed(), "production connected VRAE endpoint is closed")
             for prefix in ("", "/en"):
                 check(status(prefix + PATH) == 404, prefix + " live diagnostic route is closed")
                 for path in ("/", "/start/rebuild"):
@@ -77,6 +96,7 @@ def run():
 
         executable = next((shutil.which(name) for name in ("google-chrome", "chromium") if shutil.which(name)), None)
         with server("preview"), sync_playwright() as playwright:
+            check(connected_api_closed(), "unconfigured preview connected VRAE endpoint is closed")
             for width in (320, 375, 390, 1440):
                 for locale, prefix in (("zh", ""), ("en", "/en")):
                     label = f"{width}/{locale}"
@@ -98,6 +118,9 @@ def run():
                           label + " preview noindex")
                     check(page.locator('meta[name="referrer"]').get_attribute("content") == "no-referrer", label + " referrer suppressed")
                     check(page.locator("#diagnosis-address").get_attribute("name") is None, label + " address not serialized")
+                    pending = page.get_by_test_id("vrae-preview-pending")
+                    expect(pending).to_contain_text("等待服务配置" if locale == "zh" else "awaiting service setup")
+                    check(page.get_by_test_id("vrae-preview-form").count() == 0, label + " unavailable service shows no invitation form")
                     requests.clear()
                     address = page.locator("#diagnosis-address")
                     feedback = page.locator("#diagnosis-feedback")
