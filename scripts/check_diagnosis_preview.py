@@ -21,19 +21,20 @@ TARGET = "https://qa-domain.example.com/" + "long-public-path-" * 20
 @contextmanager
 def server(environment):
     with (ROOT / f"server-{environment}.log").open("w", encoding="utf-8") as log:
+        # Start Next directly so terminating this process frees the port for the next environment.
         with subprocess.Popen(
-            ["pnpm", "exec", "next", "start", "-p", "3101", "-H", "127.0.0.1"],
+            ["node", "node_modules/next/dist/bin/next", "start", "-p", "3101", "-H", "127.0.0.1"],
             env={**os.environ, "VERCEL_ENV": environment}, stdout=log, stderr=subprocess.STDOUT,
         ) as process:
             try:
                 for _ in range(100):
+                    if process.poll() is not None:
+                        raise RuntimeError(f"Next.js exited in {environment}")
                     try:
                         with urllib.request.urlopen(BASE, timeout=2) as response:
                             if response.status == 200:
                                 break
                     except OSError:
-                        if process.poll() is not None:
-                            raise RuntimeError(f"Next.js exited in {environment}")
                         time.sleep(0.3)
                 else:
                     raise RuntimeError(f"Next.js did not start in {environment}")
@@ -44,6 +45,7 @@ def server(environment):
                     process.wait(timeout=7)
                 except subprocess.TimeoutExpired:
                     process.kill()
+                    process.wait()
 
 
 def run():
@@ -114,7 +116,9 @@ def run():
                     expect(page).to_have_url(BASE + prefix + PATH)
                     check(page.locator("html").get_attribute("lang") == ("zh-CN" if locale == "zh" else "en"), label + " browser locale")
                     check(page.locator("h1").count() == 1, label + " one H1")
-                    check("noindex" in page.locator('meta[name="robots"]').get_attribute("content"),
+                    robots_tags = page.locator('head meta[name="robots"]')
+                    expect(robots_tags.first).to_have_attribute("content", "noindex, nofollow")
+                    check(all("noindex" in tag.get_attribute("content") for tag in robots_tags.all()),
                           label + " preview noindex")
                     check(page.locator('meta[name="referrer"]').get_attribute("content") == "no-referrer", label + " referrer suppressed")
                     check(page.locator("#diagnosis-address").get_attribute("name") is None, label + " address not serialized")
