@@ -1,27 +1,20 @@
 // This configuration and all derived authority stay in the VEYFRONT server.
-import { createCipheriv, createDecipheriv, createHash, randomBytes, X509Certificate, createPrivateKey } from 'node:crypto'
+import { createCipheriv, createDecipheriv, randomBytes, X509Certificate, createPrivateKey } from 'node:crypto'
 import { isIP } from 'node:net'
 import {
-  auditRefPattern, createDiagnosisClient, createReportClient, object, privateTokenPattern, targetIdPattern, vfContract, VraeFailure,
-  type DiagnosisSession, type ServiceConfig,
+  auditRefPattern, createDiagnosisClient, createReportClient, digestPattern, object, privateTokenPattern, VraeFailure,
+  type DiagnosisConsent, type DiagnosisSession, type ServiceConfig,
 } from './vrae-preview-client.ts'
 
 export const previewSessionCookie = '__Host-vf-vrae-preview'
-type Language = 'zh' | 'en'
-export type PreviewSession = { session: DiagnosisSession; request?: string; ref?: string }
-type SignedSubmission = {
-  raw: string
-  target: string
-  expiresAt: number
-  subject: unknown
-  invitation: unknown
-  tenant: unknown
-  url: string
-  mode: 'L0' | 'L1'
-  language: Language
-  consentText: string
-  fingerprint: string
+export type PreviewSession = {
+  session: DiagnosisSession
+  intent?: string
+  scope?: { url: string; consentHash: string; consentVersion: string; expiresAt: number }
+  pending?: { raw: string; acceptedAt: number }
+  ref?: string
 }
+const intentPattern = /^[a-f0-9-]{36}$/
 
 export function isPreviewSameOrigin(headers: Headers, hosted = Boolean(process.env.VERCEL)) {
   const origin = headers.get('origin')
@@ -70,14 +63,15 @@ export function previewConfig(env = process.env) {
   if (env.VERCEL_ENV !== 'preview' || env.VF_VRAE_PREVIEW_ENABLED !== '1') return
   const diagnosis = serviceConfig('DIAGNOSIS', env)
   const hex = env.VF_VRAE_PREVIEW_SESSION_KEY ?? ''
-  const grants = env.VF_VRAE_PREVIEW_SIGNED_SUBMISSIONS
-  if (!diagnosis || !/^[0-9a-f]{64}$/.test(hex) || !grants || Buffer.byteLength(grants) > 256_000) return
+  const configuredTarget = env.VF_VRAE_PREVIEW_TARGET_URL ?? ''
+  if (!diagnosis || !digestPattern.test(hex) || configuredTarget.length > 500) return
   try {
-    const entries: unknown = JSON.parse(grants)
-    if (!Array.isArray(entries) || !entries.length || entries.length > 40) return
-    const submissions = entries.map(validateSubmission)
-    if (submissions.some(value => !value)) return
-    return { client: createDiagnosisClient(diagnosis), key: Buffer.from(hex, 'hex'), submissions: submissions as SignedSubmission[] }
+    const target = new URL(configuredTarget)
+    const hostname = target.hostname
+    if (target.protocol !== 'https:' || configuredTarget !== target.origin + '/' || target.href !== configuredTarget ||
+        target.port || !hostname.includes('.') || isIP(hostname) || hostname.endsWith('.') ||
+        /(?:^|\.)(?:localhost|local|internal|test|invalid|example)$/.test(hostname)) return
+    return { client: createDiagnosisClient(diagnosis), key: Buffer.from(hex, 'hex'), targetUrl: target.href }
   } catch {
     return undefined
   }
@@ -92,65 +86,26 @@ export function previewReportClient(env = process.env) {
   return createReportClient(report)
 }
 
-function validateSubmission(value: unknown): SignedSubmission | undefined {
-  const grant = object(value)
-  if (
-    !grant || typeof grant.targetId !== 'string' || !targetIdPattern.test(grant.targetId) ||
-    typeof grant.expiresAt !== 'string' || typeof grant.consentText !== 'string' ||
-    !grant.consentText.trim() || grant.consentText.length > 4000 ||
-    typeof grant.signedSubmission !== 'string' || Buffer.byteLength(grant.signedSubmission) > 32_000
-  ) return
-  const expiresAt = Date.parse(grant.expiresAt)
-  const raw = grant.signedSubmission
-  const body = object(JSON.parse(raw))
-  const command = object(body?.command)
-  const request = object(command?.request)
-  const permission = object(command?.permission_reference)
-  const consent = object(body?.diagnosis_consent)
-  const textHash = createHash('sha256').update(JSON.stringify(grant.consentText)).digest('hex')
-  if (
-    !Number.isFinite(expiresAt) || !body || body.contract_version !== vfContract || !object(body.submission_proof) ||
-    typeof body.subject_ref !== 'string' || typeof body.invitation_ref !== 'string' || !request ||
-    typeof request.tenant_id !== 'string' || typeof request.site_url !== 'string' || typeof request.idempotency_key !== 'string' ||
-    (request.audit_mode !== 'L0' && request.audit_mode !== 'L1') ||
-    (body.language !== 'zh' && body.language !== 'en') || !permission || !object(permission.proof) ||
-    !consent || typeof consent.consent_version !== 'string' || consent.consent_version !== permission.consent_version ||
-    consent.text_sha256 !== textHash || permission.consent_sha256 !== textHash ||
-    typeof consent.accepted_at !== 'string' || !(Date.parse(consent.accepted_at) <= Date.now())
-  ) return
-  const url = new URL(request.site_url)
-  if (url.protocol !== 'https:' || url.href !== url.origin + '/' || request.site_url !== url.href ||
-      url.username || url.password || url.port || body.normalized_host !== url.hostname) return
-  return {
-    raw, expiresAt, consentText: grant.consentText, target: grant.targetId,
-    subject: body.subject_ref, invitation: body.invitation_ref, tenant: request.tenant_id,
-    url: url.href, mode: request.audit_mode, language: body.language,
-    fingerprint: createHash('sha256').update(raw).digest('hex'),
-  }
+/** Invoked only after the tester confirms diagnosis of the already authorised scope. */
+export function preparePreviewDiagnosis(current: PreviewSession, targetUrl: string, consent: DiagnosisConsent, language: 'zh' | 'en') {
+  const now = Date.now()
+  if (!current.intent || current.ref || current.scope?.url !== targetUrl || current.scope.expiresAt <= now ||
+      current.scope.consentHash !== consent.hash || current.scope.consentVersion !== consent.version) throw new VraeFailure(403)
+  if (current.pending) return current.pending
+  return { acceptedAt: now, raw: JSON.stringify({
+    url: targetUrl,
+    idempotency_key: current.intent,
+    accepted_at: new Date(now).toISOString(),
+    consent_version: consent.version,
+    language,
+  }) }
 }
 
-export function authorizedSubmission(
-  entries: SignedSubmission[], plan: Record<string, unknown>, language: Language, fingerprint?: string,
-) {
-  const matches = entries.filter(entry =>
-    entry.target === plan.target_id && entry.expiresAt > Date.now() && entry.subject === plan.subject_ref &&
-    entry.invitation === plan.invitation_ref && entry.tenant === plan.tenant_id && entry.url === plan.site_url &&
-    entry.language === language && Array.isArray(plan.audit_modes) && plan.audit_modes.includes(entry.mode) &&
-    (!fingerprint || entry.fingerprint === fingerprint),
-  )
-  if (matches.length !== 1) throw new VraeFailure(403)
-  return matches[0]
-}
-
-export function matchesSubmittedUrl(raw: string, approved: string) {
-  const address = raw.trim()
-  if (!address || /[\\?#\s]/.test(address)) return false
-  try {
-    const url = new URL(/^[a-z][a-z\d+.-]*:\/\//i.test(address) ? address : 'https://' + address)
-    return !url.username && !url.password && !url.port && url.href === approved
-  } catch {
-    return false
-  }
+export function currentPreviewDiagnosis(current: PreviewSession, targetUrl: string) {
+  const now = Date.now()
+  if (!current.pending || current.scope?.url !== targetUrl || current.scope.expiresAt <= now ||
+      current.pending.acceptedAt > now || current.pending.acceptedAt <= now - 30 * 60_000) throw new VraeFailure(403)
+  return current.pending.raw
 }
 
 type Purpose = 'session' | 'return'
@@ -184,6 +139,13 @@ export function readPreviewSession(key: Buffer, value: string | undefined): Prev
     typeof session.csrf !== 'string' || !privateTokenPattern.test(session.csrf)
   ) throw new VraeFailure(403)
   const ref = typeof entry?.ref === 'string' && auditRefPattern.test(entry.ref) ? entry.ref : undefined
-  const request = typeof entry?.request === 'string' ? entry.request : undefined
-  return { session: { cookie: session.cookie, csrf: session.csrf, expiresAt: session.expiresAt }, ref, request }
+  const intent = typeof entry?.intent === 'string' && intentPattern.test(entry.intent) ? entry.intent : undefined
+  const s = object(entry?.scope)
+  const scope = typeof s?.url === 'string' && typeof s.consentHash === 'string' && digestPattern.test(s.consentHash) &&
+    typeof s.consentVersion === 'string' && typeof s.expiresAt === 'number'
+    ? { url: s.url, consentHash: s.consentHash, consentVersion: s.consentVersion, expiresAt: s.expiresAt } : undefined
+  const p = object(entry?.pending)
+  const pending = typeof p?.raw === 'string' && typeof p.acceptedAt === 'number'
+    ? { raw: p.raw, acceptedAt: p.acceptedAt } : undefined
+  return { session: { cookie: session.cookie, csrf: session.csrf, expiresAt: session.expiresAt }, ref, intent, scope, pending }
 }

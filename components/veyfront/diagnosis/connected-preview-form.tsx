@@ -5,7 +5,9 @@ import { useLang } from '@/lib/i18n'
 
 const statusCopy: Record<string, readonly [string, string]> = {
   authorised: ['邀请已验证，请核对获准检查的网站。', 'Invitation verified. Check the approved website below.'],
-  plan: ['网站范围已核对，请阅读并确认诊断授权。', 'The site scope is confirmed. Review and confirm your consent.'],
+  'scope-authorised': ['测试权限已核验，请确认提交这次诊断。', 'The test scope is authorised. Confirm to submit this diagnosis.'],
+  prepared: ['申请已确认。可以发送，或在断线后继续发送同一申请。', 'Your request is confirmed. You can send it or retry the same request after a connection interruption.'],
+  'consent-changed': ['授权条款已更新，请继续当前申请并重新阅读。', 'The consent terms have changed. Resume your request and review them again.'],
   accepted: ['诊断申请已受理。', 'The diagnostic request was accepted.'],
   running: ['正在检查获准的公开页面。', 'The permitted public pages are being checked.'],
   'awaiting-report': ['诊断已有待审核内容，报告尚未发布。', 'The diagnostic has findings pending review. The report is awaiting release.'],
@@ -32,9 +34,8 @@ export function ConnectedPreviewForm() {
   const { lang } = useLang()
   const zh = lang === 'zh'
   const [invited, setInvited] = useState(false)
-  const [target, setTarget] = useState('')
-  const [plan, setPlan] = useState<{ consentText: string; language: string } | null>(null)
-  const [address, setAddress] = useState('')
+  const [scope, setScope] = useState<{ authorised: boolean; address: string; text: string; hash: string } | null>(null)
+  const [prepared, setPrepared] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
   const [state, setState] = useState('')
   const [sending, setSending] = useState(false)
@@ -60,11 +61,23 @@ export function ConnectedPreviewForm() {
         setRetryDelay(Number.isInteger(retryAfter) && retryAfter >= 1 && retryAfter <= 900 ? retryAfter : 60)
       }
       setState(Object.hasOwn(statusCopy, result.state) ? result.state : 'unavailable')
-      if (result.state === 'authorised' || result.state === 'no-task') setInvited(true)
-      if (result.state === 'plan' && typeof result.consentText === 'string' && typeof result.address === 'string') {
-        setPlan({ consentText: result.consentText, language: lang })
-        setAddress(result.address)
+      if ((result.state === 'authorised' || result.state === 'scope-authorised') &&
+          typeof result.address === 'string' && typeof result.consentText === 'string' && typeof result.consentHash === 'string') {
+        setInvited(true)
+        setPrepared(false)
+        setScope({ authorised: result.state === 'scope-authorised', address: result.address, text: result.consentText, hash: result.consentHash })
         setConfirmed(false)
+      }
+      if (result.state === 'restored' || result.hasTask === true) {
+        setInvited(true)
+        setScope(null)
+        setPrepared(false)
+      }
+      if (result.state === 'prepared') {
+        setInvited(true)
+        setScope(null)
+        setPrepared(true)
+        if (action === 'prepare') await send('submit')
       }
       if (result.state === 'return-issued' && typeof result.code === 'string') setCode(result.code)
     } catch {
@@ -84,7 +97,7 @@ export function ConnectedPreviewForm() {
   }
 
   return <div data-testid="vrae-preview-form" className="space-y-4">
-    <p className="text-sm leading-relaxed text-ink/75">{zh ? '仅限已获邀请及网站访问授权的测试。请使用邀请材料提供的代码和网站编号。' : 'Testing is limited to approved invitations and sites. Use the code and site ID from your invitation.'}</p>
+    <p className="text-sm leading-relaxed text-ink/75">{zh ? '请使用一次性邀请代码。此预览仅对 VRAE 自控测试站点开放只读诊断。' : 'Use your one-time invitation code. This preview runs read-only diagnostics on a VRAE-controlled test site.'}</p>
     <fieldset disabled={sending || retryDelay > 0} className="space-y-4">
       {!invited && <form method="post" className="space-y-2" onSubmit={event => exchange(event, 'invite')}>
         <label className="block text-sm font-semibold">
@@ -93,26 +106,30 @@ export function ConnectedPreviewForm() {
         </label>
         <button className={button}>{zh ? '验证邀请' : 'Verify invitation'}</button>
       </form>}
-      {invited && <form className="space-y-2" onSubmit={event => { event.preventDefault(); void send('plan', { target, language: lang }) }}>
+      {scope && <form className="space-y-3" onSubmit={event => {
+        event.preventDefault()
+        void send(scope.authorised ? 'prepare' : 'authorise', { address: scope.address, consentHash: scope.hash, language: lang, confirmed })
+      }}>
         <label className="block text-sm font-semibold">
-          {zh ? '获准网站编号' : 'Approved site ID'}
-          <input className={input} required value={target} onChange={event => { setTarget(event.target.value); setPlan(null) }} maxLength={128} autoComplete="off" spellCheck={false} />
+          {zh ? '自控测试站点' : 'Controlled test site'}
+          <input className={input} readOnly value={scope.address} />
         </label>
-        <button className={button}>{zh ? '查看获准范围' : 'Check approved scope'}</button>
-      </form>}
-      {plan?.language === lang && <form className="space-y-3" onSubmit={event => { event.preventDefault(); void send('submit', { target, language: lang, address, confirmed }) }}>
-        <label className="block text-sm font-semibold">
-          {zh ? '现有外贸网站网址' : 'Current B2B website address'}
-          <input className={input} required value={address} onChange={event => setAddress(event.target.value)} inputMode="url" maxLength={500} autoComplete="off" spellCheck={false} />
-        </label>
-        <p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-sm leading-relaxed">{plan.consentText}</p>
+        <p className="whitespace-pre-wrap [overflow-wrap:anywhere] text-sm leading-relaxed">{scope.text}</p>
         <label className="flex min-h-11 items-start gap-2 text-sm">
           <input type="checkbox" className="mt-0.5 size-5 shrink-0" required checked={confirmed} onChange={event => setConfirmed(event.target.checked)} />
-          {zh ? '我确认按上述范围提出诊断申请。' : 'I confirm the request within the scope above.'}
+          {scope.authorised
+            ? (zh ? '我同意按上述范围提交这次诊断。' : 'I consent to submitting this diagnosis within the scope above.')
+            : (zh ? '我有权授权上述只读范围，已阅读并理解其中的数据处理说明。' : 'I am authorised to permit the read-only scope above, and I understand the data processing notice.')}
         </label>
-        <button className={button + ' bg-lime'}>{zh ? '提交授权诊断' : 'Submit authorized check'}</button>
+        <button className={button + ' bg-lime'}>{scope.authorised
+          ? (zh ? '提交诊断' : 'Submit diagnosis')
+          : (zh ? '核验测试权限' : 'Verify test scope')}</button>
       </form>}
+      {prepared && <button type="button" className={button + ' bg-lime'} onClick={() => void send('submit')}>
+        {zh ? '继续发送原申请' : 'Send the original request'}
+      </button>}
       <div className="flex flex-wrap gap-2">
+        <button type="button" className={button} onClick={() => void send('resume')}>{zh ? '继续当前申请' : 'Resume this request'}</button>
         <button type="button" className={button} onClick={() => void send('status')}>{zh ? '查询进度' : 'Check task status'}</button>
         <button type="button" className={button} onClick={() => void send('return')}>{zh ? '获取任务恢复码' : 'Get recovery code'}</button>
       </div>

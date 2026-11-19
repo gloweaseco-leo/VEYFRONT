@@ -1,5 +1,6 @@
 // Server only. The browser never supplies an upstream host, service credentials, or path.
 import { request } from 'node:https'
+import { createHash } from 'node:crypto'
 import type { IncomingHttpHeaders } from 'node:http'
 
 export const vfContract = 'vf-vrae-r0.1-vfb.1'
@@ -14,6 +15,11 @@ const diagnosisMedia = `application/vnd.vrae.launch+json; profile="${vfContract}
 const reportMedia = `application/vnd.vrae.report+json; profile="${reportContract}"`
 const jsonMedia = 'application/json'
 const targetCookie = '__Host-vrae-targets'
+const intakeContract = 'vrae.target-intake.v1'
+const applicationContract = 'vrae.target-application.v1'
+const applicationPath = '/v1/target-applications'
+const authorisationPath = applicationPath + '/authorize'
+const diagnosisPath = '/v1/diagnoses'
 
 export type ServiceConfig = {
   origin: URL
@@ -24,6 +30,7 @@ export type ServiceConfig = {
   bearer: string
 }
 export type DiagnosisSession = { cookie: string; csrf: string; expiresAt: number }
+export type DiagnosisConsent = { version: string; text: string; hash: string }
 type Wire = { body: Record<string, unknown>; headers: IncomingHttpHeaders }
 type FailureStatus = 403 | 404 | 409 | 429 | 503
 export class VraeFailure extends Error {
@@ -69,8 +76,12 @@ function transport(config: ServiceConfig, profile: 'diagnosis' | 'report') {
         const meta = response.headers
         const scope = profile === 'diagnosis' ? meta['x-vrae-api-version'] === diagnosisVersion
           : meta['x-vrae-scope'] === reportProfile
+        const status = response.statusCode
+        const expectedMedia = meta['content-type'] === media ||
+          (profile === 'diagnosis' && media === jsonMedia && status !== expected &&
+            meta['content-type'] === diagnosisMedia)
         if (
-          meta['content-type'] !== media || meta['x-vrae-source-sha'] !== config.sourceSha || !scope ||
+          !expectedMedia || meta['x-vrae-source-sha'] !== config.sourceSha || !scope ||
           !/(?:^|,\s*)no-store(?:,|$)/i.test(meta['cache-control'] ?? '')
         ) {
           response.destroy()
@@ -89,7 +100,6 @@ function transport(config: ServiceConfig, profile: 'diagnosis' | 'report') {
           try {
             const body = object(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks))))
             if (!body) throw new VraeFailure(503)
-            const status = response.statusCode
             if (status !== expected) {
               if (status === 403 || status === 404 || status === 409) throw new VraeFailure(status)
               if (status === 429) {
@@ -134,10 +144,31 @@ function diagnosisSession({ body, headers }: Wire): DiagnosisSession {
 export function createDiagnosisClient(config: ServiceConfig) {
   const send = transport(config, 'diagnosis')
   const get = (path: string, session: DiagnosisSession) => send(path, 200, diagnosisMedia, undefined, diagnosisHeaders(session))
+  const post = (path: string, expected: number, raw: string, session: DiagnosisSession) =>
+    send(path, expected, diagnosisMedia, raw, diagnosisHeaders(session))
   return {
     async ready() {
       const { body } = await send('/health/ready', 200, jsonMedia)
       return body.api_version === diagnosisVersion && body.status === 'READY' && body.source_sha === config.sourceSha
+    },
+    async openapi() {
+      const { body } = await send('/v1/openapi.json', 200, jsonMedia)
+      const paths = object(body.paths)
+      if (![applicationPath, authorisationPath, diagnosisPath].every(path => object(object(paths?.[path])?.post))) {
+        throw new VraeFailure(503)
+      }
+    },
+    async intake(): Promise<DiagnosisConsent> {
+      const { body } = await send('/v1/target-intake-contract', 200, jsonMedia)
+      if (body.contract !== intakeContract || object(body.application)?.path !== applicationPath ||
+          object(body.authorization)?.path !== authorisationPath || object(body.diagnosis)?.path !== diagnosisPath) {
+        throw new VraeFailure(503)
+      }
+      const version = requireMatch(body.consent_version, /^[A-Za-z0-9_.-]{1,128}$/)
+      const hash = requireMatch(body.consent_text_sha256, digestPattern)
+      if (typeof body.consent_text !== 'string' || !body.consent_text.trim() || body.consent_text.length > 4000 ||
+          createHash('sha256').update(JSON.stringify(body.consent_text)).digest('hex') !== hash) throw new VraeFailure(503)
+      return { version, hash, text: body.consent_text }
     },
     async exchange(kind: 'invitation' | 'return', token: string) {
       if (!privateTokenPattern.test(token)) throw new VraeFailure(403)
@@ -145,13 +176,26 @@ export function createDiagnosisClient(config: ServiceConfig) {
       const field = kind === 'invitation' ? 'invitation_token' : 'return_token'
       return diagnosisSession(await send(path, 200, diagnosisMedia, JSON.stringify({ [field]: token })))
     },
-    async plan(target: string, session: DiagnosisSession) {
-      const { body } = await get('/v1/source-plans/' + requireMatch(target, targetIdPattern), session)
-      if (body.contract !== 'vrae.authorized-source-context.v1' || body.target_id !== target) throw new VraeFailure(503)
-      return body
+    async authorise(url: string, consent: DiagnosisConsent, session: DiagnosisSession) {
+      const { body: application } = await post(applicationPath, 201, JSON.stringify({
+        url, paths: [], consent: { version: consent.version, read_only_authorized: true, model_data_notice: true },
+      }), session)
+      if (application.contract !== applicationContract || application.consent_version !== consent.version ||
+          application.consent_text_sha256 !== consent.hash) throw new VraeFailure(503)
+      // The first Preview only uses a VRAE operator-owned origin. Do not follow a DNS challenge.
+      if (object(application.proof)?.type !== 'OPERATOR_OWNED_PUBLIC_ORIGIN') throw new VraeFailure(403)
+      if (typeof application.expires_at !== 'string' || !(Date.parse(application.expires_at) > Date.now())) throw new VraeFailure(403)
+      const applicationToken = requireMatch(application.application_token, /^[A-Za-z0-9_-]{32,8192}={0,2}$/)
+      const { body } = await post(authorisationPath, 201, JSON.stringify({ application_token: applicationToken }), session)
+      if (body.contract !== applicationContract || body.state !== 'AUTHORIZED_FOR_READONLY_DIAGNOSIS' ||
+          body.legal_reference_kind !== 'OPERATOR_OWNED_PUBLIC_SOURCE') throw new VraeFailure(403)
+      requireMatch(body.target_id, targetIdPattern)
+      const expiresAt = typeof body.expires_at === 'string' ? Date.parse(body.expires_at) : NaN
+      if (!(expiresAt > Date.now())) throw new VraeFailure(403)
+      return expiresAt
     },
     async submit(raw: string, session: DiagnosisSession) {
-      const { body } = await send('/v1/audit-requests', 202, diagnosisMedia, raw, diagnosisHeaders(session))
+      const { body } = await post(diagnosisPath, 202, raw, session)
       if (body.contract_version !== vfContract || body.run_status !== 'CREATED' || body.diagnosis_complete !== false) throw new VraeFailure(503)
       return requireMatch(body.audit_ref, auditRefPattern)
     },

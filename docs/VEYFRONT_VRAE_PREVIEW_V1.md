@@ -4,8 +4,8 @@
 
 | 合同 | 源码基线 | 能力 |
 | --- | --- | --- |
-| 诊断 API | [VRAE main fbefba0](https://github.com/gloweaseco-leo/VRAE/blob/fbefba03c393bd1a0013f4a42d8e5765248fe2bb/docs/03-engineering/authorized-targets/DIAGNOSIS-API.md) | 受邀会话、当前目标授权、原始签名提交、任务状态、一次性任务恢复 |
-| 客户报告 API | [VRAE Draft PR #169](https://github.com/gloweaseco-leo/VRAE/pull/169) · `00431c308d69c20f1b6dae6890ee26b93eb40008` | 独立 REVIEW mTLS、MFA 挑战和会话交换、授权读取、版本及正式发布校验。浏览器客户报告入口等待真实 MFA 和定向许可交接，以及获准报告字段的联调验收。 |
+| 诊断 API | [VRAE PR #172](https://github.com/gloweaseco-leo/VRAE/pull/172) · [接口交接](https://github.com/gloweaseco-leo/VRAE/blob/bd2c21792e78c60d534466a7030ecdc6c56ad5c8/docs/03-engineering/vf-preview-173/HANDOFF.md) | 受邀会话、动态申请及授权、VRAE 实时签发、任务状态、一次性任务恢复 |
+| 客户报告 API | [VRAE PR #169](https://github.com/gloweaseco-leo/VRAE/pull/169) | 独立 REVIEW mTLS、MFA 挑战和会话交换、授权读取、版本及正式发布校验。浏览器客户报告入口等待真实 MFA、定向许可和报告字段验收。 |
 
 ## 预览配置
 
@@ -19,11 +19,13 @@
 | `VRAE_<DIAGNOSIS或REPORT>_CLIENT_CERT_PEM` / `_CLIENT_KEY_PEM` | 对应服务身份的客户端证书和私钥 PEM |
 | `VRAE_<DIAGNOSIS或REPORT>_BEARER` / `_SOURCE_SHA` | 与客户端证书绑定的服务令牌和实际部署源码 SHA |
 | `VF_VRAE_PREVIEW_SESSION_KEY` | 独立的 32 字节随机密钥，使用 64 个小写十六进制字符，供短期会话及恢复码加密 |
-| `VF_VRAE_PREVIEW_SIGNED_SUBMISSIONS` | 小批受邀联调用的私有 JSON 数组。每项包含 `targetId`、`expiresAt`、`consentText`、`signedSubmission` |
+| `VF_VRAE_PREVIEW_TARGET_URL` | 唯一批准的 VRAE 自控测试站点 HTTPS 根地址，必须带结尾 `/` |
 
-`signedSubmission` 是经受信签发方授权的完整 VFSubmit 原始 JSON **字符串**，包含目标来源许可及已有诊断同意证明。签发方需提供与证明哈希匹配的完整授权文案。页面确认用于确认同一份申请。签名和幂等键保持原样，当前目标、受邀主体、语言和网站地址必须一致。网址只与授权源比较，并且不参与服务器目标寻址。
+验证一次性邀请前，BFF 先检查 `/health/ready`、`/v1/openapi.json` 和 `/v1/target-intake-contract`。用户看到当次部署的授权原文，确认后才调用 `/v1/target-applications` 和 `/v1/target-applications/authorize`。首测限定于唯一设置的自控根地址，VRAE 必须返回其自控来源证明与当前授权，额外路径为空。
 
-预览页面向已受邀测试者。测试者从受控渠道获得对应的一次性邀请和目标编号。任务查询使用 HttpOnly、Secure、SameSite=Strict 的加密会话。恢复码最多有效 5 分钟，只用于任务恢复。未发布的草稿和任务完成状态均不取得报告读取权。报告客户端只接受当前正式发布且版本与审核决定一致的响应，原始报告不进入浏览器。Reviewer 的决策、改稿、签发及撤销仍走 VRAE 的权限流程。
+授权后，测试者再次主动确认诊断。BFF 记录真实确认时间和固定幂等键，先写入浏览器的加密会话，再向 `/v1/diagnoses` 发送完整原意图；发送或响应中断时可继续发送原意图。签名由 VRAE 实时生成，过期或不匹配时拒绝。原预签名数组已退出此 Preview 流程，独立离线 G1 路径另有自己的配置。
+
+测试者从受控渠道获得一次性邀请。上游 Cookie 和 CSRF 只由 BFF 读取及发送。浏览器保存 HttpOnly、Secure、SameSite=Strict 的加密会话；恢复码最多有效 5 分钟，用于任务恢复。未发布草稿和任务完成状态均不产生报告读取权。Reviewer 的决策、改稿、签发及撤销仍走 VRAE 的权限流程。
 
 ## 实际服务联调与回滚
 

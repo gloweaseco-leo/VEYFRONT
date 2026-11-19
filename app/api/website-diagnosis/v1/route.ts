@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { randomUUID } from 'node:crypto'
 import { isJsonContentType, readLeadBody } from '@/lib/lead-request'
-import { auditRefPattern, object, privateTokenPattern, targetIdPattern, VraeFailure } from '@/lib/vrae-preview-client'
+import { auditRefPattern, object, privateTokenPattern, VraeFailure } from '@/lib/vrae-preview-client'
 import {
-  authorizedSubmission, isPreviewSameOrigin, matchesSubmittedUrl, previewConfig, previewSessionCookie,
+  currentPreviewDiagnosis, isPreviewSameOrigin, preparePreviewDiagnosis, previewConfig, previewSessionCookie,
   readPreviewSession, seal, unseal, type PreviewSession,
 } from '@/lib/vrae-preview'
 
@@ -40,14 +41,17 @@ export async function POST(request: NextRequest) {
   const input = await readLeadBody(request, 4096)
   if (input.kind !== 'ok') return reply({ state: 'invalid' }, input.kind === 'too-large' ? 413 : 400)
 
-  const { client, key, submissions } = config
+  const { client, key, targetUrl } = config
   try {
     const body = object(JSON.parse(input.text))
     if (!body) return reply({ state: 'invalid' }, 400)
     if (body.action === 'invite') {
       const token = field(body, 'token', privateTokenPattern)
+      const [ready, , consent] = await Promise.all([client.ready(), client.openapi(), client.intake()])
+      if (!ready) throw new VraeFailure(503)
       const session = await client.exchange('invitation', token)
-      return withSession(key, { session }, { state: 'authorised' })
+      return withSession(key, { session, intent: randomUUID() },
+        { state: 'authorised', address: targetUrl, consentText: consent.text, consentHash: consent.hash })
     }
     if (body.action === 'restore') {
       const envelope = unseal(key, 'return', field(body, 'token', /^[A-Za-z0-9_-]{40,3072}$/))
@@ -59,25 +63,45 @@ export async function POST(request: NextRequest) {
     }
 
     const current = readPreviewSession(key, request.cookies.get(previewSessionCookie)?.value)
-    if (body.action === 'plan' || body.action === 'submit') {
-      const target = field(body, 'target', targetIdPattern)
-      const language = body.language === 'zh' || body.language === 'en' ? body.language : null
-      if (!language || (body.action === 'submit' && !current.request)) throw new VraeFailure(403)
-      const plan = await client.plan(target, current.session)
-      const submission = authorizedSubmission(submissions, plan, language, body.action === 'submit' ? current.request : undefined)
-      if (body.action === 'plan') {
-        return withSession(key, { ...current, request: submission.fingerprint },
-          { state: 'plan', address: submission.url, consentText: submission.consentText })
+    if (body.action === 'submit') {
+      if (current.ref) return reply({ state: await client.status(current.ref, current.session), hasTask: true })
+      const ref = await client.submit(currentPreviewDiagnosis(current, targetUrl), current.session)
+      return withSession(key, { session: current.session, ref }, { state: 'accepted', hasTask: true }, 202)
+    }
+    if (body.action === 'resume') {
+      if (current.ref) return reply({ state: await client.status(current.ref, current.session), hasTask: true })
+      if (!current.intent) throw new VraeFailure(403)
+      if (current.pending) {
+        currentPreviewDiagnosis(current, targetUrl)
+        return reply({ state: 'prepared' })
       }
-      if (body.confirmed !== true || typeof body.address !== 'string' || !matchesSubmittedUrl(body.address, submission.url)) {
-        return reply({ state: 'address-or-consent' }, 400)
+      const consent = await client.intake()
+      const authorised = current.scope?.url === targetUrl &&
+        current.scope.consentHash === consent.hash && current.scope.consentVersion === consent.version &&
+        current.scope.expiresAt > Date.now()
+      return reply({ state: authorised ? 'scope-authorised' : 'authorised',
+        address: targetUrl, consentText: consent.text, consentHash: consent.hash })
+    }
+    if (body.action === 'authorise' || body.action === 'prepare') {
+      if (!current.intent || current.ref) throw new VraeFailure(403)
+      if (body.confirmed !== true || body.address !== targetUrl) return reply({ state: 'address-or-consent' }, 400)
+      const consent = await client.intake()
+      if (body.consentHash !== consent.hash) return reply({ state: 'consent-changed' }, 409)
+      if (body.action === 'authorise') {
+        if (current.pending) throw new VraeFailure(409)
+        const expiresAt = await client.authorise(targetUrl, consent, current.session)
+        const scope = { url: targetUrl, consentHash: consent.hash, consentVersion: consent.version, expiresAt }
+        return withSession(key, { ...current, scope },
+          { state: 'scope-authorised', address: targetUrl, consentText: consent.text, consentHash: consent.hash })
       }
-      const ref = await client.submit(submission.raw, current.session)
-      return withSession(key, { ...current, ref }, { state: 'accepted' }, 202)
+      const language = body.language
+      if (language !== 'zh' && language !== 'en') return reply({ state: 'invalid' }, 400)
+      const pending = preparePreviewDiagnosis(current, targetUrl, consent, language)
+      return withSession(key, { ...current, pending }, { state: 'prepared' })
     }
     if (body.action === 'status') {
       if (!current.ref) return reply({ state: 'no-task' })
-      return reply({ state: await client.status(current.ref, current.session) })
+      return reply({ state: await client.status(current.ref, current.session), hasTask: true })
     }
     if (body.action === 'return' && current.ref) {
       const token = await client.issueReturn(current.ref, current.session)
