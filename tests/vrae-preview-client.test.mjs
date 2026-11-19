@@ -11,7 +11,7 @@ import {
   createDiagnosisClient, createReportClient, diagnosisVersion, reportContract, reportProfile, vfContract,
 } from '../lib/vrae-preview-client.ts'
 import {
-  authorizedSubmission, matchesSubmittedUrl, previewConfig, readPreviewSession, seal, unseal,
+  authorizedSubmission, isPreviewSameOrigin, matchesSubmittedUrl, previewConfig, readPreviewSession, seal, unseal,
 } from '../lib/vrae-preview.ts'
 
 const sourceSha = 'a'.repeat(40)
@@ -44,6 +44,20 @@ const signedSubmission = JSON.stringify({
     permission_reference: { proof: { synthetic: true }, consent_version: 'test-1', consent_sha256: hash },
   },
 }, null, 2)
+
+test('preview origin uses the browser Host and preserves cross-origin refusal', () => {
+  const loopback = new Headers({ host: '127.0.0.1:3119', origin: 'http://127.0.0.1:3119', 'sec-fetch-site': 'same-origin' })
+  assert.equal(isPreviewSameOrigin(loopback, false), true)
+  assert.equal(isPreviewSameOrigin(loopback, true), false)
+  const deployed = new Headers({ host: 'preview.example.com', origin: 'https://preview.example.com', 'sec-fetch-site': 'same-origin' })
+  assert.equal(isPreviewSameOrigin(deployed, true), true)
+  deployed.set('origin', 'https://other.example.com')
+  deployed.set('x-forwarded-host', 'other.example.com')
+  assert.equal(isPreviewSameOrigin(deployed, true), false)
+  deployed.set('origin', 'https://preview.example.com')
+  deployed.set('sec-fetch-site', 'cross-site')
+  assert.equal(isPreviewSameOrigin(deployed, true), false)
+})
 
 test('preview session envelope is purpose-bound, tamper-evident and expires', () => {
   const key = randomBytes(32)

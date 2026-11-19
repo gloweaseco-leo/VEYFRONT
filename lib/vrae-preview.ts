@@ -23,6 +23,21 @@ type SignedSubmission = {
   fingerprint: string
 }
 
+export function isPreviewSameOrigin(headers: Headers, hosted = Boolean(process.env.VERCEL)) {
+  const origin = headers.get('origin')
+  const fetchSite = headers.get('sec-fetch-site')
+  if (!origin || (fetchSite && fetchSite !== 'same-origin')) return false
+  try {
+    const url = new URL(origin)
+    if (origin !== url.origin || headers.get('host') !== url.host) return false
+    if (url.protocol === 'https:') return true
+    // Self-hosted Next may normalize a loopback request URL to localhost.
+    return !hosted && url.protocol === 'http:' && ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname)
+  } catch {
+    return false
+  }
+}
+
 function pem(value: string | undefined) {
   return (value ?? '').replace(/\\n/g, '\n')
 }

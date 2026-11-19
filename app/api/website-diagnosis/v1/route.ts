@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { isJsonContentType, isSameOrigin, readLeadBody } from '@/lib/lead-request'
+import { isJsonContentType, readLeadBody } from '@/lib/lead-request'
 import { auditRefPattern, object, privateTokenPattern, targetIdPattern, VraeFailure } from '@/lib/vrae-preview-client'
 import {
-  authorizedSubmission, matchesSubmittedUrl, previewConfig, previewSessionCookie,
+  authorizedSubmission, isPreviewSameOrigin, matchesSubmittedUrl, previewConfig, previewSessionCookie,
   readPreviewSession, seal, unseal, type PreviewSession,
 } from '@/lib/vrae-preview'
 
@@ -36,7 +36,7 @@ function field(body: Record<string, unknown>, name: string, pattern: RegExp) {
 export async function POST(request: NextRequest) {
   const config = previewConfig()
   if (!config) return reply({ state: 'closed' }, 404)
-  if (!isSameOrigin(request) || !isJsonContentType(request) || request.nextUrl.search) return reply({ state: 'denied' }, 403)
+  if (!isPreviewSameOrigin(request.headers) || !isJsonContentType(request) || request.nextUrl.search) return reply({ state: 'denied' }, 403)
   const input = await readLeadBody(request, 4096)
   if (input.kind !== 'ok') return reply({ state: 'invalid' }, input.kind === 'too-large' ? 413 : 400)
 
