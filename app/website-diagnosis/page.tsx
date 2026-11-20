@@ -17,6 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Page() {
   if (!diagnosisPreviewEnabled) notFound()
-  const connectedPreview = isAutomaticPreviewHost((await headers()).get('host')) && Boolean(previewConfig())
+  // Locale rewrites can change the render request's Host. The API checks the browser's original host.
+  const connectedPreview = isAutomaticPreviewHost(process.env.VERCEL_URL ?? null) && Boolean(previewConfig())
   return <DiagnosisPreview offlineG1={localG1Enabled()} connectedPreview={connectedPreview} />
 }
