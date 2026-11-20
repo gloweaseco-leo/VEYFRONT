@@ -19,6 +19,7 @@ const intakeContract = 'vrae.target-intake.v1'
 const sessionPath = '/v1/diagnosis-sessions'
 const diagnosisPath = '/v1/diagnoses'
 const resultPath = '/v1/audits/{audit_ref}/diagnosis'
+const resultReadTimeoutMs = 20_000
 const automaticConsentVersion = 'VRAE-AUTO-DIAGNOSIS-1'
 const automaticConsentText = 'I am authorized to permit bounded read-only diagnosis of this HTTPS website and its public same-origin pages, including processing minimized typed evidence by Alibaba Bailian qwen4-max in cn-beijing. Raw HTML and PII are excluded from model input. Automated conclusions and suggestions may be returned to me; they are not human-certified findings. No login, write or form submission is authorized.'
 
@@ -56,7 +57,7 @@ function requireMatch(value: unknown, pattern: RegExp): string {
 }
 
 function transport(config: ServiceConfig, profile: 'diagnosis' | 'report') {
-  return (path: string, expected: number | readonly number[], media: string, raw?: string, privateHeaders?: Record<string, string>) =>
+  return (path: string, expected: number | readonly number[], media: string, raw?: string, privateHeaders?: Record<string, string>, timeoutMs = 8_000) =>
     new Promise<Wire>((resolve, reject) => {
       const headers: Record<string, string | number> = {
         Accept: media,
@@ -72,7 +73,7 @@ function transport(config: ServiceConfig, profile: 'diagnosis' | 'report') {
         path, headers, method: raw === undefined ? 'GET' : 'POST',
         ca: config.ca, cert: config.cert, key: config.key,
         rejectUnauthorized: true, minVersion: 'TLSv1.2', agent: false,
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(timeoutMs),
       }, response => {
         const meta = response.headers
         const scope = profile === 'diagnosis' ? meta['x-vrae-api-version'] === diagnosisVersion
@@ -281,7 +282,9 @@ export function createDiagnosisClient(config: ServiceConfig) {
     },
     async result(ref: string, session: DiagnosisSession) {
       const path = resultPath.replace('{audit_ref}', requireMatch(ref, auditRefPattern))
-      const { status, body } = await send(path, [200, 202], diagnosisMedia, undefined, diagnosisHeaders(session))
+      const { status, body } = await send(
+        path, [200, 202], diagnosisMedia, undefined, diagnosisHeaders(session), resultReadTimeoutMs,
+      )
       return projectResult(body, status, ref)
     },
     async issueReturn(ref: string, session: DiagnosisSession) {

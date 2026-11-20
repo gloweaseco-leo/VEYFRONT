@@ -7,6 +7,7 @@ import { createServer } from 'node:https'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
+import { setTimeout as delay } from 'node:timers/promises'
 import {
   createDiagnosisClient, createReportClient, diagnosisVersion, reportContract, reportProfile, vfContract,
 } from '../lib/vrae-preview-client.ts'
@@ -129,6 +130,7 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
     let resultState = 'CAPTURE_PENDING'
     let verification = 'REAL_PROVIDER'
     let boundEvidence = true
+    let slowResult = false
     server = createServer({
       ...serverIdentity, ca: [appIdentity.cert, reviewIdentity.cert], rejectUnauthorized: true, requestCert: true,
     }, async (req, res) => {
@@ -143,12 +145,16 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
         const chunks = []
         for await (const chunk of req) chunks.push(chunk)
         const raw = Buffer.concat(chunks).toString()
-        function respond(status, body = {}, headers = {}) {
+        async function respond(status, body = {}, headers = {}, bodyDelay = 0) {
           res.writeHead(status, {
             'Content-Type': req.headers.accept, 'Cache-Control': 'no-store',
             'X-VRAE-Source-SHA': review ? reportSha : sourceSha,
             ...(review ? { 'X-VRAE-Scope': reportProfile } : { 'X-VRAE-API-Version': diagnosisVersion }), ...headers,
           })
+          if (bodyDelay) {
+            res.flushHeaders()
+            await delay(bodyDelay)
+          }
           res.end(JSON.stringify(review ? { contract: reportContract, ...body } : body))
         }
         if (review) {
@@ -225,8 +231,8 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
               source_bindings: { 'synthetic-citation': {
                 type: 'GUARD_LITERAL', fact: { source: { citation: { snapshot_ref: boundEvidence ? sourcePage : 'unbound', url: site } } },
               } }, guard: { private_fixture: true },
-            }], deterministic_diagnosis: { internal_fixture: true },
-          })
+            }], deterministic_diagnosis: { internal_fixture: slowResult ? 'x'.repeat(735_000) : true },
+          }, {}, slowResult ? 8_500 : 0)
         }
         if (req.url === '/v1/audits/' + audit + '/return-tokens') {
           assert.deepEqual(JSON.parse(raw), { ttl_seconds: 300 })
@@ -305,7 +311,10 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
       assert.equal(await diagnosis.issueReturn(audit, session), returnToken)
       const restored = await diagnosis.restoreSession(returnToken)
       assert.equal(restored.cookie, cookie)
-      assert.equal((await diagnosis.result(audit, restored)).state, 'diagnosed')
+      slowResult = true
+      const recovered = await diagnosis.result(audit, restored)
+      assert.deepEqual(recovered, diagnosed)
+      assert.deepEqual(submissions, [raw, raw])
       assert.equal(sessionCount, 2)
       assert.equal(paths.includes('/v1/invitation-session'), false)
     })

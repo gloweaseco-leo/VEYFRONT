@@ -8,6 +8,8 @@ import {
 } from '@/lib/vrae-preview'
 
 export const runtime = 'nodejs'
+// Leave the result read time budget intact on the hosting platform.
+export const maxDuration = 30
 
 function reply(data: Record<string, unknown>, status = 200, retryAfter?: number) {
   const headers: Record<string, string> = {
