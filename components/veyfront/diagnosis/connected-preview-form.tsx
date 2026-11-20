@@ -208,16 +208,16 @@ export function ConnectedPreviewForm() {
         </label>
         {consent && <>
           <p id="vf-automatic-consent" className="text-sm leading-relaxed text-ink/80 [overflow-wrap:anywhere]">{zh
-            ? '诊断只读检查这个 HTTPS 网站及同一域名下的公开页面。阿里云百炼北京区域的 qwen4-max 会处理最少必要的结构化证据，模型输入不含原始 HTML 或个人身份信息。您可查看自动结论和建议，结果未经人工审核。授权范围不包括登录、写入或提交表单。'
+            ? '我们只查看该域名下您授权的公开网页，不登录后台、不修改网站，也不代您提交表单。AI 会分析必要的页面信息，给出改版建议，帮助海外买家更容易找到产品、看懂资料和发起询价。'
             : consent.text}</p>
           {zh && <details className="text-sm text-ink/75">
-            <summary className="cursor-pointer font-semibold">查看授权说明英文原文</summary>
-            <p lang="en" className="mt-2 leading-relaxed [overflow-wrap:anywhere]">{consent.text}</p>
+            <summary className="cursor-pointer font-semibold">数据如何使用</summary>
+            <p className="mt-2 leading-relaxed [overflow-wrap:anywhere]">必要的页面信息会整理后交给阿里云百炼北京区域的 qwen4-max 分析。发送给模型的信息不包含网页源代码或个人身份信息。</p>
           </details>}
           <label className="flex min-h-11 items-start gap-2 text-sm">
             <input type="checkbox" aria-describedby="vf-automatic-consent" className="mt-0.5 size-5 shrink-0" required
               checked={confirmed} onChange={event => setConfirmed(event.target.checked)} />
-            {zh ? '我有权授权对此网站进行上述只读诊断，并同意上述数据处理。'
+            {zh ? '我有权授权检查此网站的公开页面，并同意上述诊断方式。'
               : 'I am authorized to permit this read-only check and agree to the data processing above.'}
           </label>
         </>}
