@@ -4,7 +4,7 @@ import { isJsonContentType, readLeadBody } from '@/lib/lead-request'
 import { auditRefPattern, object, privateTokenPattern, VraeFailure } from '@/lib/vrae-preview-client'
 import {
   currentPreviewDiagnosis, isPreviewSameOrigin, preparePreviewDiagnosis, previewConfig, previewSessionCookie,
-  readPreviewSession, seal, unseal, type PreviewSession,
+  readPreviewSession, seal, stagedPreviewInvitation, unseal, type PreviewSession,
 } from '@/lib/vrae-preview'
 
 export const runtime = 'nodejs'
@@ -34,6 +34,24 @@ function field(body: Record<string, unknown>, name: string, pattern: RegExp) {
   return value
 }
 
+async function checkConnection(client: NonNullable<ReturnType<typeof previewConfig>>['client']) {
+  const [ready, , consent] = await Promise.all([client.ready(), client.openapi(), client.intake()])
+  if (!ready) throw new VraeFailure(503)
+  return consent
+}
+
+export async function GET(request: NextRequest) {
+  const config = previewConfig()
+  if (!config || !stagedPreviewInvitation(request.headers.get('host'))) return reply({ state: 'closed' }, 404)
+  try {
+    await checkConnection(config.client)
+    return reply({ state: 'ready', ready: 200, openapi: 200, intake: 200 })
+  } catch (error) {
+    const upstream = error instanceof VraeFailure ? error.status : 503
+    return reply({ state: 'unavailable', upstream }, upstream === 403 ? 403 : 503)
+  }
+}
+
 export async function POST(request: NextRequest) {
   const config = previewConfig()
   if (!config) return reply({ state: 'closed' }, 404)
@@ -42,14 +60,24 @@ export async function POST(request: NextRequest) {
   if (input.kind !== 'ok') return reply({ state: 'invalid' }, input.kind === 'too-large' ? 413 : 400)
 
   const { client, key, targetUrl } = config
+  const staged = stagedPreviewInvitation(request.headers.get('host'))
+  const evidence = (event: 'invitation200' | 'application201_authorize201' | 'diagnoses202' | 'DRAFT_READY_status200') => {
+    if (staged) console.info('VRAE_PREVIEW_EVIDENCE ' + event)
+  }
+  const readStatus = (current: PreviewSession, ref: string) =>
+    client.status(ref, current.session, () => evidence('DRAFT_READY_status200'))
   try {
     const body = object(JSON.parse(input.text))
     if (!body) return reply({ state: 'invalid' }, 400)
-    if (body.action === 'invite') {
-      const token = field(body, 'token', privateTokenPattern)
-      const [ready, , consent] = await Promise.all([client.ready(), client.openapi(), client.intake()])
-      if (!ready) throw new VraeFailure(503)
+    if (body.action === 'invite' || body.action === 'claim-preview') {
+      const token = body.action === 'invite' ? field(body, 'token', privateTokenPattern) : staged
+      if (!token) throw new VraeFailure(403)
+      if (body.action === 'claim-preview' && (Object.keys(body).length !== 1 || request.cookies.has(previewSessionCookie))) {
+        throw new VraeFailure(409)
+      }
+      const consent = await checkConnection(client)
       const session = await client.exchange('invitation', token)
+      evidence('invitation200')
       return withSession(key, { session, intent: randomUUID() },
         { state: 'authorised', address: targetUrl, consentText: consent.text, consentHash: consent.hash })
     }
@@ -64,12 +92,13 @@ export async function POST(request: NextRequest) {
 
     const current = readPreviewSession(key, request.cookies.get(previewSessionCookie)?.value)
     if (body.action === 'submit') {
-      if (current.ref) return reply({ state: await client.status(current.ref, current.session), hasTask: true })
+      if (current.ref) return reply({ state: await readStatus(current, current.ref), hasTask: true })
       const ref = await client.submit(currentPreviewDiagnosis(current, targetUrl), current.session)
+      evidence('diagnoses202')
       return withSession(key, { session: current.session, ref }, { state: 'accepted', hasTask: true }, 202)
     }
     if (body.action === 'resume') {
-      if (current.ref) return reply({ state: await client.status(current.ref, current.session), hasTask: true })
+      if (current.ref) return reply({ state: await readStatus(current, current.ref), hasTask: true })
       if (!current.intent) throw new VraeFailure(403)
       if (current.pending) {
         currentPreviewDiagnosis(current, targetUrl)
@@ -90,6 +119,7 @@ export async function POST(request: NextRequest) {
       if (body.action === 'authorise') {
         if (current.pending) throw new VraeFailure(409)
         const expiresAt = await client.authorise(targetUrl, consent, current.session)
+        evidence('application201_authorize201')
         const scope = { url: targetUrl, consentHash: consent.hash, consentVersion: consent.version, expiresAt }
         return withSession(key, { ...current, scope },
           { state: 'scope-authorised', address: targetUrl, consentText: consent.text, consentHash: consent.hash })
@@ -101,7 +131,7 @@ export async function POST(request: NextRequest) {
     }
     if (body.action === 'status') {
       if (!current.ref) return reply({ state: 'no-task' })
-      return reply({ state: await client.status(current.ref, current.session), hasTask: true })
+      return reply({ state: await readStatus(current, current.ref), hasTask: true })
     }
     if (body.action === 'return' && current.ref) {
       const token = await client.issueReturn(current.ref, current.session)

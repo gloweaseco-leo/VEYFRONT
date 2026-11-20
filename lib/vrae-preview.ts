@@ -7,6 +7,7 @@ import {
 } from './vrae-preview-client.ts'
 
 export const previewSessionCookie = '__Host-vf-vrae-preview'
+const handoffBranch = 'feature/vf-b-offline-g1-adapter'
 export type PreviewSession = {
   session: DiagnosisSession
   intent?: string
@@ -75,6 +76,14 @@ export function previewConfig(env = process.env) {
   } catch {
     return undefined
   }
+}
+
+// The staged invite is consumed only from the SSO-protected deployment's own URL.
+export function stagedPreviewInvitation(host: string | null, env = process.env) {
+  const invite = env.VRAE_PREVIEW_INVITATION
+  if (env.VERCEL !== '1' || env.VERCEL_ENV !== 'preview' || env.VERCEL_GIT_COMMIT_REF !== handoffBranch ||
+      host !== env.VERCEL_URL || !host?.endsWith('.vercel.app') || !invite || !privateTokenPattern.test(invite)) return
+  return invite
 }
 
 export function previewReportClient(env = process.env) {

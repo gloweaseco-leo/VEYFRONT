@@ -11,7 +11,7 @@ import {
   createDiagnosisClient, createReportClient, diagnosisVersion, reportContract, reportProfile, vfContract,
 } from '../lib/vrae-preview-client.ts'
 import {
-  currentPreviewDiagnosis, isPreviewSameOrigin, preparePreviewDiagnosis, previewConfig, readPreviewSession, seal, unseal,
+  currentPreviewDiagnosis, isPreviewSameOrigin, preparePreviewDiagnosis, previewConfig, readPreviewSession, seal, stagedPreviewInvitation, unseal,
 } from '../lib/vrae-preview.ts'
 
 const sourceSha = 'a'.repeat(40)
@@ -56,6 +56,19 @@ test('preview origin uses the browser Host and preserves cross-origin refusal', 
   deployed.set('origin', 'https://preview.example.com')
   deployed.set('sec-fetch-site', 'cross-site')
   assert.equal(isPreviewSameOrigin(deployed, true), false)
+})
+
+test('staged invitation is retained only on the designated Vercel Preview deployment host', () => {
+  const host = 'veyfront-fixture.vercel.app'
+  const env = {
+    VERCEL: '1', VERCEL_ENV: 'preview', VERCEL_URL: host,
+    VERCEL_GIT_COMMIT_REF: 'feature/vf-b-offline-g1-adapter', VRAE_PREVIEW_INVITATION: invite,
+  }
+  assert.equal(stagedPreviewInvitation(host, env), invite)
+  assert.equal(stagedPreviewInvitation('veyfront.com', env), undefined)
+  assert.equal(stagedPreviewInvitation(host, { ...env, VERCEL_ENV: 'production' }), undefined)
+  assert.equal(stagedPreviewInvitation(host, { ...env, VERCEL_GIT_COMMIT_REF: 'other-branch' }), undefined)
+  assert.equal(stagedPreviewInvitation(host, { ...env, VRAE_PREVIEW_INVITATION: '\ninvalid' }), undefined)
 })
 
 test('preview session envelope is purpose-bound, tamper-evident and expires', () => {

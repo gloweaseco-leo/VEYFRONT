@@ -20,12 +20,15 @@
 | `VRAE_<DIAGNOSIS或REPORT>_BEARER` / `_SOURCE_SHA` | 与客户端证书绑定的服务令牌和实际部署源码 SHA |
 | `VF_VRAE_PREVIEW_SESSION_KEY` | 独立的 32 字节随机密钥，使用 64 个小写十六进制字符，供短期会话及恢复码加密 |
 | `VF_VRAE_PREVIEW_TARGET_URL` | 唯一批准的 VRAE 自控测试站点 HTTPS 根地址，必须带结尾 `/` |
+| `VRAE_PREVIEW_INVITATION` | 可选的 Sensitive 一次性邀请。仅在启用 Vercel Authentication 的 PR #37 Preview 配置，测试者在实际部署 URL 主动领取 |
 
 验证一次性邀请前，BFF 先检查 `/health/ready`、`/v1/openapi.json` 和 `/v1/target-intake-contract`。用户看到当次部署的授权原文，确认后才调用 `/v1/target-applications` 和 `/v1/target-applications/authorize`。首测限定于唯一设置的自控根地址，VRAE 必须返回其自控来源证明与当前授权，额外路径为空。
 
 授权后，测试者再次主动确认诊断。BFF 记录真实确认时间和固定幂等键，先写入浏览器的加密会话，再向 `/v1/diagnoses` 发送完整原意图；发送或响应中断时可继续发送原意图。签名由 VRAE 实时生成，过期或不匹配时拒绝。原预签名数组已退出此 Preview 流程，独立离线 G1 路径另有自己的配置。
 
 测试者从受控渠道获得一次性邀请。上游 Cookie 和 CSRF 只由 BFF 读取及发送。浏览器保存 HttpOnly、Secure、SameSite=Strict 的加密会话；恢复码最多有效 5 分钟，用于任务恢复。未发布草稿和任务完成状态均不产生报告读取权。Reviewer 的决策、改稿、签发及撤销仍走 VRAE 的权限流程。
+
+启用预置邀请时，使用真实部署 URL。受保护的 `GET /api/website-diagnosis/v1` 只检查 Ready、OpenAPI 和授权合同，不消费邀请码。测试者点击「使用本轮邀请」后，仍需亲自确认站点权限及提交诊断。联调日志只包含阶段标记，不记录凭据或任务引用。
 
 ## 实际服务联调与回滚
 

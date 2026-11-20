@@ -199,7 +199,7 @@ export function createDiagnosisClient(config: ServiceConfig) {
       if (body.contract_version !== vfContract || body.run_status !== 'CREATED' || body.diagnosis_complete !== false) throw new VraeFailure(503)
       return requireMatch(body.audit_ref, auditRefPattern)
     },
-    async status(ref: string, session: DiagnosisSession) {
+    async status(ref: string, session: DiagnosisSession, onDraftReady?: () => void) {
       const { body } = await get('/v1/audits/' + requireMatch(ref, auditRefPattern), session)
       if (body.contract_version !== vfContract || body.audit_ref !== ref) throw new VraeFailure(503)
       const access = object(body.access)?.state
@@ -216,6 +216,7 @@ export function createDiagnosisClient(config: ServiceConfig) {
           return body.display_state
         case 'running':
           if (publication === 'UNPUBLISHED') {
+            if (task === 'DRAFT_READY') onDraftReady?.()
             return task === 'DRAFT_READY' || task === 'REVIEW_REQUIRED' ? 'awaiting-report' : 'running'
           }
           break

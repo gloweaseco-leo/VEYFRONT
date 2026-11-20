@@ -30,7 +30,7 @@ const statusCopy: Record<string, readonly [string, string]> = {
 const button = 'min-h-11 rounded-md border border-ink/25 px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50'
 const input = 'mt-1 min-h-11 w-full rounded-md border border-ink/30 bg-white px-3 text-base focus-visible:outline-2 focus-visible:outline-offset-2'
 
-export function ConnectedPreviewForm() {
+export function ConnectedPreviewForm({ stagedInvitation = false }: { stagedInvitation?: boolean }) {
   const { lang } = useLang()
   const zh = lang === 'zh'
   const [invited, setInvited] = useState(false)
@@ -97,9 +97,12 @@ export function ConnectedPreviewForm() {
   }
 
   return <div data-testid="vrae-preview-form" className="space-y-4">
-    <p className="text-sm leading-relaxed text-ink/75">{zh ? '请使用一次性邀请代码。此预览仅对 VRAE 自控测试站点开放只读诊断。' : 'Use your one-time invitation code. This preview runs read-only diagnostics on a VRAE-controlled test site.'}</p>
+    <p className="text-sm leading-relaxed text-ink/75">{zh ? '此预览仅对 VRAE 自控测试站点开放只读诊断。' : 'This preview runs read-only diagnostics on a VRAE-controlled test site.'}</p>
     <fieldset disabled={sending || retryDelay > 0} className="space-y-4">
-      {!invited && <form method="post" className="space-y-2" onSubmit={event => exchange(event, 'invite')}>
+      {!invited && stagedInvitation && <button type="button" className={button + ' bg-lime'} onClick={() => void send('claim-preview')}>
+        {zh ? '使用本轮邀请' : 'Use the current test invitation'}
+      </button>}
+      {!invited && !stagedInvitation && <form method="post" className="space-y-2" onSubmit={event => exchange(event, 'invite')}>
         <label className="block text-sm font-semibold">
           {zh ? '一次性邀请代码' : 'One-time invitation code'}
           <input className={input} id="invite-secret" type="password" maxLength={512} autoComplete="off" required />
