@@ -1,5 +1,5 @@
 // This configuration and all derived authority stay in the VEYFRONT server.
-import { createCipheriv, createDecipheriv, randomBytes, X509Certificate, createPrivateKey } from 'node:crypto'
+import { createCipheriv, createDecipheriv, randomBytes, randomUUID, X509Certificate, createPrivateKey } from 'node:crypto'
 import { isIP } from 'node:net'
 import {
   auditRefPattern, createDiagnosisClient, createReportClient, digestPattern, object, privateTokenPattern, VraeFailure,
@@ -10,12 +10,10 @@ export const previewSessionCookie = '__Host-vf-vrae-preview'
 const handoffBranch = 'feature/vf-b-offline-g1-adapter'
 export type PreviewSession = {
   session: DiagnosisSession
-  intent?: string
-  scope?: { url: string; consentHash: string; consentVersion: string; expiresAt: number }
-  pending?: { raw: string; acceptedAt: number }
+  pending?: { raw: string; acceptedAt: number; consentHash: string }
   ref?: string
+  address?: string
 }
-const intentPattern = /^[a-f0-9-]{36}$/
 
 export function isPreviewSameOrigin(headers: Headers, hosted = Boolean(process.env.VERCEL)) {
   const origin = headers.get('origin')
@@ -64,26 +62,36 @@ export function previewConfig(env = process.env) {
   if (env.VERCEL_ENV !== 'preview' || env.VF_VRAE_PREVIEW_ENABLED !== '1') return
   const diagnosis = serviceConfig('DIAGNOSIS', env)
   const hex = env.VF_VRAE_PREVIEW_SESSION_KEY ?? ''
-  const configuredTarget = env.VF_VRAE_PREVIEW_TARGET_URL ?? ''
-  if (!diagnosis || !digestPattern.test(hex) || configuredTarget.length > 500) return
+  if (!diagnosis || !digestPattern.test(hex)) return
+  return { client: createDiagnosisClient(diagnosis), key: Buffer.from(hex, 'hex') }
+}
+
+export function isAutomaticPreviewHost(host: string | null, env = process.env) {
+  return env.VERCEL === '1' && env.VERCEL_ENV === 'preview' && env.VERCEL_GIT_COMMIT_REF === handoffBranch &&
+    host === env.VERCEL_URL && Boolean(host?.endsWith('.vercel.app'))
+}
+
+// The one-use invitation is consumed only by the tester's submission on the SSO-protected deployment.
+export function stagedPreviewInvitation(host: string | null, env = process.env) {
+  const invite = env.VRAE_PREVIEW_INVITATION
+  if (isAutomaticPreviewHost(host, env) && invite && privateTokenPattern.test(invite)) return invite
+}
+
+export function automaticPreviewAddress(value: unknown) {
+  if (typeof value !== 'string') return
+  const text = value.trim()
+  if (!text || text.length > 500 || /[\s\\?#]/.test(text) || text.startsWith('/')) return
   try {
-    const target = new URL(configuredTarget)
-    const hostname = target.hostname
-    if (target.protocol !== 'https:' || configuredTarget !== target.origin + '/' || target.href !== configuredTarget ||
-        target.port || !hostname.includes('.') || isIP(hostname) || hostname.endsWith('.') ||
-        /(?:^|\.)(?:localhost|local|internal|test|invalid|example)$/.test(hostname)) return
-    return { client: createDiagnosisClient(diagnosis), key: Buffer.from(hex, 'hex'), targetUrl: target.href }
+    const url = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(text) ? text : 'https://' + text)
+    const domain = url.hostname
+    if (url.protocol !== 'https:' || url.port || url.username || url.password || isIP(domain) ||
+        !/^[a-z0-9-]+(?:\.[a-z0-9-]+)+$/.test(domain) ||
+        /\.(?:localhost|local|internal|test|invalid)$/.test(domain)) return
+    // The VRAE automatic contract starts discovery from the site origin.
+    return url.origin + '/'
   } catch {
     return undefined
   }
-}
-
-// The staged invite is consumed only from the SSO-protected deployment's own URL.
-export function stagedPreviewInvitation(host: string | null, env = process.env) {
-  const invite = env.VRAE_PREVIEW_INVITATION
-  if (env.VERCEL !== '1' || env.VERCEL_ENV !== 'preview' || env.VERCEL_GIT_COMMIT_REF !== handoffBranch ||
-      host !== env.VERCEL_URL || !host?.endsWith('.vercel.app') || !invite || !privateTokenPattern.test(invite)) return
-  return invite
 }
 
 export function previewReportClient(env = process.env) {
@@ -95,26 +103,23 @@ export function previewReportClient(env = process.env) {
   return createReportClient(report)
 }
 
-/** Invoked only after the tester confirms diagnosis of the already authorised scope. */
-export function preparePreviewDiagnosis(current: PreviewSession, targetUrl: string, consent: DiagnosisConsent, language: 'zh' | 'en') {
-  const now = Date.now()
-  if (!current.intent || current.ref || current.scope?.url !== targetUrl || current.scope.expiresAt <= now ||
-      current.scope.consentHash !== consent.hash || current.scope.consentVersion !== consent.version) throw new VraeFailure(403)
-  if (current.pending) return current.pending
-  return { acceptedAt: now, raw: JSON.stringify({
-    url: targetUrl,
-    idempotency_key: current.intent,
-    accepted_at: new Date(now).toISOString(),
+export function preparePreviewDiagnosis(address: string, consent: DiagnosisConsent, language: 'zh' | 'en') {
+  const acceptedAt = Date.now()
+  return { acceptedAt, consentHash: consent.hash, raw: JSON.stringify({
+    url: address,
+    authorized: true,
     consent_version: consent.version,
+    idempotency_key: randomUUID(),
+    accepted_at: new Date(acceptedAt).toISOString(),
     language,
   }) }
 }
 
-export function currentPreviewDiagnosis(current: PreviewSession, targetUrl: string) {
+export function currentPreviewDiagnosis(current: PreviewSession) {
   const now = Date.now()
-  if (!current.pending || current.scope?.url !== targetUrl || current.scope.expiresAt <= now ||
-      current.pending.acceptedAt > now || current.pending.acceptedAt <= now - 30 * 60_000) throw new VraeFailure(403)
-  return current.pending.raw
+  const pending = current.pending
+  if (!pending || pending.acceptedAt > now || pending.acceptedAt < now - 30 * 60_000) throw new VraeFailure(403)
+  return pending.raw
 }
 
 type Purpose = 'session' | 'return'
@@ -148,13 +153,10 @@ export function readPreviewSession(key: Buffer, value: string | undefined): Prev
     typeof session.csrf !== 'string' || !privateTokenPattern.test(session.csrf)
   ) throw new VraeFailure(403)
   const ref = typeof entry?.ref === 'string' && auditRefPattern.test(entry.ref) ? entry.ref : undefined
-  const intent = typeof entry?.intent === 'string' && intentPattern.test(entry.intent) ? entry.intent : undefined
-  const s = object(entry?.scope)
-  const scope = typeof s?.url === 'string' && typeof s.consentHash === 'string' && digestPattern.test(s.consentHash) &&
-    typeof s.consentVersion === 'string' && typeof s.expiresAt === 'number'
-    ? { url: s.url, consentHash: s.consentHash, consentVersion: s.consentVersion, expiresAt: s.expiresAt } : undefined
   const p = object(entry?.pending)
-  const pending = typeof p?.raw === 'string' && typeof p.acceptedAt === 'number'
-    ? { raw: p.raw, acceptedAt: p.acceptedAt } : undefined
-  return { session: { cookie: session.cookie, csrf: session.csrf, expiresAt: session.expiresAt }, ref, intent, scope, pending }
+  const pending = typeof p?.raw === 'string' && typeof p.acceptedAt === 'number' &&
+    typeof p.consentHash === 'string' && digestPattern.test(p.consentHash)
+    ? { raw: p.raw, acceptedAt: p.acceptedAt, consentHash: p.consentHash } : undefined
+  const address = automaticPreviewAddress(entry?.address)
+  return { session: { cookie: session.cookie, csrf: session.csrf, expiresAt: session.expiresAt }, ref, pending, address }
 }

@@ -137,16 +137,16 @@ function Walkthrough() {
   )
 }
 
-export function DiagnosisPreview({ offlineG1 = false, connectedPreview = false, stagedInvitation = false }: {
-  offlineG1?: boolean; connectedPreview?: boolean; stagedInvitation?: boolean
+export function DiagnosisPreview({ offlineG1 = false, connectedPreview = false }: {
+  offlineG1?: boolean; connectedPreview?: boolean
 }) {
   const { lang } = useLang()
   const zh = lang === 'zh'
-  const title = connectedPreview ? (zh ? '受邀诊断测试' : 'Invitation-only diagnostic test')
+  const title = connectedPreview ? (zh ? '诊断您的外贸网站' : 'Check your B2B website')
     : offlineG1 ? (zh ? '本地 G1 离线联调' : 'Local G1 offline integration')
     : (zh ? '检查网址是否符合输入要求' : 'Check the website address')
   const scope = connectedPreview
-    ? (zh ? '受邀测试会将已授权的申请发送到诊断服务。任务进度和客户报告使用不同的授权。' : 'Invitation-only testing sends approved requests to the diagnostic service. Task status and customer reports use separate authorizations.')
+    ? (zh ? '确认授权后，网址会交由诊断服务处理。您可以用当前会话或一次性恢复码查看任务。' : 'Once you confirm authorization, the service receives your website address. Use this session or a one-time recovery code to return to the task.')
     : offlineG1
       ? (zh ? '本地联调仅向隔离服务发送获准的合成测试申请。' : 'The local test sends approved synthetic requests to an isolated service.')
       : (zh ? '预览中的网址仅在当前页面验证格式，不提交、保存或访问。' : 'In preview, the address stays on this page for format validation. It is not submitted, stored or visited.')
@@ -154,7 +154,7 @@ export function DiagnosisPreview({ offlineG1 = false, connectedPreview = false, 
     <PageShell>
       <section aria-labelledby="diagnosis-title" className="bg-ink text-ivory">
         <div className={sectionWidth + ' py-8 sm:py-12 lg:py-16'}>
-          <p className="inline-flex items-center gap-2 text-sm font-semibold text-lime"><Info aria-hidden="true" className="size-4 shrink-0" />{zh ? '功能预览 · 自动诊断尚未开放' : 'Feature preview · Live checks are not open'}</p>
+          <p className="inline-flex items-center gap-2 text-sm font-semibold text-lime"><Info aria-hidden="true" className="size-4 shrink-0" />{connectedPreview ? (zh ? '自动诊断预览' : 'Automated diagnostic preview') : (zh ? '功能预览 · 自动诊断尚未开放' : 'Feature preview · Live checks are not open')}</p>
           <h1 id="diagnosis-title" className="mt-3 max-w-4xl text-balance text-[30px] font-semibold leading-tight sm:text-5xl">
             {zh ? '外贸独立站免费预诊断' : 'Free B2B website pre-diagnostic'}
           </h1>
@@ -167,9 +167,9 @@ export function DiagnosisPreview({ offlineG1 = false, connectedPreview = false, 
       <div className={sectionWidth + ' grid items-start gap-5 py-7 sm:py-10 lg:grid-cols-[minmax(0,1.22fr)_minmax(0,0.78fr)]'}>
         <section aria-labelledby="diagnosis-input-title" className="min-w-0 rounded-xl border border-ink/15 bg-white p-4 sm:p-6">
           <h2 id="diagnosis-input-title" className="mb-4 text-xl font-semibold">{title}</h2>
-          {connectedPreview ? <ConnectedPreviewForm stagedInvitation={stagedInvitation} /> : offlineG1 ? <OfflineG1Form /> : <>
+          {connectedPreview ? <ConnectedPreviewForm /> : offlineG1 ? <OfflineG1Form /> : <>
             <p data-testid="vrae-preview-pending" className="mb-4 rounded-md bg-mist/55 px-3 py-2 text-sm leading-relaxed text-ink/80">
-              {zh ? '受邀诊断等待服务配置。当前可检查网址格式和查看报告示例。' : 'Invitation-only testing is awaiting service setup. You can check address formatting and explore a sample report.'}
+              {zh ? '自动诊断暂未开放。当前可检查网址格式和查看报告示例。' : 'Automated diagnosis is currently closed. You can check address formatting and explore a sample report.'}
             </p>
             <AddressPreview />
           </>}

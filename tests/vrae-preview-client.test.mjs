@@ -11,7 +11,7 @@ import {
   createDiagnosisClient, createReportClient, diagnosisVersion, reportContract, reportProfile, vfContract,
 } from '../lib/vrae-preview-client.ts'
 import {
-  currentPreviewDiagnosis, isPreviewSameOrigin, preparePreviewDiagnosis, previewConfig, readPreviewSession, seal, stagedPreviewInvitation, unseal,
+  automaticPreviewAddress, currentPreviewDiagnosis, isPreviewSameOrigin, preparePreviewDiagnosis, previewConfig, readPreviewSession, seal, stagedPreviewInvitation, unseal,
 } from '../lib/vrae-preview.ts'
 
 const sourceSha = 'a'.repeat(40)
@@ -23,25 +23,23 @@ const returnToken = 'synthetic-return-token'
 const csrf = 'synthetic-diagnosis-csrf'
 const cookie = 'synthetic-diagnosis-session'
 const audit = 'aref-' + '1'.repeat(32)
-const target = 'test-target-1'
 const versionId = 'synthetic-reviewed-version'
 const displayHash = 'c'.repeat(64)
 const media = `application/vnd.vrae.launch+json; profile="${vfContract}"`
 const reportMedia = `application/vnd.vrae.report+json; profile="${reportContract}"`
-const consentText = 'Only the approved public pages may be read.'
+const consentText = 'I am authorized to permit bounded read-only diagnosis of this HTTPS website and its public same-origin pages, including processing minimized typed evidence by Alibaba Bailian qwen4-max in cn-beijing. Raw HTML and PII are excluded from model input. Automated conclusions and suggestions may be returned to me; they are not human-certified findings. No login, write or form submission is authorized.'
 const hash = createHash('sha256').update(JSON.stringify(consentText)).digest('hex')
-const consent = { version: 'VRAE-READONLY-DIAGNOSIS-1', text: consentText, hash }
+const consent = { version: 'VRAE-AUTO-DIAGNOSIS-1', text: consentText, hash }
 const site = 'https://approved.example.com/'
-const intent = 'e60e1184-7c86-448c-8adb-3f1210a2540e'
-const applicationToken = 'T'.repeat(720) + '=='
-const applicationPath = '/v1/target-applications'
-const authorisationPath = applicationPath + '/authorize'
 const diagnosisPath = '/v1/diagnoses'
+const resultPath = '/v1/audits/{audit_ref}/diagnosis'
+const sourcePage = 'page-' + 'e'.repeat(64)
 const jsonPaths = ['/health/ready', '/v1/openapi.json', '/v1/target-intake-contract']
 const json = 'application/json'
 const intake = {
-  contract: 'vrae.target-intake.v1', consent_version: consent.version, consent_text: consent.text, consent_text_sha256: consent.hash,
-  application: { path: applicationPath }, authorization: { path: authorisationPath }, diagnosis: { path: diagnosisPath },
+  contract: 'vrae.target-intake.v1', automatic_diagnosis: {
+    method: 'POST', path: diagnosisPath, result_path: resultPath, consent_version: consent.version, consent_text: consent.text,
+  },
 }
 
 test('preview origin uses the browser Host and preserves cross-origin refusal', () => {
@@ -84,26 +82,27 @@ test('preview session envelope is purpose-bound, tamper-evident and expires', ()
   assert.throws(() => readPreviewSession(key, seal(key, 'session', value)), { status: 403 })
 })
 
-test('confirmed diagnosis keeps its original body and expires with either consent or source scope', () => {
+test('a customer can supply an HTTPS site and retry the exact authorized request', () => {
+  for (const address of ['supplier.com', 'https://supplier.com', 'https://supplier.com/product']) {
+    assert.equal(automaticPreviewAddress(address), 'https://supplier.com/')
+  }
+  assert.equal(automaticPreviewAddress('https://other-supplier.com/'), 'https://other-supplier.com/')
+  for (const address of ['', 'https://127.0.0.1/', 'http://supplier.com/', 'https://private.internal/',
+    'https://supplier.com:8080', 'https://supplier.com/?private=value', 'https://user@supplier.com/']) {
+    assert.equal(automaticPreviewAddress(address), undefined)
+  }
   const key = randomBytes(32)
-  const now = Date.now()
-  const session = { cookie, csrf, expiresAt: now + 60_000 }
-  const pendingScope = { session, intent }
-  const scope = { url: site, consentHash: hash, consentVersion: consent.version, expiresAt: now + 120_000 }
-  assert.throws(() => preparePreviewDiagnosis(pendingScope, site, consent, 'zh'), { status: 403 })
-  assert.throws(() => preparePreviewDiagnosis({ ...pendingScope, scope }, 'https://other.example.com/', consent, 'zh'), { status: 403 })
-  assert.throws(() => preparePreviewDiagnosis({ ...pendingScope, scope }, site, { ...consent, hash: 'b'.repeat(64) }, 'zh'), { status: 403 })
-  assert.throws(() => preparePreviewDiagnosis({ ...pendingScope, scope }, site, { ...consent, version: 'new-terms' }, 'zh'), { status: 403 })
-  const authorised = { ...pendingScope, scope }
-  const pending = preparePreviewDiagnosis(authorised, site, consent, 'zh')
-  const restored = readPreviewSession(key, seal(key, 'session', { ...authorised, pending }))
-  assert.equal(currentPreviewDiagnosis(restored, site), pending.raw)
-  assert.deepEqual(preparePreviewDiagnosis(restored, site, consent, 'en'), pending)
-  assert.deepEqual(JSON.parse(pending.raw), {
-    url: site, idempotency_key: intent, accepted_at: new Date(pending.acceptedAt).toISOString(), consent_version: consent.version, language: 'zh',
+  const session = { cookie, csrf, expiresAt: Date.now() + 60_000 }
+  const pending = preparePreviewDiagnosis(site, consent, 'zh')
+  const restored = readPreviewSession(key, seal(key, 'session', { session, pending, address: site }))
+  assert.equal(currentPreviewDiagnosis(restored), pending.raw)
+  const raw = JSON.parse(pending.raw)
+  assert.match(raw.idempotency_key, /^[a-f0-9-]{36}$/)
+  assert.deepEqual(raw, {
+    url: site, authorized: true, idempotency_key: raw.idempotency_key,
+    accepted_at: new Date(pending.acceptedAt).toISOString(), consent_version: consent.version, language: 'zh',
   })
-  assert.throws(() => currentPreviewDiagnosis({ ...restored, scope: { ...scope, expiresAt: now - 1 } }, site), { status: 403 })
-  assert.throws(() => currentPreviewDiagnosis({ ...restored, pending: { ...pending, acceptedAt: now - 31 * 60_000 } }, site), { status: 403 })
+  assert.throws(() => currentPreviewDiagnosis({ ...restored, pending: { ...pending, acceptedAt: Date.now() - 31 * 60_000 } }), { status: 403 })
 })
 
 test('diagnosis and independent customer report contracts over actual mutual TLS', async t => {
@@ -125,9 +124,11 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
     const failures = []
     let oneUse = false
     let approved = false
-    let owned = true
     let readyDenied = false
     let changedConsent = false
+    let resultState = 'CAPTURE_PENDING'
+    let verification = 'REAL_PROVIDER'
+    let boundEvidence = true
     server = createServer({
       ...serverIdentity, ca: [appIdentity.cert, reviewIdentity.cert], rejectUnauthorized: true, requestCert: true,
     }, async (req, res) => {
@@ -179,9 +180,9 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
           return respond(200, { api_version: diagnosisVersion, status: 'READY', source_sha: sourceSha })
         }
         if (req.url === '/v1/openapi.json') return respond(200, {
-          paths: Object.fromEntries([applicationPath, authorisationPath, diagnosisPath].map(path => [path, { post: {} }])),
+          paths: { [diagnosisPath]: { post: {} }, [resultPath]: { get: {} } },
         })
-        if (req.url === '/v1/target-intake-contract') return respond(200, changedConsent ? { ...intake, consent_text: 'Different terms' } : intake)
+        if (req.url === '/v1/target-intake-contract') return respond(200, changedConsent ? { ...intake, automatic_diagnosis: { ...intake.automatic_diagnosis, consent_text: 'Different terms' } } : intake)
         if (req.url === '/v1/invitation-session' || req.url === '/v1/return-sessions') {
           const invitation = req.url === '/v1/invitation-session'
           assert.deepEqual(JSON.parse(raw), invitation ? { invitation_token: invite } : { return_token: returnToken })
@@ -194,34 +195,31 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
         }
         assert.equal(req.headers.cookie, '__Host-vrae-targets=' + cookie)
         assert.equal(req.headers['x-csrf-token'], csrf)
-        if (req.url === applicationPath) {
-          assert.deepEqual(JSON.parse(raw), {
-            url: site, paths: [], consent: { version: consent.version, read_only_authorized: true, model_data_notice: true },
-          })
-          return respond(201, {
-            contract: 'vrae.target-application.v1', application_token: applicationToken,
-            consent_version: consent.version, consent_text_sha256: hash,
-            expires_at: new Date(Date.now() + 60_000).toISOString(),
-            proof: { type: owned ? 'OPERATOR_OWNED_PUBLIC_ORIGIN' : 'DNS_TXT' },
-          })
-        }
-        if (req.url === authorisationPath) {
-          assert.deepEqual(JSON.parse(raw), { application_token: applicationToken })
-          return respond(201, {
-            contract: 'vrae.target-application.v1', state: 'AUTHORIZED_FOR_READONLY_DIAGNOSIS',
-            legal_reference_kind: 'OPERATOR_OWNED_PUBLIC_SOURCE', target_id: target,
-            expires_at: new Date(Date.now() + 120_000).toISOString(),
-          })
-        }
         if (req.url === diagnosisPath) {
           submissions.push(raw)
           if (submissions.length === 1) return respond(503)
           return respond(202, { contract_version: vfContract, audit_ref: audit, run_status: 'CREATED', diagnosis_complete: false })
         }
-        if (req.url === '/v1/audits/' + audit) return respond(200, {
-          contract_version: vfContract, audit_ref: audit, task: { status: 'DRAFT_READY', progress_percent: null },
-          access: { state: 'ACTIVE' }, publication: { state: 'UNPUBLISHED' }, display_state: 'running',
-        })
+        if (req.url === '/v1/audits/' + audit + '/diagnosis') {
+          if (resultState === 'DENIED') return respond(403)
+          const pending = ['CAPTURE_PENDING', 'AI_PENDING'].includes(resultState)
+          return respond(pending ? 202 : 200, {
+            contract: 'vrae.automatic-diagnosis.v1', audit_ref: audit, state: resultState,
+            diagnosis_complete: resultState === 'DIAGNOSED', formal_human_review: false, publication: 'UNPUBLISHED',
+            evidence: [{ snapshot_ref: sourcePage, url: site, observed_at: '2026-11-19T16:00:00Z', status: 'OBSERVED' }],
+            coverage: [{ scope: 'PAGE', url: site + 'products', status: 'NOT_VISITED' }],
+            model: { verification_realm: verification, state: 'AI_CANDIDATES_FOR_HUMAN_REVIEW',
+              real_model_calls: 1, usage: { usage_origin: 'PROVIDER_REPORTED' } },
+            claims: [{
+              task: 'UNDERSTAND', explanation: 'Buyers can review the product information.',
+              status: 'HUMAN_REVIEW_REQUIRED', guard_semantic_approval: false,
+              refs: ['synthetic-citation'], rebuild: ['Add a specification table.'], questions: ['Which properties do buyers compare?'],
+              source_bindings: { 'synthetic-citation': {
+                type: 'GUARD_LITERAL', fact: { source: { citation: { snapshot_ref: boundEvidence ? sourcePage : 'unbound', url: site } } },
+              } }, guard: { private_fixture: true },
+            }], deterministic_diagnosis: { internal_fixture: true },
+          })
+        }
         if (req.url === '/v1/audits/' + audit + '/return-tokens') {
           assert.deepEqual(JSON.parse(raw), { ttl_seconds: 300 })
           return respond(201, { contract: 'vrae.task-return-token.v1', return_token: returnToken })
@@ -241,18 +239,12 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
       VRAE_DIAGNOSIS_BASE_URL: 'https://diagnosis.vrae.example.com', VRAE_DIAGNOSIS_SOURCE_SHA: sourceSha,
       VRAE_DIAGNOSIS_BEARER: diagnosisToken, VRAE_DIAGNOSIS_CA_PEM: app.ca,
       VRAE_DIAGNOSIS_CLIENT_CERT_PEM: app.cert, VRAE_DIAGNOSIS_CLIENT_KEY_PEM: app.key,
-      VF_VRAE_PREVIEW_TARGET_URL: site,
     }
     const prepared = previewConfig(env)
     assert.ok(prepared)
     assert.equal(previewConfig({ ...env, VERCEL_ENV: 'production' }), undefined)
     assert.equal(previewConfig({ ...env, VRAE_DIAGNOSIS_BASE_URL: origin.href }), undefined)
-    assert.equal(prepared.targetUrl, site)
-    for (const targetUrl of ['', 'https://127.0.0.1/', site + 'products', site + '?private=value']) {
-      assert.equal(previewConfig({ ...env, VF_VRAE_PREVIEW_TARGET_URL: targetUrl }), undefined)
-    }
-
-    await t.test('mTLS, single-use invitations, stable retries, draft status and task recovery', async () => {
+    await t.test('mTLS, one-use session, stable retries, genuine AI result and task recovery', async () => {
       const diagnosis = createDiagnosisClient(app)
       assert.equal(await diagnosis.ready(), true)
       readyDenied = true
@@ -267,22 +259,38 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
       await assert.rejects(createDiagnosisClient({ ...app, key: undefined, cert: undefined }).ready(), { status: 503 })
       const session = await diagnosis.exchange('invitation', invite)
       await assert.rejects(diagnosis.exchange('invitation', invite), { status: 403 })
-      owned = false
-      await assert.rejects(diagnosis.authorise(site, consent, session), { status: 403 })
-      assert.equal(paths.includes(authorisationPath), false)
-      owned = true
-      const expiresAt = await diagnosis.authorise(site, consent, session)
-      const scope = { url: site, consentHash: hash, consentVersion: consent.version, expiresAt }
-      const { raw } = preparePreviewDiagnosis({ session, intent, scope }, site, consent, 'zh')
+      const { raw } = preparePreviewDiagnosis(site, consent, 'zh')
       await assert.rejects(diagnosis.submit(raw, session), { status: 503 })
       assert.equal(await diagnosis.submit(raw, session), audit)
       assert.deepEqual(submissions, [raw, raw])
-      assert.equal(paths.includes('/v1/audit-requests'), false)
-      assert.equal(await diagnosis.status(audit, session), 'awaiting-report')
+      assert.equal(paths.some(path => path.startsWith('/v1/target-applications') || path === '/v1/audit-requests'), false)
+      assert.equal((await diagnosis.result(audit, session)).state, 'running')
+      resultState = 'AI_PENDING'
+      assert.equal((await diagnosis.result(audit, session)).state, 'analyzing')
+      resultState = 'AI_UNAVAILABLE'
+      const unavailable = await diagnosis.result(audit, session)
+      assert.deepEqual(unavailable.insights, [])
+      assert.deepEqual(unavailable.pages.map(page => page.observed), [true, false])
+      resultState = 'CAPTURE_FAILED'
+      assert.equal((await diagnosis.result(audit, session)).state, 'failed')
+      resultState = 'DENIED'
+      await assert.rejects(diagnosis.result(audit, session), { status: 403 })
+      resultState = 'DIAGNOSED'
+      verification = 'PROTOCOL_FAKE_NOT_REAL_API'
+      await assert.rejects(diagnosis.result(audit, session), { status: 503 })
+      verification = 'REAL_PROVIDER'
+      boundEvidence = false
+      await assert.rejects(diagnosis.result(audit, session), { status: 503 })
+      boundEvidence = true
+      const diagnosed = await diagnosis.result(audit, session)
+      assert.equal(diagnosed.state, 'diagnosed')
+      assert.deepEqual(diagnosed.insights[0].sources, [sourcePage])
+      assert.deepEqual(diagnosed.insights[0].rebuild, ['Add a specification table.'])
+      assert.doesNotMatch(JSON.stringify(diagnosed), /private_fixture|internal_fixture|verification_realm|audit_ref/)
       assert.equal(await diagnosis.issueReturn(audit, session), returnToken)
       const restored = await diagnosis.exchange('return', returnToken)
       assert.equal(restored.cookie, cookie)
-      assert.equal(await diagnosis.status(audit, restored), 'awaiting-report')
+      assert.equal((await diagnosis.result(audit, restored)).state, 'diagnosed')
     })
 
     await t.test('reports use a separate mutual TLS binding, a trusted session and an approved release', async () => {

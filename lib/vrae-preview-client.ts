@@ -2,12 +2,12 @@
 import { request } from 'node:https'
 import { createHash } from 'node:crypto'
 import type { IncomingHttpHeaders } from 'node:http'
+import type { BuyerTask } from './diagnosis-presentation.ts'
 
 export const vfContract = 'vf-vrae-r0.1-vfb.1'
 export const diagnosisVersion = 'vrae.diagnosis-api.v1'
 export const reportContract = 'vrae.report-authority.v1'
 export const reportProfile = 'VERIFIED_HUMAN_CUSTOMER_REPORT'
-export const targetIdPattern = /^[A-Za-z0-9][A-Za-z0-9_.-]{2,127}$/
 export const auditRefPattern = /^aref-[0-9a-f]{32}$/
 export const privateTokenPattern = /^[A-Za-z0-9._~-]{16,512}$/
 export const digestPattern = /^[0-9a-f]{64}$/
@@ -16,10 +16,10 @@ const reportMedia = `application/vnd.vrae.report+json; profile="${reportContract
 const jsonMedia = 'application/json'
 const targetCookie = '__Host-vrae-targets'
 const intakeContract = 'vrae.target-intake.v1'
-const applicationContract = 'vrae.target-application.v1'
-const applicationPath = '/v1/target-applications'
-const authorisationPath = applicationPath + '/authorize'
 const diagnosisPath = '/v1/diagnoses'
+const resultPath = '/v1/audits/{audit_ref}/diagnosis'
+const automaticConsentVersion = 'VRAE-AUTO-DIAGNOSIS-1'
+const automaticConsentText = 'I am authorized to permit bounded read-only diagnosis of this HTTPS website and its public same-origin pages, including processing minimized typed evidence by Alibaba Bailian qwen4-max in cn-beijing. Raw HTML and PII are excluded from model input. Automated conclusions and suggestions may be returned to me; they are not human-certified findings. No login, write or form submission is authorized.'
 
 export type ServiceConfig = {
   origin: URL
@@ -31,7 +31,7 @@ export type ServiceConfig = {
 }
 export type DiagnosisSession = { cookie: string; csrf: string; expiresAt: number }
 export type DiagnosisConsent = { version: string; text: string; hash: string }
-type Wire = { body: Record<string, unknown>; headers: IncomingHttpHeaders }
+type Wire = { status: number; body: Record<string, unknown>; headers: IncomingHttpHeaders }
 type FailureStatus = 403 | 404 | 409 | 429 | 503
 export class VraeFailure extends Error {
   readonly status: FailureStatus
@@ -55,7 +55,7 @@ function requireMatch(value: unknown, pattern: RegExp): string {
 }
 
 function transport(config: ServiceConfig, profile: 'diagnosis' | 'report') {
-  return (path: string, expected: number, media: string, raw?: string, privateHeaders?: Record<string, string>) =>
+  return (path: string, expected: number | readonly number[], media: string, raw?: string, privateHeaders?: Record<string, string>) =>
     new Promise<Wire>((resolve, reject) => {
       const headers: Record<string, string | number> = {
         Accept: media,
@@ -76,9 +76,10 @@ function transport(config: ServiceConfig, profile: 'diagnosis' | 'report') {
         const meta = response.headers
         const scope = profile === 'diagnosis' ? meta['x-vrae-api-version'] === diagnosisVersion
           : meta['x-vrae-scope'] === reportProfile
-        const status = response.statusCode
+        const status = response.statusCode ?? 0
+        const ok = typeof expected === 'number' ? status === expected : expected.includes(status)
         const expectedMedia = meta['content-type'] === media ||
-          (profile === 'diagnosis' && media === jsonMedia && status !== expected &&
+          (profile === 'diagnosis' && media === jsonMedia && !ok &&
             meta['content-type'] === diagnosisMedia)
         if (
           !expectedMedia || meta['x-vrae-source-sha'] !== config.sourceSha || !scope ||
@@ -100,7 +101,7 @@ function transport(config: ServiceConfig, profile: 'diagnosis' | 'report') {
           try {
             const body = object(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks))))
             if (!body) throw new VraeFailure(503)
-            if (status !== expected) {
+            if (!ok) {
               if (status === 403 || status === 404 || status === 409) throw new VraeFailure(status)
               if (status === 429) {
                 const seconds = Number(meta['retry-after'] ?? body.retry_after_seconds)
@@ -108,7 +109,7 @@ function transport(config: ServiceConfig, profile: 'diagnosis' | 'report') {
               }
               throw new VraeFailure(503)
             }
-            resolve({ body, headers: meta })
+            resolve({ status, body, headers: meta })
           } catch (error) {
             reject(error instanceof VraeFailure ? error : new VraeFailure(503))
           }
@@ -141,9 +142,105 @@ function diagnosisSession({ body, headers }: Wire): DiagnosisSession {
   }
 }
 
+type SourcePage = { id: string; url: string; observed: boolean; checkedAt?: string }
+type BuyerInsight = { task: BuyerTask; explanation: string; rebuild: string[]; checks: string[]; sources: string[] }
+export type AutomaticResult = {
+  state: 'running' | 'analyzing' | 'failed' | 'diagnosed' | 'ai-unavailable'
+  pages: SourcePage[]
+  insights: BuyerInsight[]
+}
+
+const taskNames: readonly string[] = ['DISCOVER', 'UNDERSTAND', 'TRUST', 'INQUIRE', 'SEARCH_TECHNICAL']
+const snapshotPattern = /^page-[a-f0-9]{64}$/
+
+function list(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : []
+}
+
+function evidenceUrl(value: unknown) {
+  if (typeof value !== 'string' || value.length > 1024) return
+  try {
+    const url = new URL(value)
+    if (url.protocol === 'https:' && !url.username && !url.password && !url.search && !url.hash) return url.href
+  } catch {
+    return
+  }
+}
+
+function customerText(value: unknown): string {
+  return typeof value === 'string' && value.length <= 600 ? value.trim() : ''
+}
+
+function projectResult(body: Record<string, unknown>, status: number, ref: string): AutomaticResult {
+  if (body.contract !== 'vrae.automatic-diagnosis.v1' || body.audit_ref !== ref ||
+      body.formal_human_review !== false || body.publication !== 'UNPUBLISHED') throw new VraeFailure(503)
+  const states = {
+    CAPTURE_PENDING: 'running', AI_PENDING: 'analyzing', CAPTURE_FAILED: 'failed',
+    DIAGNOSED: 'diagnosed', AI_UNAVAILABLE: 'ai-unavailable',
+  } as const
+  const wireState = body.state
+  if (typeof wireState !== 'string' || !Object.hasOwn(states, wireState)) throw new VraeFailure(503)
+  const state = states[wireState as keyof typeof states]
+  if ((status === 202) !== (state === 'running' || state === 'analyzing') ||
+      body.diagnosis_complete !== (state === 'diagnosed')) throw new VraeFailure(503)
+
+  const pages = new Map<string, SourcePage>()
+  for (const value of list(body.evidence)) {
+    const item = object(value)
+    const url = evidenceUrl(item?.url)
+    const id = item?.snapshot_ref
+    const checkedAt = item?.observed_at
+    if (typeof id === 'string' && snapshotPattern.test(id) && url &&
+        typeof checkedAt === 'string' && Number.isFinite(Date.parse(checkedAt))) {
+      pages.set(id, { id, url, checkedAt, observed: item?.status === 'OBSERVED' })
+    }
+  }
+  const knownUrls = new Set(Array.from(pages.values(), page => page.url))
+  for (const value of list(body.coverage)) {
+    const item = object(value)
+    const url = evidenceUrl(item?.url)
+    if (item?.scope === 'PAGE' && url && !knownUrls.has(url) && pages.size < 24) {
+      knownUrls.add(url)
+      const id = 'coverage-' + pages.size
+      pages.set(id, { id, url, observed: false })
+    }
+  }
+  const insights: BuyerInsight[] = []
+  if (state === 'diagnosed') {
+    const model = object(body.model)
+    if (model?.verification_realm !== 'REAL_PROVIDER' || model.real_model_calls !== 1 ||
+        model.state !== 'AI_CANDIDATES_FOR_HUMAN_REVIEW' ||
+        object(model.usage)?.usage_origin !== 'PROVIDER_REPORTED') throw new VraeFailure(503)
+    for (const value of list(body.claims)) {
+      const claim = object(value)
+      if (!claim) continue
+      const task = claim.task
+      const explanation = customerText(claim.explanation)
+      if (typeof task !== 'string' || !taskNames.includes(task) || !explanation ||
+          claim.status !== 'HUMAN_REVIEW_REQUIRED' || claim.guard_semantic_approval !== false) continue
+      const bindings = object(claim.source_bindings)
+      const sources = new Set<string>()
+      for (const key of [...list(claim.refs), ...list(claim.counter_refs)]) {
+        if (typeof key !== 'string' || !bindings || !Object.hasOwn(bindings, key)) continue
+        const binding = object(bindings[key])
+        const citation = object(object(object(binding?.fact)?.source)?.citation)
+        const id = citation?.snapshot_ref
+        const page = typeof id === 'string' ? pages.get(id) : undefined
+        if (binding?.type === 'GUARD_LITERAL' && page?.observed && evidenceUrl(citation?.url) === page.url) {
+          sources.add(page.id)
+        }
+      }
+      const rebuild = list(claim.rebuild).map(customerText).filter(Boolean)
+      const checks = [...list(claim.uncertainties), ...list(claim.questions)].map(customerText).filter(Boolean)
+      if (sources.size && rebuild.length) insights.push({ task: task as BuyerTask, explanation, rebuild, checks, sources: [...sources] })
+    }
+    if (!insights.length) throw new VraeFailure(503)
+  }
+  return { state, pages: [...pages.values()], insights: insights.slice(0, 3) }
+}
+
 export function createDiagnosisClient(config: ServiceConfig) {
   const send = transport(config, 'diagnosis')
-  const get = (path: string, session: DiagnosisSession) => send(path, 200, diagnosisMedia, undefined, diagnosisHeaders(session))
   const post = (path: string, expected: number, raw: string, session: DiagnosisSession) =>
     send(path, expected, diagnosisMedia, raw, diagnosisHeaders(session))
   return {
@@ -154,21 +251,18 @@ export function createDiagnosisClient(config: ServiceConfig) {
     async openapi() {
       const { body } = await send('/v1/openapi.json', 200, jsonMedia)
       const paths = object(body.paths)
-      if (![applicationPath, authorisationPath, diagnosisPath].every(path => object(object(paths?.[path])?.post))) {
+      if (!object(object(paths?.[diagnosisPath])?.post) || !object(object(paths?.[resultPath])?.get)) {
         throw new VraeFailure(503)
       }
     },
     async intake(): Promise<DiagnosisConsent> {
       const { body } = await send('/v1/target-intake-contract', 200, jsonMedia)
-      if (body.contract !== intakeContract || object(body.application)?.path !== applicationPath ||
-          object(body.authorization)?.path !== authorisationPath || object(body.diagnosis)?.path !== diagnosisPath) {
-        throw new VraeFailure(503)
-      }
-      const version = requireMatch(body.consent_version, /^[A-Za-z0-9_.-]{1,128}$/)
-      const hash = requireMatch(body.consent_text_sha256, digestPattern)
-      if (typeof body.consent_text !== 'string' || !body.consent_text.trim() || body.consent_text.length > 4000 ||
-          createHash('sha256').update(JSON.stringify(body.consent_text)).digest('hex') !== hash) throw new VraeFailure(503)
-      return { version, hash, text: body.consent_text }
+      const automatic = object(body.automatic_diagnosis)
+      if (body.contract !== intakeContract || automatic?.method !== 'POST' || automatic.path !== diagnosisPath ||
+          automatic.result_path !== resultPath || automatic.consent_version !== automaticConsentVersion ||
+          automatic.consent_text !== automaticConsentText) throw new VraeFailure(503)
+      const hash = createHash('sha256').update(JSON.stringify(automaticConsentText)).digest('hex')
+      return { version: automaticConsentVersion, text: automaticConsentText, hash }
     },
     async exchange(kind: 'invitation' | 'return', token: string) {
       if (!privateTokenPattern.test(token)) throw new VraeFailure(403)
@@ -176,57 +270,15 @@ export function createDiagnosisClient(config: ServiceConfig) {
       const field = kind === 'invitation' ? 'invitation_token' : 'return_token'
       return diagnosisSession(await send(path, 200, diagnosisMedia, JSON.stringify({ [field]: token })))
     },
-    async authorise(url: string, consent: DiagnosisConsent, session: DiagnosisSession) {
-      const { body: application } = await post(applicationPath, 201, JSON.stringify({
-        url, paths: [], consent: { version: consent.version, read_only_authorized: true, model_data_notice: true },
-      }), session)
-      if (application.contract !== applicationContract || application.consent_version !== consent.version ||
-          application.consent_text_sha256 !== consent.hash) throw new VraeFailure(503)
-      // The first Preview only uses a VRAE operator-owned origin. Do not follow a DNS challenge.
-      if (object(application.proof)?.type !== 'OPERATOR_OWNED_PUBLIC_ORIGIN') throw new VraeFailure(403)
-      if (typeof application.expires_at !== 'string' || !(Date.parse(application.expires_at) > Date.now())) throw new VraeFailure(403)
-      const applicationToken = requireMatch(application.application_token, /^[A-Za-z0-9_-]{32,8192}={0,2}$/)
-      const { body } = await post(authorisationPath, 201, JSON.stringify({ application_token: applicationToken }), session)
-      if (body.contract !== applicationContract || body.state !== 'AUTHORIZED_FOR_READONLY_DIAGNOSIS' ||
-          body.legal_reference_kind !== 'OPERATOR_OWNED_PUBLIC_SOURCE') throw new VraeFailure(403)
-      requireMatch(body.target_id, targetIdPattern)
-      const expiresAt = typeof body.expires_at === 'string' ? Date.parse(body.expires_at) : NaN
-      if (!(expiresAt > Date.now())) throw new VraeFailure(403)
-      return expiresAt
-    },
     async submit(raw: string, session: DiagnosisSession) {
       const { body } = await post(diagnosisPath, 202, raw, session)
       if (body.contract_version !== vfContract || body.run_status !== 'CREATED' || body.diagnosis_complete !== false) throw new VraeFailure(503)
       return requireMatch(body.audit_ref, auditRefPattern)
     },
-    async status(ref: string, session: DiagnosisSession, onDraftReady?: () => void) {
-      const { body } = await get('/v1/audits/' + requireMatch(ref, auditRefPattern), session)
-      if (body.contract_version !== vfContract || body.audit_ref !== ref) throw new VraeFailure(503)
-      const access = object(body.access)?.state
-      if (access === 'EXPIRED') return 'expired'
-      if (access === 'REVOKED' || body.display_state === 'access-ended') return 'access-ended'
-      if (access !== 'ACTIVE') throw new VraeFailure(503)
-      const task = object(body.task)?.status
-      const publication = object(body.publication)?.state
-      if (publication === 'WITHDRAWN') return 'access-ended'
-      switch (body.display_state) {
-        case 'accepted':
-        case 'failed':
-        case 'unavailable':
-          return body.display_state
-        case 'running':
-          if (publication === 'UNPUBLISHED') {
-            if (task === 'DRAFT_READY') onDraftReady?.()
-            return task === 'DRAFT_READY' || task === 'REVIEW_REQUIRED' ? 'awaiting-report' : 'running'
-          }
-          break
-        case 'completed':
-          if (publication === 'APPROVED_FULL') return 'awaiting-access'
-          break
-        case 'partial':
-          if (publication === 'APPROVED_PARTIAL') return 'awaiting-access'
-      }
-      throw new VraeFailure(503)
+    async result(ref: string, session: DiagnosisSession) {
+      const path = resultPath.replace('{audit_ref}', requireMatch(ref, auditRefPattern))
+      const { status, body } = await send(path, [200, 202], diagnosisMedia, undefined, diagnosisHeaders(session))
+      return projectResult(body, status, ref)
     },
     async issueReturn(ref: string, session: DiagnosisSession) {
       const { body } = await send('/v1/audits/' + requireMatch(ref, auditRefPattern) + '/return-tokens',
