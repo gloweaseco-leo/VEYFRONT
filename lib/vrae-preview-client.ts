@@ -16,6 +16,7 @@ const reportMedia = `application/vnd.vrae.report+json; profile="${reportContract
 const jsonMedia = 'application/json'
 const targetCookie = '__Host-vrae-targets'
 const intakeContract = 'vrae.target-intake.v1'
+const sessionPath = '/v1/diagnosis-sessions'
 const diagnosisPath = '/v1/diagnoses'
 const resultPath = '/v1/audits/{audit_ref}/diagnosis'
 const automaticConsentVersion = 'VRAE-AUTO-DIAGNOSIS-1'
@@ -125,9 +126,9 @@ function diagnosisHeaders(session: DiagnosisSession) {
   return { Cookie: `${targetCookie}=${session.cookie}`, 'X-CSRF-Token': session.csrf }
 }
 
-function diagnosisSession({ body, headers }: Wire): DiagnosisSession {
+function diagnosisSession({ body, headers }: Wire, outcome: 'created' | 'restored'): DiagnosisSession {
   const lines = headers['set-cookie']?.filter(line => line.startsWith(targetCookie + '=')) ?? []
-  if (body.restored !== true || lines.length !== 1) throw new VraeFailure(503)
+  if (body[outcome] !== true || lines.length !== 1) throw new VraeFailure(503)
   const [pair, ...rawAttributes] = lines[0].split(';').map(part => part.trim())
   const attributes = rawAttributes.map(part => part.toLowerCase())
   const age = attributes.filter(attr => /^max-age=[1-9]\d*$/.test(attr))
@@ -251,7 +252,8 @@ export function createDiagnosisClient(config: ServiceConfig) {
     async openapi() {
       const { body } = await send('/v1/openapi.json', 200, jsonMedia)
       const paths = object(body.paths)
-      if (!object(object(paths?.[diagnosisPath])?.post) || !object(object(paths?.[resultPath])?.get)) {
+      if (!object(object(paths?.[sessionPath])?.post) || !object(object(paths?.[diagnosisPath])?.post) ||
+          !object(object(paths?.[resultPath])?.get)) {
         throw new VraeFailure(503)
       }
     },
@@ -264,11 +266,13 @@ export function createDiagnosisClient(config: ServiceConfig) {
       const hash = createHash('sha256').update(JSON.stringify(automaticConsentText)).digest('hex')
       return { version: automaticConsentVersion, text: automaticConsentText, hash }
     },
-    async exchange(kind: 'invitation' | 'return', token: string) {
+    async createSession() {
+      return diagnosisSession(await send(sessionPath, 200, diagnosisMedia, '{}'), 'created')
+    },
+    async restoreSession(token: string) {
       if (!privateTokenPattern.test(token)) throw new VraeFailure(403)
-      const path = kind === 'invitation' ? '/v1/invitation-session' : '/v1/return-sessions'
-      const field = kind === 'invitation' ? 'invitation_token' : 'return_token'
-      return diagnosisSession(await send(path, 200, diagnosisMedia, JSON.stringify({ [field]: token })))
+      const raw = JSON.stringify({ return_token: token })
+      return diagnosisSession(await send('/v1/return-sessions', 200, diagnosisMedia, raw), 'restored')
     },
     async submit(raw: string, session: DiagnosisSession) {
       const { body } = await post(diagnosisPath, 202, raw, session)

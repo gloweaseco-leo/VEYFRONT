@@ -4,7 +4,7 @@ import { auditRefPattern, object, privateTokenPattern, VraeFailure } from '@/lib
 import {
   automaticPreviewAddress, currentPreviewDiagnosis, isAutomaticPreviewHost, isPreviewSameOrigin,
   preparePreviewDiagnosis, previewConfig, previewSessionCookie, readPreviewSession, seal,
-  stagedPreviewInvitation, unseal, type PreviewSession,
+  unseal, type PreviewSession,
 } from '@/lib/vrae-preview'
 
 export const runtime = 'nodejs'
@@ -53,7 +53,6 @@ export async function GET(request: NextRequest) {
       currentPreviewDiagnosis(current)
       return reply({ state: 'prepared', address: current.address })
     }
-    if (!current && !stagedPreviewInvitation(host)) return reply({ state: 'unavailable' }, 503)
     const [ready, , consent] = await Promise.all([config.client.ready(), config.client.openapi(), config.client.intake()])
     if (!ready) throw new VraeFailure(503)
     return reply({ state: 'ready', consentText: consent.text, consentHash: consent.hash })
@@ -79,7 +78,7 @@ export async function POST(request: NextRequest) {
       if (!envelope || typeof envelope.expiresAt !== 'number' || envelope.expiresAt <= Date.now() ||
           typeof envelope.ref !== 'string' || !auditRefPattern.test(envelope.ref) ||
           typeof envelope.token !== 'string' || !privateTokenPattern.test(envelope.token)) throw new VraeFailure(403)
-      const session = await client.exchange('return', envelope.token)
+      const session = await client.restoreSession(envelope.token)
       const address = automaticPreviewAddress(envelope.address)
       return withSession(key, { session, ref: envelope.ref, address }, { state: 'resume', address })
     }
@@ -98,10 +97,8 @@ export async function POST(request: NextRequest) {
       if (body.confirmed !== true || (language !== 'zh' && language !== 'en')) return reply({ state: 'invalid' }, 400)
       const consent = await client.intake()
       if (body.consentHash !== consent.hash) return reply({ state: 'consent-changed' }, 409)
-      const invite = stagedPreviewInvitation(host)
-      if (!current && !invite) throw new VraeFailure(503)
+      const session = await client.createSession()
       const pending = preparePreviewDiagnosis(address, consent, language)
-      const session = current?.session ?? await client.exchange('invitation', invite!)
       // Store the exact intent before submitting. A retry must never generate a second task.
       return withSession(key, { session, pending, address }, { state: 'prepared', address })
     }

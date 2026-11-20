@@ -71,12 +71,6 @@ export function isAutomaticPreviewHost(host: string | null, env = process.env) {
     host === env.VERCEL_URL && Boolean(host?.endsWith('.vercel.app'))
 }
 
-// The one-use invitation is consumed only by the tester's submission on the SSO-protected deployment.
-export function stagedPreviewInvitation(host: string | null, env = process.env) {
-  const invite = env.VRAE_PREVIEW_INVITATION
-  if (isAutomaticPreviewHost(host, env) && invite && privateTokenPattern.test(invite)) return invite
-}
-
 export function automaticPreviewAddress(value: unknown) {
   if (typeof value !== 'string') return
   const text = value.trim()

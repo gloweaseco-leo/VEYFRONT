@@ -11,14 +11,13 @@ import {
   createDiagnosisClient, createReportClient, diagnosisVersion, reportContract, reportProfile, vfContract,
 } from '../lib/vrae-preview-client.ts'
 import {
-  automaticPreviewAddress, currentPreviewDiagnosis, isPreviewSameOrigin, preparePreviewDiagnosis, previewConfig, readPreviewSession, seal, stagedPreviewInvitation, unseal,
+  automaticPreviewAddress, currentPreviewDiagnosis, isAutomaticPreviewHost, isPreviewSameOrigin, preparePreviewDiagnosis, previewConfig, readPreviewSession, seal, unseal,
 } from '../lib/vrae-preview.ts'
 
 const sourceSha = 'a'.repeat(40)
 const reportSha = 'b'.repeat(40)
 const diagnosisToken = 'synthetic-preview-app-bearer'
 const reportToken = 'synthetic-preview-review-bearer'
-const invite = 'synthetic-invitation-token'
 const returnToken = 'synthetic-return-token'
 const csrf = 'synthetic-diagnosis-csrf'
 const cookie = 'synthetic-diagnosis-session'
@@ -31,6 +30,7 @@ const consentText = 'I am authorized to permit bounded read-only diagnosis of th
 const hash = createHash('sha256').update(JSON.stringify(consentText)).digest('hex')
 const consent = { version: 'VRAE-AUTO-DIAGNOSIS-1', text: consentText, hash }
 const site = 'https://approved.example.com/'
+const sessionPath = '/v1/diagnosis-sessions'
 const diagnosisPath = '/v1/diagnoses'
 const resultPath = '/v1/audits/{audit_ref}/diagnosis'
 const sourcePage = 'page-' + 'e'.repeat(64)
@@ -56,17 +56,16 @@ test('preview origin uses the browser Host and preserves cross-origin refusal', 
   assert.equal(isPreviewSameOrigin(deployed, true), false)
 })
 
-test('staged invitation is retained only on the designated Vercel Preview deployment host', () => {
+test('automatic diagnosis is limited to the designated Vercel Preview deployment host', () => {
   const host = 'veyfront-fixture.vercel.app'
   const env = {
     VERCEL: '1', VERCEL_ENV: 'preview', VERCEL_URL: host,
-    VERCEL_GIT_COMMIT_REF: 'feature/vf-b-offline-g1-adapter', VRAE_PREVIEW_INVITATION: invite,
+    VERCEL_GIT_COMMIT_REF: 'feature/vf-b-offline-g1-adapter',
   }
-  assert.equal(stagedPreviewInvitation(host, env), invite)
-  assert.equal(stagedPreviewInvitation('veyfront.com', env), undefined)
-  assert.equal(stagedPreviewInvitation(host, { ...env, VERCEL_ENV: 'production' }), undefined)
-  assert.equal(stagedPreviewInvitation(host, { ...env, VERCEL_GIT_COMMIT_REF: 'other-branch' }), undefined)
-  assert.equal(stagedPreviewInvitation(host, { ...env, VRAE_PREVIEW_INVITATION: '\ninvalid' }), undefined)
+  assert.equal(isAutomaticPreviewHost(host, env), true)
+  assert.equal(isAutomaticPreviewHost('veyfront.com', env), false)
+  assert.equal(isAutomaticPreviewHost(host, { ...env, VERCEL_ENV: 'production' }), false)
+  assert.equal(isAutomaticPreviewHost(host, { ...env, VERCEL_GIT_COMMIT_REF: 'other-branch' }), false)
 })
 
 test('preview session envelope is purpose-bound, tamper-evident and expires', () => {
@@ -122,7 +121,8 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
     const submissions = []
     const paths = []
     const failures = []
-    let oneUse = false
+    let sessionCount = 0
+    let legacyContract = false
     let approved = false
     let readyDenied = false
     let changedConsent = false
@@ -180,18 +180,26 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
           return respond(200, { api_version: diagnosisVersion, status: 'READY', source_sha: sourceSha })
         }
         if (req.url === '/v1/openapi.json') return respond(200, {
-          paths: { [diagnosisPath]: { post: {} }, [resultPath]: { get: {} } },
+          paths: { ...(legacyContract ? {} : { [sessionPath]: { post: {} } }), [diagnosisPath]: { post: {} }, [resultPath]: { get: {} } },
         })
         if (req.url === '/v1/target-intake-contract') return respond(200, changedConsent ? { ...intake, automatic_diagnosis: { ...intake.automatic_diagnosis, consent_text: 'Different terms' } } : intake)
-        if (req.url === '/v1/invitation-session' || req.url === '/v1/return-sessions') {
-          const invitation = req.url === '/v1/invitation-session'
-          assert.deepEqual(JSON.parse(raw), invitation ? { invitation_token: invite } : { return_token: returnToken })
-          if (invitation && oneUse) return respond(403)
-          if (invitation) oneUse = true
-          return respond(200, { restored: true }, {
-            'Set-Cookie': '__Host-vrae-targets=' + cookie + '; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=300',
-            'X-CSRF-Token': csrf,
+        if (req.url === sessionPath || req.url === '/v1/return-sessions') {
+          const created = req.url === sessionPath
+          assert.equal(req.method, 'POST')
+          assert.equal(req.headers.cookie, undefined)
+          assert.equal(req.headers['x-csrf-token'], undefined)
+          assert.deepEqual(JSON.parse(raw), created ? {} : { return_token: returnToken })
+          if (created) sessionCount++
+          const suffix = created && sessionCount > 1 ? '-' + sessionCount : ''
+          return respond(200, created ? { created: true } : { restored: true }, {
+            'Set-Cookie': '__Host-vrae-targets=' + cookie + suffix + '; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=300',
+            'X-CSRF-Token': csrf + suffix,
           })
+        }
+        if (req.headers.cookie === '__Host-vrae-targets=' + cookie + '-2') {
+          assert.equal(req.url, '/v1/audits/' + audit + '/diagnosis')
+          assert.equal(req.headers['x-csrf-token'], csrf + '-2')
+          return respond(403)
         }
         assert.equal(req.headers.cookie, '__Host-vrae-targets=' + cookie)
         assert.equal(req.headers['x-csrf-token'], csrf)
@@ -244,25 +252,32 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
     assert.ok(prepared)
     assert.equal(previewConfig({ ...env, VERCEL_ENV: 'production' }), undefined)
     assert.equal(previewConfig({ ...env, VRAE_DIAGNOSIS_BASE_URL: origin.href }), undefined)
-    await t.test('mTLS, one-use session, stable retries, genuine AI result and task recovery', async () => {
+    await t.test('mTLS, independent sessions without invitations, stable retries, genuine AI result and task recovery', async () => {
       const diagnosis = createDiagnosisClient(app)
       assert.equal(await diagnosis.ready(), true)
       readyDenied = true
       await assert.rejects(diagnosis.ready(), { status: 403 })
       readyDenied = false
+      legacyContract = true
+      await assert.rejects(diagnosis.openapi(), { status: 503 })
+      legacyContract = false
       await diagnosis.openapi()
+      assert.equal(sessionCount, 0)
       changedConsent = true
       await assert.rejects(diagnosis.intake(), { status: 503 })
       changedConsent = false
       assert.deepEqual(await diagnosis.intake(), consent)
       await assert.rejects(createDiagnosisClient({ ...app, sourceSha: reportSha }).ready(), { status: 503 })
       await assert.rejects(createDiagnosisClient({ ...app, key: undefined, cert: undefined }).ready(), { status: 503 })
-      const session = await diagnosis.exchange('invitation', invite)
-      await assert.rejects(diagnosis.exchange('invitation', invite), { status: 403 })
+      const session = await diagnosis.createSession()
+      const secondVisitor = await diagnosis.createSession()
+      assert.notEqual(session.cookie, secondVisitor.cookie)
+      assert.notEqual(session.csrf, secondVisitor.csrf)
       const { raw } = preparePreviewDiagnosis(site, consent, 'zh')
       await assert.rejects(diagnosis.submit(raw, session), { status: 503 })
       assert.equal(await diagnosis.submit(raw, session), audit)
       assert.deepEqual(submissions, [raw, raw])
+      await assert.rejects(diagnosis.result(audit, secondVisitor), { status: 403 })
       assert.equal(paths.some(path => path.startsWith('/v1/target-applications') || path === '/v1/audit-requests'), false)
       assert.equal((await diagnosis.result(audit, session)).state, 'running')
       resultState = 'AI_PENDING'
@@ -288,9 +303,11 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
       assert.deepEqual(diagnosed.insights[0].rebuild, ['Add a specification table.'])
       assert.doesNotMatch(JSON.stringify(diagnosed), /private_fixture|internal_fixture|verification_realm|audit_ref/)
       assert.equal(await diagnosis.issueReturn(audit, session), returnToken)
-      const restored = await diagnosis.exchange('return', returnToken)
+      const restored = await diagnosis.restoreSession(returnToken)
       assert.equal(restored.cookie, cookie)
       assert.equal((await diagnosis.result(audit, restored)).state, 'diagnosed')
+      assert.equal(sessionCount, 2)
+      assert.equal(paths.includes('/v1/invitation-session'), false)
     })
 
     await t.test('reports use a separate mutual TLS binding, a trusted session and an approved release', async () => {
