@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
 import { setTimeout as delay } from 'node:timers/promises'
+import { withPresentation } from './fixtures/vrae-presentation.mjs'
 import {
   createDiagnosisClient, createReportClient, diagnosisVersion, reportContract, reportProfile, vfContract,
 } from '../lib/vrae-preview-client.ts'
@@ -131,6 +132,8 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
     let verification = 'REAL_PROVIDER'
     let boundEvidence = true
     let slowResult = false
+    let modernResult = false
+    let staleRulePointer = false
     server = createServer({
       ...serverIdentity, ca: [appIdentity.cert, reviewIdentity.cert], rejectUnauthorized: true, requestCert: true,
     }, async (req, res) => {
@@ -217,7 +220,7 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
         if (req.url === '/v1/audits/' + audit + '/diagnosis') {
           if (resultState === 'DENIED') return respond(403)
           const pending = ['CAPTURE_PENDING', 'AI_PENDING'].includes(resultState)
-          return respond(pending ? 202 : 200, {
+          const dto = {
             contract: 'vrae.automatic-diagnosis.v1', audit_ref: audit, state: resultState,
             diagnosis_complete: resultState === 'DIAGNOSED', formal_human_review: false, publication: 'UNPUBLISHED',
             evidence: [{ snapshot_ref: sourcePage, url: site, observed_at: '2026-11-19T16:00:00Z', status: 'OBSERVED' }],
@@ -232,7 +235,11 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
                 type: 'GUARD_LITERAL', fact: { source: { citation: { snapshot_ref: boundEvidence ? sourcePage : 'unbound', url: site } } },
               } }, guard: { private_fixture: true },
             }], deterministic_diagnosis: { internal_fixture: slowResult ? 'x'.repeat(735_000) : true },
-          }, {}, slowResult ? 8_500 : 0)
+          }
+          const payload = modernResult ? withPresentation(dto, dto.evidence[0]) : dto
+          if (staleRulePointer) payload.customer_presentation.tasks[1].observations[0].source_pointer =
+            '/deterministic_diagnosis/buyer_tasks/0/rules/0/observations/0'
+          return respond(pending ? 202 : 200, payload, {}, slowResult ? 8_500 : 0)
         }
         if (req.url === '/v1/audits/' + audit + '/return-tokens') {
           assert.deepEqual(JSON.parse(raw), { ttl_seconds: 300 })
@@ -317,6 +324,32 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
       assert.deepEqual(submissions, [raw, raw])
       assert.equal(sessionCount, 2)
       assert.equal(paths.includes('/v1/invitation-session'), false)
+      slowResult = false
+      modernResult = true
+      resultState = 'AI_PENDING'
+      const preview = await diagnosis.result(audit, restored, 'en')
+      assert.equal(preview.state, 'analyzing')
+      assert.deepEqual(preview.buyerTasks.map(task => task.task), ['DISCOVER', 'UNDERSTAND', 'TRUST', 'INQUIRE', 'SEARCH_TECHNICAL'])
+      assert.equal(preview.buyerTasks[0].observations[0].result, 'UNKNOWN')
+      assert.match(preview.buyerTasks[0].observations[0].text, /did not provide conclusive evidence/)
+      assert.equal(preview.buyerTasks[1].observations[0].result, 'PASS')
+      assert.deepEqual(preview.buyerTasks[1].observations[0].sources, [sourcePage])
+      assert.equal(preview.insights.length, 0)
+      assert.equal(preview.pages.length, 1)
+      assert.deepEqual(preview.pageScope.candidateUrls, [site + 'unvisited'])
+      assert.deepEqual(preview.pageScope.failedUrls, [site + 'limited'])
+      assert.doesNotMatch(JSON.stringify(preview), /private_fixture|source_pointer|product_scope_ref|audit_ref/)
+      assert.equal((await diagnosis.result(audit, restored, 'zh')).buyerTasks[0].observations[0].statusText, '本次尚未核实')
+
+      resultState = 'DIAGNOSED'
+      assert.equal((await diagnosis.result(audit, restored)).insights.length, 1)
+      boundEvidence = false
+      const withheld = await diagnosis.result(audit, restored)
+      assert.equal(withheld.state, 'ai-unavailable')
+      assert.equal(withheld.buyerTasks.length, 5)
+      assert.deepEqual(withheld.insights, [])
+      staleRulePointer = true
+      await assert.rejects(diagnosis.result(audit, restored), /INVALID_DIAGNOSIS_DELIVERY/)
     })
 
     await t.test('reports use a separate mutual TLS binding, a trusted session and an approved release', async () => {

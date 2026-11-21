@@ -12,7 +12,7 @@ const statusCopy: Record<string, readonly [string, string]> = {
   running: ['正在检查网站的公开页面。', 'Checking the website’s public pages.'],
   analyzing: ['页面检查已结束，正在整理诊断结论。', 'The page check has ended. The diagnostic findings are being prepared.'],
   diagnosed: ['本次自动诊断已完成。', 'The automated check is complete.'],
-  'ai-unavailable': ['本次未能生成 AI 结论。您仍可查看已记录的页面和检查范围。', 'AI findings are unavailable. You can still view the recorded pages and coverage.'],
+  'ai-unavailable': ['本次没有可展示的 AI 结论。已有检查结果仍可查看。', 'No AI interpretation is available. You can still see the recorded checks.'],
   failed: ['本次页面检查未能完成。您仍可咨询网站改版。', 'The page check could not be completed. You can still discuss a website redesign.'],
   denied: ['预览权限或任务会话不可用，也可能已到期。', 'Preview or task access is unavailable or has expired.'],
   'no-task': ['当前会话没有可查看的任务。', 'This session has no task to view.'],
@@ -30,14 +30,12 @@ const endpoint = '/api/website-diagnosis/v1'
 const button = 'min-h-11 rounded-md border border-ink/25 px-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50'
 const input = 'mt-1 min-h-11 w-full rounded-md border border-ink/30 bg-white px-3 text-base focus-visible:outline-2 focus-visible:outline-offset-2'
 const waiting = ['accepted', 'running', 'analyzing']
-type ResponseData = {
+type ResponseData = Partial<Omit<AutomaticResult, 'state'>> & {
   state: string
   address?: string
   consentText?: string
   consentHash?: string
   code?: string
-  pages?: AutomaticResult['pages']
-  insights?: AutomaticResult['insights']
 }
 
 async function call(action?: string, fields: Record<string, string | boolean> = {}): Promise<ResponseData & { delay: number }> {
@@ -54,48 +52,91 @@ async function call(action?: string, fields: Record<string, string | boolean> = 
   }
 }
 
+function EvidenceLinks({ ids, pages, zh }: { ids: string[]; pages: AutomaticResult['pages']; zh: boolean }) {
+  if (!ids.length) return null
+  return <ul aria-label={zh ? '来源证据' : 'Source evidence'} className="flex flex-wrap gap-x-3 gap-y-1">
+    {ids.map(id => {
+      const index = pages.findIndex(page => page.id === id)
+      return index < 0 ? null : <li key={id}><a href={'#vrae-source-' + id} className="font-semibold underline underline-offset-4">
+        {zh ? '查看来源 ' : 'See source '}{index + 1}
+      </a></li>
+    })}
+  </ul>
+}
+
+type Observation = NonNullable<AutomaticResult['buyerTasks']>[number]['observations'][number]
+
+function ObservationList({ items, pages, zh }: { items: Observation[]; pages: AutomaticResult['pages']; zh: boolean }) {
+  return <ul className="space-y-2">{items.map(item => <li key={item.id} className="rounded-md bg-mist/55 p-3" data-check-result={item.result}>
+    <p className="font-semibold">{item.statusText}</p>
+    <p className="mt-1">{item.text}</p>
+    <EvidenceLinks ids={item.sources} pages={pages} zh={zh} />
+  </li>)}</ul>
+}
+
 function AutomaticDiagnosis({ data, address }: { data: AutomaticResult; address: string }) {
   const { lang } = useLang()
   const zh = lang === 'zh'
   const checked = data.pages.filter(page => page.observed).length
+  const dimensions = data.buyerTasks ?? buyerTasks.map(task => ({ task, observations: [] }))
+  const scope = data.pageScope
   const formatter = new Intl.DateTimeFormat(zh ? 'zh-CN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })
   return <article aria-labelledby="automatic-result-heading" className="mt-6 space-y-4 [overflow-wrap:anywhere]" data-testid="vrae-automatic-result">
     <header className="rounded-lg bg-ink p-4 text-ivory sm:p-5">
       <h3 id="automatic-result-heading" className="text-xl font-semibold">{zh ? '网站采购体验预诊断' : 'Website buyer experience check'}</h3>
       {address && <p className="mt-2 text-sm">{address}</p>}
       <p className="mt-2 text-sm text-ivory/80">{zh
-        ? `来源为 VRAE。本次记录 ${data.pages.length} 个页面，其中 ${checked} 个已访问。自动结论供改版参考，尚未经过人工审核。`
-        : `Source: VRAE. ${checked} of ${data.pages.length} recorded pages were accessed. Automated findings are for planning and have not been reviewed by a person.`}</p>
+        ? `来源为 VRAE。本次已访问 ${checked} 个页面。自动结论供改版参考，尚未经过人工审核。`
+        : `Source: VRAE. ${checked} pages were accessed. Automated findings are for planning and have not been reviewed by a person.`}</p>
+      {data.analysisText && <p className="mt-2 text-sm text-ivory/80">{data.analysisText}</p>}
     </header>
     <div className="space-y-3">
-      {buyerTasks.map(task => <section key={task} className="rounded-lg border border-ink/15 p-3 sm:p-4">
-        <h4 className="font-semibold">{taskLabels[lang][task]}</h4>
-        {data.insights.filter(insight => insight.task === task).length === 0 &&
-          <p className="mt-1 text-sm text-ink/75">UNKNOWN · {zh ? '本次未形成可展示的结论。' : 'No finding is available for this task.'}</p>}
-        {data.insights.filter(insight => insight.task === task).map((insight, index) => <div key={index} className="mt-3 space-y-2 text-sm leading-relaxed">
-          <p><strong>{zh ? 'AI 分析' : 'AI interpretation'}</strong> · {insight.explanation}</p>
-          <ul className="ml-5 list-disc space-y-1">{insight.rebuild.map((line, i) =>
-            <li key={i}><strong>{zh ? '改版建议' : 'Suggested improvement'}</strong> · {line}</li>)}</ul>
-          {insight.checks.map((line, i) => <p key={i}><strong>{zh ? '待核对' : 'To verify'}</strong> · {line}</p>)}
-          <ul aria-label={zh ? '来源证据' : 'Source evidence'} className="flex flex-wrap gap-x-3 gap-y-1">
-            {insight.sources.map(id => <li key={id}><a href={'#vrae-source-' + id} className="font-semibold underline underline-offset-4">
-              {zh ? '查看来源 ' : 'See source '}{data.pages.findIndex(page => page.id === id) + 1}
-            </a></li>)}
-          </ul>
-        </div>)}
-      </section>)}
+      {dimensions.map(({ task, observations }) => {
+        const confirmed = observations.filter(item => item.result === 'PASS' || item.result === 'FAIL_WITH_EVIDENCE')
+        const limits = observations.filter(item => item.result !== 'PASS' && item.result !== 'FAIL_WITH_EVIDENCE')
+        const insights = data.insights.filter(insight => insight.task === task)
+        return <section key={task} className="space-y-2 rounded-lg border border-ink/15 p-3 text-sm leading-relaxed sm:p-4" data-buyer-task={task}>
+          <h4 className="text-base font-semibold">{taskLabels[lang][task]}</h4>
+          {confirmed.length > 0 && <ObservationList items={confirmed} pages={data.pages} zh={zh} />}
+          {limits.length > 0 && <details>
+            <summary className="cursor-pointer py-2 font-semibold">{zh ? '未核实及检查限制' : 'Unverified checks and limits'}（{limits.length}）</summary>
+            <ObservationList items={limits} pages={data.pages} zh={zh} />
+          </details>}
+          {!observations.length && !insights.length && <p className="text-ink/75">
+            {zh ? '本次未取得可核实的结果。' : 'This check produced no verifiable result.'}
+          </p>}
+          {insights.map((insight, index) => <div key={index} className="space-y-2 border-t border-ink/15 pt-3">
+            <p><strong>{zh ? 'AI 分析' : 'AI interpretation'}</strong> · {insight.explanation}</p>
+            <ul className="ml-5 list-disc space-y-1">{insight.rebuild.map((line, i) =>
+              <li key={i}><strong>{zh ? '改版建议' : 'Suggested improvement'}</strong> · {line}</li>)}</ul>
+            {insight.checks.map((line, i) => <p key={i}><strong>{zh ? '待核对' : 'To verify'}</strong> · {line}</p>)}
+            {insight.verification && <p><strong>{zh ? '改完怎么验证' : 'How to verify the improvement'}</strong> · {insight.verification}</p>}
+            <EvidenceLinks ids={insight.sources} pages={data.pages} zh={zh} />
+          </div>)}
+        </section>
+      })}
     </div>
-    <section aria-labelledby="automatic-sources">
-      <h4 id="automatic-sources" className="font-semibold">{zh ? '页面范围与证据' : 'Pages and evidence'}</h4>
-      <ol className="mt-2 space-y-2 text-sm">
+    {(data.pages.length > 0 || !!scope?.failedUrls.length || !!scope?.candidateUrls.length) && <section aria-labelledby="automatic-sources" className="space-y-3 text-sm">
+      <h4 id="automatic-sources" className="text-base font-semibold">{zh ? '页面范围与证据' : 'Pages and evidence'}</h4>
+      <ol className="space-y-2">
         {data.pages.map((page, index) => <li key={page.id} id={'vrae-source-' + page.id} tabIndex={-1}
           className="scroll-mt-24 rounded-md bg-mist/55 p-3 focus-visible:outline-2">
-          <p className="font-semibold">{index + 1}. {page.observed ? (zh ? '已记录页面' : 'Page recorded') : 'UNKNOWN'}</p>
+          <p className="font-semibold">{index + 1}. {page.observed ? (zh ? '已访问页面' : 'Visited page') : 'UNKNOWN'}</p>
           <p className="mt-1 select-all">{page.url}</p>
           {page.checkedAt && <time dateTime={page.checkedAt} className="mt-1 block text-xs">{formatter.format(new Date(page.checkedAt))} UTC</time>}
         </li>)}
       </ol>
-    </section>
+      {!!scope?.failedUrls.length && <details className="rounded-md border border-ink/15 p-3">
+        <summary className="cursor-pointer font-semibold">{zh ? '尝试访问但未取得内容' : 'Attempted pages without content'}（{scope.failedUrls.length}）</summary>
+        <ul className="mt-2 space-y-2">{scope.failedUrls.map(url => <li key={url}>{url}</li>)}</ul>
+      </details>}
+      {!!scope?.candidateUrls.length && <details className="rounded-md border border-ink/15 p-3" data-testid="vrae-unvisited">
+        <summary className="cursor-pointer font-semibold">{zh ? '本次未访问的候选页面' : 'Unvisited candidate pages'}（{scope.candidateUrls.length}）</summary>
+        <p className="mt-2 text-ink/75">{zh ? '这些链接仅列入候选范围，未作评价。' : 'These links were recorded as candidates and were left unassessed.'}</p>
+        {scope.inventoryTruncated && <p className="mt-2 text-ink/75">{zh ? '候选列表已达到本次检查上限。' : 'The candidate list reached the limit for this check.'}</p>}
+        <ul className="mt-2 space-y-2">{scope.candidateUrls.map(url => <li key={url}>{url}</li>)}</ul>
+      </details>}
+    </section>}
   </article>
 }
 
@@ -111,6 +152,7 @@ export function ConnectedPreviewForm() {
   const [sending, setSending] = useState(false)
   const [code, setCode] = useState('')
   const [retryDelay, setRetryDelay] = useState(0)
+  const readStatus = useCallback(() => call('status', { language: lang }), [lang])
 
   const apply = useCallback((reply: ResponseData & { delay: number }) => {
     setState(Object.hasOwn(statusCopy, reply.state) ? reply.state : '')
@@ -125,8 +167,11 @@ export function ConnectedPreviewForm() {
     if (reply.state === 'accepted' || reply.state === 'resume') setStage('task')
     if (reply.state === 'return-issued') setCode(reply.code ?? '')
     if (reply.state === 'denied') setResult(undefined)
-    if (reply.pages && reply.insights && (reply.state === 'diagnosed' || reply.state === 'ai-unavailable')) {
-      setResult({ state: reply.state, pages: reply.pages, insights: reply.insights })
+    if (reply.pages && reply.insights && (
+      reply.state === 'diagnosed' || reply.state === 'ai-unavailable' ||
+      (reply.state === 'analyzing' && reply.buyerTasks?.length) || (reply.state === 'failed' && reply.analysisText)
+    )) {
+      setResult({ ...reply, state: reply.state, pages: reply.pages, insights: reply.insights })
     }
   }, [])
 
@@ -136,12 +181,12 @@ export function ConnectedPreviewForm() {
       if (!active) return
       apply(reply)
       if (reply.state === 'resume') {
-        const status = await call('status')
+        const status = await readStatus()
         if (active) apply(status)
       }
     })
     return () => { active = false }
-  }, [apply])
+  }, [apply, readStatus])
 
   useEffect(() => {
     if (!retryDelay) return
@@ -155,7 +200,7 @@ export function ConnectedPreviewForm() {
     let timer: number
     function schedule() {
       timer = window.setTimeout(async () => {
-        const reply = await call('status')
+        const reply = await readStatus()
         if (!active) return
         apply(reply)
         if (reply.state === state) schedule()
@@ -166,21 +211,21 @@ export function ConnectedPreviewForm() {
       active = false
       window.clearTimeout(timer)
     }
-  }, [apply, sending, state])
+  }, [apply, readStatus, sending, state])
 
   async function run(action: string, fields?: Record<string, string | boolean>) {
     setSending(true)
     setCode('')
     if (action === 'status' || action === 'restore') setResult(undefined)
     try {
-      const reply = await call(action, fields)
+      const reply = await (action === 'status' ? readStatus() : call(action, fields))
       apply(reply)
       if (action === 'prepare' && reply.state === 'prepared') {
         const submitted = await call('submit')
         apply(submitted)
-        if (submitted.state === 'resume') apply(await call('status'))
+        if (submitted.state === 'resume') apply(await readStatus())
       } else if (reply.state === 'resume') {
-        apply(await call('status'))
+        apply(await readStatus())
       }
     } finally {
       setSending(false)

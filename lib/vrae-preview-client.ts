@@ -3,6 +3,7 @@ import { request } from 'node:https'
 import { createHash } from 'node:crypto'
 import type { IncomingHttpHeaders } from 'node:http'
 import type { BuyerTask } from './diagnosis-presentation.ts'
+import { projectPreviewResult, type RuleResult } from './vrae-consumer/vf-preview-adapter.mjs'
 
 export const vfContract = 'vf-vrae-r0.1-vfb.1'
 export const diagnosisVersion = 'vrae.diagnosis-api.v1'
@@ -145,11 +146,15 @@ function diagnosisSession({ body, headers }: Wire, outcome: 'created' | 'restore
 }
 
 type SourcePage = { id: string; url: string; observed: boolean; checkedAt?: string }
-type BuyerInsight = { task: BuyerTask; explanation: string; rebuild: string[]; checks: string[]; sources: string[] }
+type BuyerInsight = { task: BuyerTask; explanation: string; rebuild: string[]; checks: string[]; sources: string[]; verification?: string }
+type RuleObservation = { id: string; result: RuleResult; statusText: string; text: string; sources: string[] }
 export type AutomaticResult = {
   state: 'running' | 'analyzing' | 'failed' | 'diagnosed' | 'ai-unavailable'
   pages: SourcePage[]
   insights: BuyerInsight[]
+  buyerTasks?: { task: BuyerTask; observations: RuleObservation[] }[]
+  analysisText?: string
+  pageScope?: { failedUrls: string[]; candidateUrls: string[]; inventoryTruncated: boolean }
 }
 
 const taskNames: readonly string[] = ['DISCOVER', 'UNDERSTAND', 'TRUST', 'INQUIRE', 'SEARCH_TECHNICAL']
@@ -241,6 +246,40 @@ function projectResult(body: Record<string, unknown>, status: number, ref: strin
   return { state, pages: [...pages.values()], insights: insights.slice(0, 3) }
 }
 
+function presentResult(body: Record<string, unknown>, status: number, ref: string, language: 'zh' | 'en'): AutomaticResult {
+  if (!Object.hasOwn(body, 'customer_presentation')) return projectResult(body, status, ref)
+  const delivery = projectPreviewResult(body, status, ref, language)
+  // Return only customer fields, never VRAE's original records, rule pointers or model metadata.
+  const pages = delivery.pages.map(page => {
+    const url = evidenceUrl(page.url)
+    if (!url || !snapshotPattern.test(page.id) || !Number.isFinite(Date.parse(page.checkedAt))) throw new VraeFailure(503)
+    return { id: page.id, url, observed: true, checkedAt: page.checkedAt }
+  })
+  const state = delivery.aiWarning && !delivery.insights.length ? 'ai-unavailable' : delivery.state
+  return {
+    state, pages,
+    analysisText: state === delivery.state ? customerText(delivery.analysisText) : undefined,
+    insights: delivery.insights.slice(0, 3).map(insight => ({
+      task: insight.task, explanation: insight.explanation, rebuild: insight.rebuild,
+      checks: insight.checks, verification: insight.verification ?? undefined, sources: insight.sources,
+    })),
+    buyerTasks: delivery.buyerTasks.map(task => ({
+      task: task.task,
+      observations: task.observations.map(observation => ({
+        id: observation.observationId, result: observation.result,
+        statusText: customerText(observation.statusText), text: observation.text,
+        sources: observation.sources.map(page => page.snapshot_ref),
+      })),
+    })),
+    pageScope: {
+      failedUrls: delivery.pageScope.failed.map(page => evidenceUrl(page.url)).filter((url): url is string => Boolean(url)),
+      candidateUrls: delivery.pageScope.candidates.filter(page => page.is_defect === false)
+        .map(page => evidenceUrl(page.url)).filter((url): url is string => Boolean(url)),
+      inventoryTruncated: delivery.captureSummary?.inventory_truncated === true,
+    },
+  }
+}
+
 export function createDiagnosisClient(config: ServiceConfig) {
   const send = transport(config, 'diagnosis')
   const post = (path: string, expected: number, raw: string, session: DiagnosisSession) =>
@@ -280,12 +319,12 @@ export function createDiagnosisClient(config: ServiceConfig) {
       if (body.contract_version !== vfContract || body.run_status !== 'CREATED' || body.diagnosis_complete !== false) throw new VraeFailure(503)
       return requireMatch(body.audit_ref, auditRefPattern)
     },
-    async result(ref: string, session: DiagnosisSession) {
+    async result(ref: string, session: DiagnosisSession, language: 'zh' | 'en' = 'zh') {
       const path = resultPath.replace('{audit_ref}', requireMatch(ref, auditRefPattern))
       const { status, body } = await send(
         path, [200, 202], diagnosisMedia, undefined, diagnosisHeaders(session), resultReadTimeoutMs,
       )
-      return projectResult(body, status, ref)
+      return presentResult(body, status, ref, language)
     },
     async issueReturn(ref: string, session: DiagnosisSession) {
       const { body } = await send('/v1/audits/' + requireMatch(ref, auditRefPattern) + '/return-tokens',

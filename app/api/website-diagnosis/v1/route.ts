@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
     }
     if (!current.ref) return reply({ state: 'no-task' }, 403)
     if (body.action === 'status') {
-      const result = await client.result(current.ref, current.session)
+      const result = await client.result(current.ref, current.session, body.language === 'en' ? 'en' : 'zh')
       return reply({ ...result, address: current.address })
     }
     if (body.action === 'return') {
