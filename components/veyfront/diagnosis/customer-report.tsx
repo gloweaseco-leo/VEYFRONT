@@ -9,6 +9,7 @@ import { useLang, type Lang } from '@/lib/i18n'
 import { callDiagnosis, isReportReady, type DiagnosisReply } from './connected-preview-api'
 import { taskLabels } from './copy'
 import { reportPriorities, sampleDocument, sourceTitle, type ReportDocument } from './customer-report-model'
+import { CustomerReportDetails } from './customer-report-details'
 
 const action = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2'
 const heading = 'text-xl font-semibold tracking-tight sm:text-2xl'
@@ -25,26 +26,33 @@ const buyerImpact: Record<BuyerTask, [string, string]> = {
 function ReportBody({ data, lang }: { data: ReportDocument; lang: Lang }) {
   const zh = lang === 'zh'
   const pages = data.pages.filter(page => page.observed)
-  const dimensions = buyerTasks.map(task => ({ task, items: data.buyerTasks?.find(group => group.task === task)?.observations ?? [] }))
-  const observations = dimensions.flatMap(group => group.items)
+  const dimensions = buyerTasks.map(task => ({ task, group: data.buyerTasks?.find(group => group.task === task) }))
+  const observations = dimensions.flatMap(({ group }) => group?.observations ?? [])
   const checked = observations.filter(item => item.result === 'PASS')
   const issues = observations.filter(item => item.result === 'FAIL_WITH_EVIDENCE')
   const priorities = reportPriorities(data)
-  const relatedIds = new Set([...checked, ...issues, ...priorities].flatMap(item => item.sources))
+  const relatedIds = new Set([...checked, ...issues, ...priorities,
+    ...(data.buyerJourney?.paths ?? []), ...(data.procurement?.cards ?? [])].flatMap(item => item.sources))
   const scope = data.pageScope
   const formatter = new Intl.DateTimeFormat(zh ? 'zh-CN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' })
   const recorded = pages.map(page => Date.parse(page.checkedAt ?? '')).filter(Number.isFinite)
   const checkTime = recorded.length ? formatter.format(Math.max(...recorded)) + ' UTC' : null
   const sourceName = (page: typeof pages[number]) => data.sample?.labels[page.id] ?? sourceTitle(page.url, lang)
   const label = (task: BuyerTask) => taskLabels[lang][task]
-  const positiveTasks = dimensions.filter(group => group.items.some(item => item.result === 'PASS')).map(group => label(group.task))
+  const positiveTasks = dimensions.filter(({ group }) => group?.observations.some(item => item.result === 'PASS')).map(group => label(group.task))
 
-  function Sources({ ids }: { ids: string[] }) {
-    return <div className="flex flex-wrap gap-2 text-sm">
-      {pages.map((page, index) => ids.includes(page.id) && <a key={page.id} href={`#evidence-${index + 1}`}
+  function sourceLink(id: string) {
+    const index = pages.findIndex(page => page.id === id)
+    const page = pages[index]
+    return page && <a href={`#evidence-${index + 1}`}
         className="vf-report-source inline-flex min-w-0 items-center gap-1.5 rounded-md bg-mist/65 px-2.5 py-1.5 font-medium underline decoration-ink/40 underline-offset-4">
         {sourceName(page)}<ArrowDown className="size-3.5 shrink-0 vf-report-web-only" aria-hidden="true" />
-      </a>)}
+      </a>
+  }
+
+  function Sources({ ids }: { ids: string[] }) {
+    return ids.length > 0 && <div className="flex flex-wrap gap-2 text-sm">
+      {ids.map(id => <span key={id}>{sourceLink(id)}</span>)}
     </div>
   }
 
@@ -101,25 +109,54 @@ function ReportBody({ data, lang }: { data: ReportDocument; lang: Lang }) {
     <section className={panel + ' space-y-3'} aria-labelledby="report-checks">
       <h2 id="report-checks" className={heading}>{zh ? '五个采购环节' : 'Five buyer tasks'}</h2>
       <div className="vf-report-task-list divide-y divide-ink/15">
-        {dimensions.map(({ task, items }) => {
+        {dimensions.map(({ task, group }) => {
+          const items = group?.observations ?? []
           const known = items.filter(item => item.result === 'PASS' || item.result === 'FAIL_WITH_EVIDENCE')
           const limits = items.filter(item => item.result !== 'PASS' && item.result !== 'FAIL_WITH_EVIDENCE')
+          const notes = group?.sourceNotes ?? []
+          const candidates = group?.reviewCandidates ?? []
           return <section key={task} className="vf-report-keep space-y-1.5 py-3" data-buyer-task={task}>
             <h3 className="font-semibold">{label(task)}</h3>
             {known.length > 0 ? <ul className="space-y-2">{known.map(item => <li key={item.id} data-check-result={item.result} className="space-y-1 text-sm leading-relaxed">
               <p><strong>{item.result === 'PASS' ? (zh ? '已观察到' : 'Observed') : (zh ? '有证据的问题' : 'Issue with evidence')}</strong>{' · '}{item.text}</p>
               <Sources ids={item.sources} />
-            </li>)}</ul> : <p className="text-sm text-ink/70">{zh ? '本次未取得足以判断的证据。' : 'This check did not establish a finding.'}</p>}
+            </li>)}</ul> : <p className="text-sm text-ink/70">{notes.length
+              ? (zh ? '已有部分页面记录，此环节仍需核实。' : 'Some sources were recorded. This task still needs verification.')
+              : (zh ? '本次未取得足以判断的证据。' : 'This check did not establish a finding.')}</p>}
+            {notes.length > 0 && <details className="vf-report-web-only text-sm text-ink/80">
+              <summary className="cursor-pointer py-2 font-medium">{zh ? '查看已记录的页面内容' : 'See what was recorded'}</summary>
+              <ul className="space-y-2 border-l-2 border-ink/15 pl-3">{notes.map((item, i) => <li key={i}>
+                <p>{item.text}</p><Sources ids={item.sources} />
+              </li>)}</ul>
+            </details>}
             {limits.length > 0 && <details className="vf-report-web-only text-sm text-ink/80">
               <summary className="cursor-pointer py-2 font-medium">{zh ? '查看未核实事项和限制' : 'See unverified checks and limits'}</summary>
               <ul className="space-y-2 border-l-2 border-ink/15 pl-3">{limits.map(item => <li key={item.id} data-check-result={item.result}>
                 <p><strong>{item.statusText}</strong>{' · '}{item.text}</p><Sources ids={item.sources} />
               </li>)}</ul>
             </details>}
+            {candidates.length > 0 && <details className="vf-report-web-only text-sm text-ink/80" data-testid="review-candidates">
+              <summary className="cursor-pointer py-2 font-medium">{zh ? '查看待复核事项' : 'See items for review'}</summary>
+              <ul className="space-y-2 border-l-2 border-ink/15 pl-3">{candidates.map((item, i) => {
+                const result = {
+                  PASS: zh ? '有证据可复核' : 'Evidence available for review',
+                  FAIL_WITH_EVIDENCE: zh ? '有待人工核对的异常' : 'Potential issue for review',
+                  UNKNOWN: zh ? '尚待核实' : 'Still to verify',
+                  ACCESS_BLOCKED: zh ? '访问受限' : 'Access limited',
+                  NOT_APPLICABLE: zh ? '本次不适用' : 'Does not apply to this check',
+                }[item.result]
+                return <li key={i}><p><strong>{item.title}</strong> · {result}</p>
+                  <p>{item.text}</p><Sources ids={item.sources} />
+                </li>
+              })}</ul>
+              {group?.reviewLimited && <p className="mt-2">{zh ? '这里只列出部分待复核事项。' : 'Only a subset of review items is shown.'}</p>}
+            </details>}
           </section>
         })}
       </div>
     </section>
+
+    <CustomerReportDetails data={data} zh={zh} panel={panel} heading={heading} sourceLink={sourceLink} />
 
     {pages.length > 0 && <section className={panel + ' space-y-3'} aria-labelledby="report-evidence">
       <h2 id="report-evidence" className={heading}>{zh ? '证据来自哪些页面' : 'Where the evidence comes from'}</h2>

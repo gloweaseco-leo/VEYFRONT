@@ -3,7 +3,7 @@ import { request } from 'node:https'
 import { createHash } from 'node:crypto'
 import type { IncomingHttpHeaders } from 'node:http'
 import type { BuyerTask } from './diagnosis-presentation.ts'
-import { projectPreviewResult, type RuleResult } from './vrae-consumer/vf-preview-adapter.mjs'
+import { projectPreviewResult, type PreviewResult, type RuleResult } from './vrae-consumer/vf-preview-adapter.mjs'
 
 export const vfContract = 'vf-vrae-r0.1-vfb.1'
 export const diagnosisVersion = 'vrae.diagnosis-api.v1'
@@ -148,11 +148,29 @@ function diagnosisSession({ body, headers }: Wire, outcome: 'created' | 'restore
 type SourcePage = { id: string; url: string; observed: boolean; checkedAt?: string }
 type BuyerInsight = { task: BuyerTask; explanation: string; rebuild: string[]; checks: string[]; sources: string[]; verification?: string }
 type RuleObservation = { id: string; result: RuleResult; statusText: string; text: string; sources: string[] }
+type SourceNote = { text: string; sources: string[] }
+type ReviewCandidate = SourceNote & { title: string; result: RuleResult }
+type ProcurementCard = {
+  name: string
+  model?: string
+  sources: string[]
+  fields: { label: string; value: string }[]
+  groups: { title: string; state: string; nextStep: string }[]
+}
+type BuyerTaskResult = {
+  task: BuyerTask
+  observations: RuleObservation[]
+  sourceNotes?: SourceNote[]
+  reviewCandidates?: ReviewCandidate[]
+  reviewLimited?: boolean
+}
 export type AutomaticResult = {
   state: 'running' | 'analyzing' | 'failed' | 'diagnosed' | 'ai-unavailable'
   pages: SourcePage[]
   insights: BuyerInsight[]
-  buyerTasks?: { task: BuyerTask; observations: RuleObservation[] }[]
+  buyerTasks?: BuyerTaskResult[]
+  procurement?: { cards: ProcurementCard[]; limited: boolean }
+  buyerJourney?: { paths: { sources: string[]; complete: boolean; products: number[] }[]; limited: boolean }
   analysisText?: string
   pageScope?: { failedUrls: string[]; candidateUrls: string[]; inventoryTruncated: boolean }
 }
@@ -256,6 +274,25 @@ function presentResult(body: Record<string, unknown>, status: number, ref: strin
     return { id: page.id, url, observed: true, checkedAt: page.checkedAt }
   })
   const state = delivery.aiWarning && !delivery.insights.length ? 'ai-unavailable' : delivery.state
+  const pageIds = new Set(pages.map(page => page.id))
+  const sources = (items: { snapshot_ref: string }[]) =>
+    [...new Set(items.map(page => page.snapshot_ref).filter(id => pageIds.has(id)))]
+  const tasks = delivery.reportView.tasks
+  const products = tasks.find(task => task.task === 'UNDERSTAND')
+  const cards = products?.procurementCards ?? []
+  const paths = delivery.buyerReview?.paths.flatMap(path => {
+    const sequence = path.steps.flatMap(step => sources([step.from, step.to].filter(
+      (page): page is NonNullable<typeof page> => page !== null,
+    )))
+    const ordered = sequence.filter((id, index) => id !== sequence[index - 1])
+    if (!ordered.length) return []
+    return [{ sources: ordered, complete: path.staticPathComplete,
+      products: path.productScopeRefs.map(ref => cards.findIndex(card => card.productScopeRef === ref)).filter(index => index >= 0) }]
+  }).sort((a, b) => Number(b.complete) - Number(a.complete))
+  const sourceNotes = (items: PreviewResult['reportView']['contextFacts']) => items.flatMap(item => {
+    const note = { text: customerText(item.text), sources: sources(item.sources) }
+    return note.text && note.sources.length ? [note] : []
+  })
   return {
     state, pages,
     analysisText: state === delivery.state ? customerText(delivery.analysisText) : undefined,
@@ -263,14 +300,29 @@ function presentResult(body: Record<string, unknown>, status: number, ref: strin
       task: insight.task, explanation: insight.explanation, rebuild: insight.rebuild,
       checks: insight.checks, verification: insight.verification ?? undefined, sources: insight.sources,
     })),
-    buyerTasks: delivery.buyerTasks.map(task => ({
+    buyerTasks: tasks.map(task => ({
       task: task.task,
       observations: task.observations.map(observation => ({
         id: observation.observationId, result: observation.result,
         statusText: customerText(observation.statusText), text: observation.text,
-        sources: observation.sources.map(page => page.snapshot_ref),
+        sources: sources(observation.sources),
       })),
+      sourceNotes: sourceNotes(task.contextFacts),
+      reviewCandidates: task.reviewCandidates.map(item => ({
+        title: customerText(item.title), text: customerText(item.text),
+        result: item.candidateResult, sources: sources(item.sources),
+      })).filter(item => item.title && item.text),
+      reviewLimited: task.reviewCoverage.some(item => item.truncated),
     })),
+    ...(cards.length > 0 && { procurement: {
+      limited: products?.procurementCoverage?.truncated === true,
+      cards: cards.map(card => ({
+        name: card.name, model: card.declaredModel ?? undefined, sources: sources(card.sources),
+        fields: card.fields.map(field => ({ label: field.label, value: field.value })),
+        groups: card.groups.map(group => ({ title: group.title, state: group.state, nextStep: group.nextStep })),
+      })),
+    } }),
+    ...(paths?.length && { buyerJourney: { paths, limited: delivery.buyerReview?.pathCoverage.truncated === true } }),
     pageScope: {
       failedUrls: delivery.pageScope.failed.map(page => evidenceUrl(page.url)).filter((url): url is string => Boolean(url)),
       candidateUrls: delivery.pageScope.candidates.filter(page => page.is_defect === false)

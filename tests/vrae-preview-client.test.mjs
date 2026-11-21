@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
 import { setTimeout as delay } from 'node:timers/promises'
-import { withPresentation } from './fixtures/vrae-presentation.mjs'
+import { withBuyerReview, withPresentation } from './fixtures/vrae-presentation.mjs'
 import {
   createDiagnosisClient, createReportClient, diagnosisVersion, reportContract, reportProfile, vfContract,
 } from '../lib/vrae-preview-client.ts'
@@ -134,6 +134,7 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
     let slowResult = false
     let modernResult = false
     let staleRulePointer = false
+    let reviewResult = false
     server = createServer({
       ...serverIdentity, ca: [appIdentity.cert, reviewIdentity.cert], rejectUnauthorized: true, requestCert: true,
     }, async (req, res) => {
@@ -237,6 +238,7 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
             }], deterministic_diagnosis: { internal_fixture: slowResult ? 'x'.repeat(735_000) : true },
           }
           const payload = modernResult ? withPresentation(dto, dto.evidence[0]) : dto
+          if (reviewResult) withBuyerReview(payload)
           if (staleRulePointer) payload.customer_presentation.tasks[1].observations[0].source_pointer =
             '/deterministic_diagnosis/buyer_tasks/0/rules/0/observations/0'
           return respond(pending ? 202 : 200, payload, {}, slowResult ? 8_500 : 0)
@@ -348,6 +350,19 @@ test('diagnosis and independent customer report contracts over actual mutual TLS
       assert.equal(withheld.state, 'ai-unavailable')
       assert.equal(withheld.buyerTasks.length, 5)
       assert.deepEqual(withheld.insights, [])
+      resultState = 'AI_UNAVAILABLE'
+      reviewResult = true
+      const partial = await diagnosis.result(audit, restored, 'en')
+      assert.equal(partial.state, 'ai-unavailable')
+      const technical = partial.buyerTasks[4]
+      assert.equal(technical.observations[0].result, 'UNKNOWN')
+      assert.deepEqual(technical.sourceNotes, [{ text: 'A page title was recorded.', sources: [sourcePage] }])
+      assert.deepEqual(technical.reviewCandidates, [{ title: 'Retained response',
+        text: 'Review this against the visited page.', result: 'PASS', sources: [sourcePage] }])
+      assert.deepEqual(partial.procurement.cards[0].fields, [{ label: 'Size', value: '100 mm' }])
+      assert.deepEqual(partial.buyerJourney.paths, [{ sources: [sourcePage], complete: false, products: [] }])
+      assert.deepEqual(partial.insights, [])
+      assert.doesNotMatch(JSON.stringify(partial), /sourcePointer|content_sha256|byte_start|productScopeRef|s2ProjectionRef/)
       staleRulePointer = true
       await assert.rejects(diagnosis.result(audit, restored), /INVALID_DIAGNOSIS_DELIVERY/)
     })

@@ -37,7 +37,24 @@ export function sampleDocument(lang: Lang): ReportDocument {
     }[result]
     return { task, observations: [{ id, result, statusText, text: item.fact, sources }] }
   })
-  return { address: source.targetUrl, state: 'diagnosed', pages, buyerTasks: tasks, insights: [], sample }
+  const productEvidence = source.results.UNDERSTAND
+  const productPage = pages.find(page => productEvidence.status !== 'UNKNOWN' && page.url === productEvidence.evidence.url)
+  return {
+    address: source.targetUrl, state: 'diagnosed', pages, buyerTasks: tasks, insights: [], sample,
+    ...(productPage && {
+      buyerJourney: {
+        paths: [{ sources: pages.map(page => page.id), complete: false, products: [0] }], limited: false,
+      },
+      procurement: {
+        limited: false,
+        cards: [{ name: 'FV240 Floating Ball Valve', model: 'FV240', sources: [productPage.id],
+          fields: [{ label: 'Body', value: 'Stainless steel 316' }, { label: 'Connection bore', value: '15–50 mm' }],
+          groups: [{ title: zh ? '压力等级' : 'Pressure rating', state: 'NOT_OBSERVED_IN_CAPTURE',
+            nextStep: zh ? '向企业核对完整规格书。' : 'Ask the supplier for the full data sheet.' }],
+        }],
+      },
+    }),
+  }
 }
 
 export function reportPriorities(data: ReportDocument) {
