@@ -3,6 +3,8 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { DiagnosisPreview } from '@/components/veyfront/diagnosis/preview'
 import { diagnosisPreviewEnabled } from '@/lib/diagnosis-preview'
+import { localG1Enabled } from '@/lib/vrae-g1-local'
+import { isAutomaticPreviewHost, previewConfig } from '@/lib/vrae-preview'
 
 export async function generateMetadata(): Promise<Metadata> {
   const en = (await headers()).get('x-vf-page-locale') === 'en'
@@ -13,7 +15,9 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default function Page() {
+export default async function Page() {
   if (!diagnosisPreviewEnabled) notFound()
-  return <DiagnosisPreview />
+  // Locale rewrites can change the render request's Host. The API checks the browser's original host.
+  const connectedPreview = isAutomaticPreviewHost(process.env.VERCEL_URL ?? null) && Boolean(previewConfig())
+  return <DiagnosisPreview offlineG1={localG1Enabled()} connectedPreview={connectedPreview} />
 }

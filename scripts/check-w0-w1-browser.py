@@ -51,7 +51,10 @@ def run():
     if not executable:
         raise RuntimeError("Chromium binary not installed")
     log = open(OUT / "server.log", "w", encoding="utf-8")
-    server = subprocess.Popen(["pnpm", "start", "-p", "3100", "-H", "127.0.0.1"], stdout=log, stderr=subprocess.STDOUT)
+    server = subprocess.Popen(
+        ["node", "node_modules/next/dist/bin/next", "start", "-p", "3100", "-H", "127.0.0.1"],
+        stdout=log, stderr=subprocess.STDOUT,
+    )
     try:
         wait_server()
         with sync_playwright() as p:
@@ -134,6 +137,7 @@ def run():
             server.wait(timeout=10)
         except subprocess.TimeoutExpired:
             server.kill()
+            server.wait()
         log.close()
 
 if __name__ == "__main__":

@@ -1,0 +1,435 @@
+// Server only. The browser never supplies an upstream host, service credentials, or path.
+import { request } from 'node:https'
+import { createHash } from 'node:crypto'
+import type { IncomingHttpHeaders } from 'node:http'
+import type { BuyerTask } from './diagnosis-presentation.ts'
+import { projectPreviewResult, type PreviewResult, type RuleResult } from './vrae-consumer/vf-preview-adapter.mjs'
+
+export const vfContract = 'vf-vrae-r0.1-vfb.1'
+export const diagnosisVersion = 'vrae.diagnosis-api.v1'
+export const reportContract = 'vrae.report-authority.v1'
+export const reportProfile = 'VERIFIED_HUMAN_CUSTOMER_REPORT'
+export const auditRefPattern = /^aref-[0-9a-f]{32}$/
+export const privateTokenPattern = /^[A-Za-z0-9._~-]{16,512}$/
+export const digestPattern = /^[0-9a-f]{64}$/
+const diagnosisMedia = `application/vnd.vrae.launch+json; profile="${vfContract}"`
+const reportMedia = `application/vnd.vrae.report+json; profile="${reportContract}"`
+const jsonMedia = 'application/json'
+const targetCookie = '__Host-vrae-targets'
+const intakeContract = 'vrae.target-intake.v1'
+const sessionPath = '/v1/diagnosis-sessions'
+const diagnosisPath = '/v1/diagnoses'
+const resultPath = '/v1/audits/{audit_ref}/diagnosis'
+const resultReadTimeoutMs = 20_000
+const automaticConsentVersion = 'VRAE-AUTO-DIAGNOSIS-1'
+const automaticConsentText = 'I am authorized to permit bounded read-only diagnosis of this HTTPS website and its public same-origin pages, including processing minimized typed evidence by Alibaba Bailian qwen4-max in cn-beijing. Raw HTML and PII are excluded from model input. Automated conclusions and suggestions may be returned to me; they are not human-certified findings. No login, write or form submission is authorized.'
+
+export type ServiceConfig = {
+  origin: URL
+  sourceSha: string
+  ca: string
+  cert: string
+  key: string
+  bearer: string
+}
+export type DiagnosisSession = { cookie: string; csrf: string; expiresAt: number }
+export type DiagnosisConsent = { version: string; text: string; hash: string }
+type Wire = { status: number; body: Record<string, unknown>; headers: IncomingHttpHeaders }
+type FailureStatus = 403 | 404 | 409 | 429 | 503
+export class VraeFailure extends Error {
+  readonly status: FailureStatus
+  readonly retryAfter?: number
+
+  constructor(status: FailureStatus, retryAfter?: number) {
+    super('VRAE request unavailable')
+    this.status = status
+    this.retryAfter = retryAfter
+  }
+}
+
+export function object(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown> : undefined
+}
+
+function requireMatch(value: unknown, pattern: RegExp): string {
+  if (typeof value !== 'string' || !pattern.test(value)) throw new VraeFailure(503)
+  return value
+}
+
+function transport(config: ServiceConfig, profile: 'diagnosis' | 'report') {
+  return (path: string, expected: number | readonly number[], media: string, raw?: string, privateHeaders?: Record<string, string>, timeoutMs = 8_000) =>
+    new Promise<Wire>((resolve, reject) => {
+      const headers: Record<string, string | number> = {
+        Accept: media,
+        Authorization: 'Bearer ' + config.bearer,
+        ...privateHeaders,
+      }
+      if (profile === 'report') headers['X-Report-Profile'] = reportProfile
+      if (raw !== undefined) {
+        headers['Content-Type'] = media
+        headers['Content-Length'] = Buffer.byteLength(raw)
+      }
+      const connection = request(config.origin, {
+        path, headers, method: raw === undefined ? 'GET' : 'POST',
+        ca: config.ca, cert: config.cert, key: config.key,
+        rejectUnauthorized: true, minVersion: 'TLSv1.2', agent: false,
+        signal: AbortSignal.timeout(timeoutMs),
+      }, response => {
+        const meta = response.headers
+        const scope = profile === 'diagnosis' ? meta['x-vrae-api-version'] === diagnosisVersion
+          : meta['x-vrae-scope'] === reportProfile
+        const status = response.statusCode ?? 0
+        const ok = typeof expected === 'number' ? status === expected : expected.includes(status)
+        const expectedMedia = meta['content-type'] === media ||
+          (profile === 'diagnosis' && media === jsonMedia && !ok &&
+            meta['content-type'] === diagnosisMedia)
+        if (
+          !expectedMedia || meta['x-vrae-source-sha'] !== config.sourceSha || !scope ||
+          !/(?:^|,\s*)no-store(?:,|$)/i.test(meta['cache-control'] ?? '')
+        ) {
+          response.destroy()
+          reject(new VraeFailure(503))
+          return
+        }
+        let size = 0
+        const chunks: Buffer[] = []
+        response.on('data', (chunk: Buffer) => {
+          size += chunk.byteLength
+          if (size > 2_000_000) response.destroy(new VraeFailure(503))
+          else chunks.push(chunk)
+        })
+        response.on('error', () => reject(new VraeFailure(503)))
+        response.on('end', () => {
+          try {
+            const body = object(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks))))
+            if (!body) throw new VraeFailure(503)
+            if (!ok) {
+              if (status === 403 || status === 404 || status === 409) throw new VraeFailure(status)
+              if (status === 429) {
+                const seconds = Number(meta['retry-after'] ?? body.retry_after_seconds)
+                throw new VraeFailure(429, Number.isInteger(seconds) && seconds >= 1 && seconds <= 900 ? seconds : 60)
+              }
+              throw new VraeFailure(503)
+            }
+            resolve({ status, body, headers: meta })
+          } catch (error) {
+            reject(error instanceof VraeFailure ? error : new VraeFailure(503))
+          }
+        })
+      })
+      connection.on('error', () => reject(new VraeFailure(503)))
+      connection.end(raw)
+    })
+}
+
+function diagnosisHeaders(session: DiagnosisSession) {
+  if (session.expiresAt <= Date.now()) throw new VraeFailure(403)
+  return { Cookie: `${targetCookie}=${session.cookie}`, 'X-CSRF-Token': session.csrf }
+}
+
+function diagnosisSession({ body, headers }: Wire, outcome: 'created' | 'restored'): DiagnosisSession {
+  const lines = headers['set-cookie']?.filter(line => line.startsWith(targetCookie + '=')) ?? []
+  if (body[outcome] !== true || lines.length !== 1) throw new VraeFailure(503)
+  const [pair, ...rawAttributes] = lines[0].split(';').map(part => part.trim())
+  const attributes = rawAttributes.map(part => part.toLowerCase())
+  const age = attributes.filter(attr => /^max-age=[1-9]\d*$/.test(attr))
+  if (
+    ['path=/', 'secure', 'httponly', 'samesite=strict'].some(attr => !attributes.includes(attr)) ||
+    attributes.some(attr => /^domain\s*=/.test(attr)) || age.length !== 1
+  ) throw new VraeFailure(503)
+  return {
+    cookie: requireMatch(pair.slice(targetCookie.length + 1), privateTokenPattern),
+    csrf: requireMatch(headers['x-csrf-token'], privateTokenPattern),
+    expiresAt: Date.now() + 1000 * Math.min(Number(age[0].slice(8)), 3600),
+  }
+}
+
+type SourcePage = { id: string; url: string; observed: boolean; checkedAt?: string }
+type BuyerInsight = { task: BuyerTask; explanation: string; rebuild: string[]; checks: string[]; sources: string[]; verification?: string }
+type RuleObservation = { id: string; result: RuleResult; statusText: string; text: string; sources: string[] }
+type SourceNote = { text: string; sources: string[] }
+type ReviewCandidate = SourceNote & { title: string; result: RuleResult }
+type ProcurementCard = {
+  name: string
+  model?: string
+  sources: string[]
+  fields: { label: string; value: string }[]
+  groups: { title: string; state: string; nextStep: string }[]
+}
+type BuyerTaskResult = {
+  task: BuyerTask
+  observations: RuleObservation[]
+  sourceNotes?: SourceNote[]
+  reviewCandidates?: ReviewCandidate[]
+  reviewLimited?: boolean
+}
+export type AutomaticResult = {
+  state: 'running' | 'analyzing' | 'failed' | 'diagnosed' | 'ai-unavailable'
+  pages: SourcePage[]
+  insights: BuyerInsight[]
+  buyerTasks?: BuyerTaskResult[]
+  procurement?: { cards: ProcurementCard[]; limited: boolean }
+  buyerJourney?: { paths: { sources: string[]; complete: boolean; products: number[] }[]; limited: boolean }
+  analysisText?: string
+  pageScope?: { failedUrls: string[]; candidateUrls: string[]; inventoryTruncated: boolean }
+}
+
+const taskNames: readonly string[] = ['DISCOVER', 'UNDERSTAND', 'TRUST', 'INQUIRE', 'SEARCH_TECHNICAL']
+const snapshotPattern = /^page-[a-f0-9]{64}$/
+
+function list(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : []
+}
+
+function evidenceUrl(value: unknown) {
+  if (typeof value !== 'string' || value.length > 1024) return
+  try {
+    const url = new URL(value)
+    if (url.protocol === 'https:' && !url.username && !url.password && !url.search && !url.hash) return url.href
+  } catch {
+    return
+  }
+}
+
+function customerText(value: unknown): string {
+  return typeof value === 'string' && value.length <= 600 ? value.trim() : ''
+}
+
+function projectResult(body: Record<string, unknown>, status: number, ref: string): AutomaticResult {
+  if (body.contract !== 'vrae.automatic-diagnosis.v1' || body.audit_ref !== ref ||
+      body.formal_human_review !== false || body.publication !== 'UNPUBLISHED') throw new VraeFailure(503)
+  const states = {
+    CAPTURE_PENDING: 'running', AI_PENDING: 'analyzing', CAPTURE_FAILED: 'failed',
+    DIAGNOSED: 'diagnosed', AI_UNAVAILABLE: 'ai-unavailable',
+  } as const
+  const wireState = body.state
+  if (typeof wireState !== 'string' || !Object.hasOwn(states, wireState)) throw new VraeFailure(503)
+  const state = states[wireState as keyof typeof states]
+  if ((status === 202) !== (state === 'running' || state === 'analyzing') ||
+      body.diagnosis_complete !== (state === 'diagnosed')) throw new VraeFailure(503)
+
+  const pages = new Map<string, SourcePage>()
+  for (const value of list(body.evidence)) {
+    const item = object(value)
+    const url = evidenceUrl(item?.url)
+    const id = item?.snapshot_ref
+    const checkedAt = item?.observed_at
+    if (typeof id === 'string' && snapshotPattern.test(id) && url &&
+        typeof checkedAt === 'string' && Number.isFinite(Date.parse(checkedAt))) {
+      pages.set(id, { id, url, checkedAt, observed: item?.status === 'OBSERVED' })
+    }
+  }
+  const knownUrls = new Set(Array.from(pages.values(), page => page.url))
+  for (const value of list(body.coverage)) {
+    const item = object(value)
+    const url = evidenceUrl(item?.url)
+    if (item?.scope === 'PAGE' && url && !knownUrls.has(url) && pages.size < 24) {
+      knownUrls.add(url)
+      const id = 'coverage-' + pages.size
+      pages.set(id, { id, url, observed: false })
+    }
+  }
+  const insights: BuyerInsight[] = []
+  if (state === 'diagnosed') {
+    const model = object(body.model)
+    if (model?.verification_realm !== 'REAL_PROVIDER' || model.real_model_calls !== 1 ||
+        model.state !== 'AI_CANDIDATES_FOR_HUMAN_REVIEW' ||
+        object(model.usage)?.usage_origin !== 'PROVIDER_REPORTED') throw new VraeFailure(503)
+    for (const value of list(body.claims)) {
+      const claim = object(value)
+      if (!claim) continue
+      const task = claim.task
+      const explanation = customerText(claim.explanation)
+      if (typeof task !== 'string' || !taskNames.includes(task) || !explanation ||
+          claim.status !== 'HUMAN_REVIEW_REQUIRED' || claim.guard_semantic_approval !== false) continue
+      const bindings = object(claim.source_bindings)
+      const sources = new Set<string>()
+      for (const key of [...list(claim.refs), ...list(claim.counter_refs)]) {
+        if (typeof key !== 'string' || !bindings || !Object.hasOwn(bindings, key)) continue
+        const binding = object(bindings[key])
+        const citation = object(object(object(binding?.fact)?.source)?.citation)
+        const id = citation?.snapshot_ref
+        const page = typeof id === 'string' ? pages.get(id) : undefined
+        if (binding?.type === 'GUARD_LITERAL' && page?.observed && evidenceUrl(citation?.url) === page.url) {
+          sources.add(page.id)
+        }
+      }
+      const rebuild = list(claim.rebuild).map(customerText).filter(Boolean)
+      const checks = [...list(claim.uncertainties), ...list(claim.questions)].map(customerText).filter(Boolean)
+      if (sources.size && rebuild.length) insights.push({ task: task as BuyerTask, explanation, rebuild, checks, sources: [...sources] })
+    }
+    if (!insights.length) throw new VraeFailure(503)
+  }
+  return { state, pages: [...pages.values()], insights: insights.slice(0, 3) }
+}
+
+function presentResult(body: Record<string, unknown>, status: number, ref: string, language: 'zh' | 'en'): AutomaticResult {
+  if (!Object.hasOwn(body, 'customer_presentation')) return projectResult(body, status, ref)
+  const delivery = projectPreviewResult(body, status, ref, language)
+  // Return only customer fields, never VRAE's original records, rule pointers or model metadata.
+  const pages = delivery.pages.map(page => {
+    const url = evidenceUrl(page.url)
+    if (!url || !snapshotPattern.test(page.id) || !Number.isFinite(Date.parse(page.checkedAt))) throw new VraeFailure(503)
+    return { id: page.id, url, observed: true, checkedAt: page.checkedAt }
+  })
+  const state = delivery.aiWarning && !delivery.insights.length ? 'ai-unavailable' : delivery.state
+  const pageIds = new Set(pages.map(page => page.id))
+  const sources = (items: { snapshot_ref: string }[]) =>
+    [...new Set(items.map(page => page.snapshot_ref).filter(id => pageIds.has(id)))]
+  const tasks = delivery.reportView.tasks
+  const products = tasks.find(task => task.task === 'UNDERSTAND')
+  const cards = products?.procurementCards ?? []
+  const paths = delivery.buyerReview?.paths.flatMap(path => {
+    const sequence = path.steps.flatMap(step => sources([step.from, step.to].filter(
+      (page): page is NonNullable<typeof page> => page !== null,
+    )))
+    const ordered = sequence.filter((id, index) => id !== sequence[index - 1])
+    if (!ordered.length) return []
+    return [{ sources: ordered, complete: path.staticPathComplete,
+      products: path.productScopeRefs.map(ref => cards.findIndex(card => card.productScopeRef === ref)).filter(index => index >= 0) }]
+  }).sort((a, b) => Number(b.complete) - Number(a.complete))
+  const sourceNotes = (items: PreviewResult['reportView']['contextFacts']) => items.flatMap(item => {
+    const note = { text: customerText(item.text), sources: sources(item.sources) }
+    return note.text && note.sources.length ? [note] : []
+  })
+  return {
+    state, pages,
+    analysisText: state === delivery.state ? customerText(delivery.analysisText) : undefined,
+    insights: delivery.insights.slice(0, 3).map(insight => ({
+      task: insight.task, explanation: insight.explanation, rebuild: insight.rebuild,
+      checks: insight.checks, verification: insight.verification ?? undefined, sources: insight.sources,
+    })),
+    buyerTasks: tasks.map(task => ({
+      task: task.task,
+      observations: task.observations.map(observation => ({
+        id: observation.observationId, result: observation.result,
+        statusText: customerText(observation.statusText), text: observation.text,
+        sources: sources(observation.sources),
+      })),
+      sourceNotes: sourceNotes(task.contextFacts),
+      reviewCandidates: task.reviewCandidates.map(item => ({
+        title: customerText(item.title), text: customerText(item.text),
+        result: item.candidateResult, sources: sources(item.sources),
+      })).filter(item => item.title && item.text),
+      reviewLimited: task.reviewCoverage.some(item => item.truncated),
+    })),
+    ...(cards.length > 0 && { procurement: {
+      limited: products?.procurementCoverage?.truncated === true,
+      cards: cards.map(card => ({
+        name: card.name, model: card.declaredModel ?? undefined, sources: sources(card.sources),
+        fields: card.fields.map(field => ({ label: field.label, value: field.value })),
+        groups: card.groups.map(group => ({ title: group.title, state: group.state, nextStep: group.nextStep })),
+      })),
+    } }),
+    ...(paths?.length && { buyerJourney: { paths, limited: delivery.buyerReview?.pathCoverage.truncated === true } }),
+    pageScope: {
+      failedUrls: delivery.pageScope.failed.map(page => evidenceUrl(page.url)).filter((url): url is string => Boolean(url)),
+      candidateUrls: delivery.pageScope.candidates.filter(page => page.is_defect === false)
+        .map(page => evidenceUrl(page.url)).filter((url): url is string => Boolean(url)),
+      inventoryTruncated: delivery.captureSummary?.inventory_truncated === true,
+    },
+  }
+}
+
+export function createDiagnosisClient(config: ServiceConfig) {
+  const send = transport(config, 'diagnosis')
+  const post = (path: string, expected: number, raw: string, session: DiagnosisSession) =>
+    send(path, expected, diagnosisMedia, raw, diagnosisHeaders(session))
+  return {
+    async ready() {
+      const { body } = await send('/health/ready', 200, jsonMedia)
+      return body.api_version === diagnosisVersion && body.status === 'READY' && body.source_sha === config.sourceSha
+    },
+    async openapi() {
+      const { body } = await send('/v1/openapi.json', 200, jsonMedia)
+      const paths = object(body.paths)
+      if (!object(object(paths?.[sessionPath])?.post) || !object(object(paths?.[diagnosisPath])?.post) ||
+          !object(object(paths?.[resultPath])?.get)) {
+        throw new VraeFailure(503)
+      }
+    },
+    async intake(): Promise<DiagnosisConsent> {
+      const { body } = await send('/v1/target-intake-contract', 200, jsonMedia)
+      const automatic = object(body.automatic_diagnosis)
+      if (body.contract !== intakeContract || automatic?.method !== 'POST' || automatic.path !== diagnosisPath ||
+          automatic.result_path !== resultPath || automatic.consent_version !== automaticConsentVersion ||
+          automatic.consent_text !== automaticConsentText) throw new VraeFailure(503)
+      const hash = createHash('sha256').update(JSON.stringify(automaticConsentText)).digest('hex')
+      return { version: automaticConsentVersion, text: automaticConsentText, hash }
+    },
+    async createSession() {
+      return diagnosisSession(await send(sessionPath, 200, diagnosisMedia, '{}'), 'created')
+    },
+    async restoreSession(token: string) {
+      if (!privateTokenPattern.test(token)) throw new VraeFailure(403)
+      const raw = JSON.stringify({ return_token: token })
+      return diagnosisSession(await send('/v1/return-sessions', 200, diagnosisMedia, raw), 'restored')
+    },
+    async submit(raw: string, session: DiagnosisSession) {
+      const { body } = await post(diagnosisPath, 202, raw, session)
+      if (body.contract_version !== vfContract || body.run_status !== 'CREATED' || body.diagnosis_complete !== false) throw new VraeFailure(503)
+      return requireMatch(body.audit_ref, auditRefPattern)
+    },
+    async result(ref: string, session: DiagnosisSession, language: 'zh' | 'en' = 'zh') {
+      const path = resultPath.replace('{audit_ref}', requireMatch(ref, auditRefPattern))
+      const { status, body } = await send(
+        path, [200, 202], diagnosisMedia, undefined, diagnosisHeaders(session), resultReadTimeoutMs,
+      )
+      return presentResult(body, status, ref, language)
+    },
+    async issueReturn(ref: string, session: DiagnosisSession) {
+      const { body } = await send('/v1/audits/' + requireMatch(ref, auditRefPattern) + '/return-tokens',
+        201, diagnosisMedia, '{"ttl_seconds":300}', diagnosisHeaders(session))
+      if (body.contract !== 'vrae.task-return-token.v1') throw new VraeFailure(503)
+      return requireMatch(body.return_token, privateTokenPattern)
+    },
+  }
+}
+
+/** Private customer read boundary. Connect a trusted per-person MFA/grant handoff before using from the website. */
+export function createReportClient(config: ServiceConfig) {
+  const send = transport(config, 'report')
+  const call = async (path: string, raw?: string, headers?: Record<string, string>) => {
+    const result = await send('/v1/report-authority' + path, 200, reportMedia, raw, headers)
+    if (result.body.contract !== reportContract) throw new VraeFailure(503)
+    return result
+  }
+  return {
+    async ready() {
+      const { body } = await call('/health')
+      return body.ready === true && body.customer_release === true
+    },
+    async challenge() {
+      const { body } = await call('/challenge', '{}')
+      return { nonce: requireMatch(body.nonce, privateTokenPattern), csrf: requireMatch(body.csrf, privateTokenPattern) }
+    },
+    async exchange(responsibleBearer: string, challenge: { nonce: string; csrf: string }) {
+      if (!/^Bearer [\w-]+\.[\w-]+\.[\w-]+$/.test(responsibleBearer) || responsibleBearer.length > 16_000) throw new VraeFailure(403)
+      const { body } = await call('/session', JSON.stringify({
+        responsible_bearer: responsibleBearer,
+        nonce: requireMatch(challenge.nonce, privateTokenPattern),
+        csrf: requireMatch(challenge.csrf, privateTokenPattern),
+      }))
+      return requireMatch(body.report_session, privateTokenPattern)
+    },
+    async read(ref: string, authority: { session: string; grant: string; token: string }) {
+      const { body, headers } = await call('/audits/' + requireMatch(ref, auditRefPattern) + '/report', undefined, {
+        'X-Report-Session': requireMatch(authority.session, privateTokenPattern),
+        'X-Report-Grant': requireMatch(authority.grant, privateTokenPattern),
+        'X-Report-Token': requireMatch(authority.token, privateTokenPattern),
+      })
+      const version = object(body.report_version)
+      const decision = object(body.review_decision)
+      const hash = requireMatch(body.display_hash, digestPattern)
+      if (
+        body.scope !== reportProfile || body.formal_human_review !== true || body.external_release !== true ||
+        !object(body.report) || !version || version.status !== 'APPROVED' || !decision ||
+        decision.action !== 'APPROVE' || typeof version.report_version_id !== 'string' ||
+        decision.report_version_id !== version.report_version_id || decision.version !== version.version ||
+        headers.etag !== '"' + hash + '"'
+      ) throw new VraeFailure(403)
+      return body
+    },
+  }
+}

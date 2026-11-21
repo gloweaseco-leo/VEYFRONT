@@ -1,0 +1,91 @@
+.vf-customer-report-page ~ [data-testid="mobile-nav-spacer"],
+.vf-customer-report-page ~ [data-testid="mobile-quick-nav"] {
+  display: none;
+}
+
+@page vf-diagnosis {
+  size: A4;
+  margin: 15mm;
+}
+
+@media print {
+  html:has(.vf-customer-report-page),
+  body:has(.vf-customer-report-page) {
+    background: white;
+  }
+
+  body:has(.vf-customer-report-page) > :not(.vf-customer-report-page) {
+    display: none !important;
+  }
+
+  .vf-customer-report-page {
+    page: vf-diagnosis;
+    min-height: 0;
+    background: white;
+    color: #17262d;
+    font-size: 10pt;
+  }
+
+  .vf-customer-report-page .vf-report-controls,
+  .vf-customer-report-page .vf-report-web-only {
+    display: none !important;
+  }
+
+  .vf-customer-report-page .vf-report-content {
+    margin: 0;
+    padding: 0;
+  }
+
+  .vf-report-content > :not(:last-child) {
+    margin-block-end: 10pt;
+  }
+
+  .vf-report-content .vf-report-panel {
+    padding: 9pt;
+    border-radius: 4pt;
+  }
+
+  .vf-report-content .vf-report-task-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 12pt;
+  }
+
+  .vf-report-content .vf-report-source {
+    padding: 0;
+    background: transparent;
+  }
+
+  .vf-customer-report-page .vf-report-hero {
+    background: white;
+    color: #17262d;
+    border-bottom: 2px solid #17262d;
+    border-radius: 0;
+    padding: 2pt 0 10pt;
+  }
+
+  .vf-customer-report-page .vf-report-hero * {
+    color: #17262d;
+  }
+
+  .vf-customer-report-page .vf-report-keep {
+    break-inside: avoid;
+  }
+
+  .vf-report-content [data-buyer-task],
+  .vf-report-content [id^="evidence-"] {
+    padding-block: 5pt;
+  }
+
+  .vf-report-content p,
+  .vf-report-content li,
+  .vf-report-content dd {
+    font-size: 9.5pt;
+    line-height: 1.4;
+  }
+
+  .vf-customer-report-page h2,
+  .vf-customer-report-page h3 {
+    break-after: avoid;
+  }
+}

@@ -21,19 +21,20 @@ TARGET = "https://qa-domain.example.com/" + "long-public-path-" * 20
 @contextmanager
 def server(environment):
     with (ROOT / f"server-{environment}.log").open("w", encoding="utf-8") as log:
+        # Start Next directly so terminating this process frees the port for the next environment.
         with subprocess.Popen(
-            ["pnpm", "exec", "next", "start", "-p", "3101", "-H", "127.0.0.1"],
+            ["node", "node_modules/next/dist/bin/next", "start", "-p", "3101", "-H", "127.0.0.1"],
             env={**os.environ, "VERCEL_ENV": environment}, stdout=log, stderr=subprocess.STDOUT,
         ) as process:
             try:
                 for _ in range(100):
+                    if process.poll() is not None:
+                        raise RuntimeError(f"Next.js exited in {environment}")
                     try:
                         with urllib.request.urlopen(BASE, timeout=2) as response:
                             if response.status == 200:
                                 break
                     except OSError:
-                        if process.poll() is not None:
-                            raise RuntimeError(f"Next.js exited in {environment}")
                         time.sleep(0.3)
                 else:
                     raise RuntimeError(f"Next.js did not start in {environment}")
@@ -44,6 +45,7 @@ def server(environment):
                     process.wait(timeout=7)
                 except subprocess.TimeoutExpired:
                     process.kill()
+                    process.wait()
 
 
 def run():
@@ -62,8 +64,27 @@ def run():
         except urllib.error.HTTPError as error:
             return error.code
 
+    def connected_api_closed():
+        request = urllib.request.Request(
+            BASE + "/api/website-diagnosis/v1",
+            data=b'{"action":"status"}',
+            headers={"Content-Type": "application/json", "Origin": BASE},
+            method="POST",
+        )
+        try:
+            urllib.request.urlopen(request, timeout=10).close()
+            return False
+        except urllib.error.HTTPError as error:
+            with error:
+                return (
+                    error.code == 404
+                    and "no-store" in error.headers.get("Cache-Control", "")
+                    and json.load(error) == {"state": "closed"}
+                )
+
     try:
         with server("production"):
+            check(connected_api_closed(), "production connected VRAE endpoint is closed")
             for prefix in ("", "/en"):
                 check(status(prefix + PATH) == 404, prefix + " live diagnostic route is closed")
                 for path in ("/", "/start/rebuild"):
@@ -77,6 +98,7 @@ def run():
 
         executable = next((shutil.which(name) for name in ("google-chrome", "chromium") if shutil.which(name)), None)
         with server("preview"), sync_playwright() as playwright:
+            check(connected_api_closed(), "unconfigured preview connected VRAE endpoint is closed")
             for width in (320, 375, 390, 1440):
                 for locale, prefix in (("zh", ""), ("en", "/en")):
                     label = f"{width}/{locale}"
@@ -94,10 +116,15 @@ def run():
                     expect(page).to_have_url(BASE + prefix + PATH)
                     check(page.locator("html").get_attribute("lang") == ("zh-CN" if locale == "zh" else "en"), label + " browser locale")
                     check(page.locator("h1").count() == 1, label + " one H1")
-                    check("noindex" in page.locator('meta[name="robots"]').get_attribute("content"),
+                    robots_tags = page.locator('head meta[name="robots"]')
+                    expect(robots_tags.first).to_have_attribute("content", "noindex, nofollow")
+                    check(all("noindex" in tag.get_attribute("content") for tag in robots_tags.all()),
                           label + " preview noindex")
                     check(page.locator('meta[name="referrer"]').get_attribute("content") == "no-referrer", label + " referrer suppressed")
                     check(page.locator("#diagnosis-address").get_attribute("name") is None, label + " address not serialized")
+                    pending = page.get_by_test_id("vrae-preview-pending")
+                    expect(pending).to_contain_text("自动诊断暂未开放" if locale == "zh" else "Automated diagnosis is currently closed")
+                    check(page.get_by_test_id("vrae-preview-form").count() == 0, label + " unavailable service shows no submission form")
                     requests.clear()
                     address = page.locator("#diagnosis-address")
                     feedback = page.locator("#diagnosis-feedback")

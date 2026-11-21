@@ -6,9 +6,12 @@ import Link from '@/components/l2m/localized-link'
 import { PageShell } from '@/components/site/page-shell'
 import { useLang } from '@/lib/i18n'
 import { diagnosisAddressStatus } from '@/lib/diagnosis-presentation'
+import { diagnosisReportPath } from '@/lib/diagnosis-preview'
 import { previewStates, stateCopy, type PreviewState } from './copy'
 import { exampleReport } from './example'
 import { DiagnosisReport } from './report'
+import { OfflineG1Form } from './offline-g1-form'
+import { ConnectedPreviewForm } from './connected-preview-form'
 
 const sectionWidth = 'mx-auto max-w-[1200px] px-4 sm:px-5 md:px-10'
 const primary = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-lime px-4 py-2 text-sm font-semibold text-ink hover:bg-lime/80 focus-visible:outline-2 focus-visible:outline-offset-2'
@@ -86,7 +89,7 @@ function AddressPreview() {
   )
 }
 
-function Walkthrough() {
+function Walkthrough({ connectedPreview }: { connectedPreview: boolean }) {
   const { lang } = useLang()
   const zh = lang === 'zh'
   const [state, setState] = useState<PreviewState | null>(null)
@@ -103,9 +106,11 @@ function Walkthrough() {
           </p>
         </div>
         <div className="mt-5 flex flex-wrap items-center gap-3">
-          <button type="button" className={primary} onClick={() => setState('completed')} data-testid="diagnosis-open-report">
+          {connectedPreview ? <Link href={diagnosisReportPath + '?example=1'} className={primary} prefetch={false}>
             {zh ? '查看报告示例' : 'View sample report'}<ArrowRight className="size-4 shrink-0" aria-hidden="true" />
-          </button>
+          </Link> : <button type="button" className={primary} onClick={() => setState('completed')} data-testid="diagnosis-open-report">
+            {zh ? '查看报告示例' : 'View sample report'}<ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+          </button>}
           <button type="button" className={secondary} onClick={() => setState('accepted')} data-testid="diagnosis-start-example">
             {zh ? '从申请开始演示' : 'Walk through from request'}
           </button>
@@ -135,14 +140,24 @@ function Walkthrough() {
   )
 }
 
-export function DiagnosisPreview() {
+export function DiagnosisPreview({ offlineG1 = false, connectedPreview = false }: {
+  offlineG1?: boolean; connectedPreview?: boolean
+}) {
   const { lang } = useLang()
   const zh = lang === 'zh'
+  const title = connectedPreview ? (zh ? '诊断您的外贸网站' : 'Check your B2B website')
+    : offlineG1 ? (zh ? '本地 G1 离线联调' : 'Local G1 offline integration')
+    : (zh ? '检查网址是否符合输入要求' : 'Check the website address')
+  const scope = connectedPreview
+    ? (zh ? '确认授权后，网址会交由诊断服务处理。您可以用当前会话或一次性恢复码查看任务。' : 'Once you confirm authorization, the service receives your website address. Use this session or a one-time recovery code to return to the task.')
+    : offlineG1
+      ? (zh ? '本地联调仅向隔离服务发送获准的合成测试申请。' : 'The local test sends approved synthetic requests to an isolated service.')
+      : (zh ? '预览中的网址仅在当前页面验证格式，不提交、保存或访问。' : 'In preview, the address stays on this page for format validation. It is not submitted, stored or visited.')
   return (
     <PageShell>
       <section aria-labelledby="diagnosis-title" className="bg-ink text-ivory">
         <div className={sectionWidth + ' py-8 sm:py-12 lg:py-16'}>
-          <p className="inline-flex items-center gap-2 text-sm font-semibold text-lime"><Info aria-hidden="true" className="size-4 shrink-0" />{zh ? '功能预览 · 自动诊断尚未开放' : 'Feature preview · Live checks are not open'}</p>
+          <p className="inline-flex items-center gap-2 text-sm font-semibold text-lime"><Info aria-hidden="true" className="size-4 shrink-0" />{connectedPreview ? (zh ? '自动诊断预览' : 'Automated diagnostic preview') : (zh ? '功能预览 · 自动诊断尚未开放' : 'Feature preview · Live checks are not open')}</p>
           <h1 id="diagnosis-title" className="mt-3 max-w-4xl text-balance text-[30px] font-semibold leading-tight sm:text-5xl">
             {zh ? '外贸独立站免费预诊断' : 'Free B2B website pre-diagnostic'}
           </h1>
@@ -154,14 +169,19 @@ export function DiagnosisPreview() {
 
       <div className={sectionWidth + ' grid items-start gap-5 py-7 sm:py-10 lg:grid-cols-[minmax(0,1.22fr)_minmax(0,0.78fr)]'}>
         <section aria-labelledby="diagnosis-input-title" className="min-w-0 rounded-xl border border-ink/15 bg-white p-4 sm:p-6">
-          <h2 id="diagnosis-input-title" className="mb-4 text-xl font-semibold">{zh ? '检查网址是否符合输入要求' : 'Check the website address'}</h2>
-          <AddressPreview />
+          <h2 id="diagnosis-input-title" className="mb-4 text-xl font-semibold">{title}</h2>
+          {connectedPreview ? <ConnectedPreviewForm /> : offlineG1 ? <OfflineG1Form /> : <>
+            <p data-testid="vrae-preview-pending" className="mb-4 rounded-md bg-mist/55 px-3 py-2 text-sm leading-relaxed text-ink/80">
+              {zh ? '自动诊断暂未开放。当前可检查网址格式和查看报告示例。' : 'Automated diagnosis is currently closed. You can check address formatting and explore a sample report.'}
+            </p>
+            <AddressPreview />
+          </>}
         </section>
         <aside aria-labelledby="diagnosis-scope-title" className="rounded-xl border border-ink/15 bg-mist/35 p-4 sm:p-6">
           <h2 id="diagnosis-scope-title" className="flex items-center gap-2 text-lg font-semibold"><CircleHelp className="size-5 shrink-0" aria-hidden="true" />{zh ? '能检查什么' : 'What the check covers'}</h2>
           <ul className="mt-3 list-outside list-disc space-y-2 pl-5 text-sm leading-relaxed text-ink/80">
             <li>{zh ? '正式开放后，预诊断仅检查获准的公开页面及其基本结构，不登录后台或修改网站。' : 'Once open, the check will cover permitted public pages and their basic structure, without signing in or changing the site.'}</li>
-            <li>{zh ? '预览中的网址仅在当前页面验证格式，不提交、保存或访问。' : 'In preview, the address stays on this page for format validation. It is not submitted, stored or visited.'}</li>
+            <li>{scope}</li>
           </ul>
           <div className="mt-4 flex flex-wrap gap-x-3 gap-y-2 text-sm">
             <Link href="/privacy" className={textLink}>{zh ? '隐私政策' : 'Privacy policy'}</Link>
@@ -170,7 +190,7 @@ export function DiagnosisPreview() {
         </aside>
       </div>
 
-      <Walkthrough />
+      <Walkthrough connectedPreview={connectedPreview} />
 
       <section aria-labelledby="diagnosis-contact-title" className="border-t border-ink/10">
         <div className={sectionWidth + ' py-8 sm:py-12'}>
