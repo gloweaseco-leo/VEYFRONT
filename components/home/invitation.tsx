@@ -29,7 +29,7 @@ export function SiteFooter(){
   <div className="mx-auto max-w-[1440px] space-y-6 px-5 py-10 md:px-10">
    <div className="flex flex-wrap items-start justify-between gap-5">
     <div className="space-y-3"><Link href="/" aria-label="VEYFRONT — Home" className="inline-flex"><Logo tone="dark"/></Link>
-    <p className="max-w-lg text-sm leading-relaxed text-ivory/65">{zh?'为中国制造业和B2B外贸企业建设、升级和维护海外官网。':'Building and improving digital business websites for global B2B buyers.'}</p>
+    <p className="max-w-lg text-sm leading-relaxed text-ivory/65">{zh?'为制造业和B2B外贸企业建设、升级和维护海外官网。':'Building and improving digital business websites for global B2B buyers.'}</p>
     </div>
     <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
       {zh && wecomQrPath() && <Link href="/contact#wechat" className="inline-flex min-h-11 items-center text-sm font-semibold text-lime underline underline-offset-4">企业微信咨询</Link>}

@@ -22,7 +22,7 @@ const pen:[string,string][]=[
  ['Contact','For privacy or data requests, use the privacy-request form or hello@veyfront.com. The legal operating entity and required jurisdiction-specific disclosures still need verification before formal commercial contracting.']
 ]
 const tzh:[string,string][]=[
- ['网站与服务','VEYFRONT 为中国制造业和B2B外贸企业提供海外官网新建、常规旧站升级，以及可选的网站维护与内容优化服务，并接受客户咨询。'],
+ ['网站与服务','VEYFRONT 为制造业和B2B外贸企业提供海外官网新建、常规旧站升级，以及可选的网站维护与内容优化服务，并接受客户咨询。'],
  ['价格与签约',`官网公开的三档标准项目参考价分别为：${publicOffers.plans.start.titleZh} ¥${publicOffers.plans.start.priceDisplay}、${publicOffers.plans.sales.titleZh} ¥${publicOffers.plans.sales.priceDisplay}、${publicOffers.plans.growth.titleZh} ¥${publicOffers.plans.growth.priceDisplay}。均包含约定网站建设、首年基础托管及3个月服务。实际交付范围、税费、特殊需求、续费和付款安排以双方签约前确认的书面报价和合同为准。提交咨询不代表签约或付款。`],
  ['展示示例','Hartwell 是明确标注的虚构工业网站设计示例，不是真实客户案例，也不是自动生成或真实诊断结果。搜索排名、流量或成交均不作保证。'],
  ['网站及素材权利','VEYFRONT 的品牌标识和展示素材受适用权利约束。客户网站的域名控制、约定源码和素材移交、第三方许可及可迁移条件，在签约时明确。'],

@@ -23,7 +23,7 @@ export function WecomContactCard({ placement = 'contact', compact = false }: {
   return <section id={compact ? undefined : 'wechat'} aria-label={zh ? '企业微信咨询' : 'WeCom contact'}
     className="scroll-mt-6 rounded-xl border border-ink/15 bg-white p-4 sm:h-full sm:bg-mist/45 sm:p-8">
     <p className="flex items-center gap-2 font-mono text-xs font-semibold tracking-[0.14em] text-ink/70">
-      <MessageCircle className="size-4" aria-hidden="true"/> {zh ? '微信咨询 / WECOM' : 'WECOM / CHINA'}
+      <MessageCircle className="size-4" aria-hidden="true"/> {zh ? '微信咨询 / WECOM' : 'WECOM / CONTACT'}
     </p>
     <h2 className="mt-3 text-xl font-semibold leading-snug sm:mt-4 sm:text-2xl">{zh ? '先聊聊您的外贸网站需求' : 'Talk to VEYFRONT'}</h2>
     <p className="mt-2 text-[14px] leading-[1.7] text-ink/75 sm:mt-3 sm:text-sm">{zh ? '不确定需要新建网站还是改版升级？告诉我们您的产品和目标市场，可以先聊聊。' : 'Use the project form or email for a written project discussion.'}</p>
