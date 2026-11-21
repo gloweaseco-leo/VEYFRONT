@@ -24,6 +24,8 @@ jobs:
       - run: pnpm check:security
       - name: Verify the private VRAE contracts over local mutual TLS
         run: node --test tests/vrae-g1-server.test.mjs tests/vrae-preview-client.test.mjs
+      - name: Verify the synced VRAE consumer contract
+        run: node --test lib/vrae-consumer/reference.test.mjs
       - run: pnpm check:w0w1
       - run: node scripts/check-veyfront-brand.mjs
       - run: pnpm exec tsc --noEmit
