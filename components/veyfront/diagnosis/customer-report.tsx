@@ -42,7 +42,7 @@ function ReportBody({ data, lang }: { data: ReportDocument; lang: Lang }) {
   function Sources({ ids }: { ids: string[] }) {
     return <div className="flex flex-wrap gap-2 text-sm">
       {pages.map((page, index) => ids.includes(page.id) && <a key={page.id} href={`#evidence-${index + 1}`}
-        className="inline-flex min-w-0 items-center gap-1.5 rounded-md bg-mist/65 px-2.5 py-1.5 font-medium underline decoration-ink/40 underline-offset-4">
+        className="vf-report-source inline-flex min-w-0 items-center gap-1.5 rounded-md bg-mist/65 px-2.5 py-1.5 font-medium underline decoration-ink/40 underline-offset-4">
         {sourceName(page)}<ArrowDown className="size-3.5 shrink-0 vf-report-web-only" aria-hidden="true" />
       </a>)}
     </div>
@@ -100,7 +100,7 @@ function ReportBody({ data, lang }: { data: ReportDocument; lang: Lang }) {
 
     <section className={panel + ' space-y-3'} aria-labelledby="report-checks">
       <h2 id="report-checks" className={heading}>{zh ? '五个采购环节' : 'Five buyer tasks'}</h2>
-      <div className="divide-y divide-ink/15">
+      <div className="vf-report-task-list divide-y divide-ink/15">
         {dimensions.map(({ task, items }) => {
           const known = items.filter(item => item.result === 'PASS' || item.result === 'FAIL_WITH_EVIDENCE')
           const limits = items.filter(item => item.result !== 'PASS' && item.result !== 'FAIL_WITH_EVIDENCE')
@@ -130,7 +130,7 @@ function ReportBody({ data, lang }: { data: ReportDocument; lang: Lang }) {
             <h3 className="text-base font-semibold">{sourceName(page)}</h3>
             {findings.length > 0 && <ul className="space-y-2 text-sm leading-relaxed">{findings.map(item => {
               const excerpt = data.sample?.evidence[item.id]
-              return <li key={item.id}>{item.text}{excerpt && <blockquote className="mt-1 whitespace-pre-wrap border-l-2 border-ink/20 pl-3">
+              return <li key={item.id} className={excerpt ? '' : 'vf-report-web-only'}><span className="vf-report-web-only">{item.text}</span>{excerpt && <blockquote className="mt-1 whitespace-pre-wrap border-l-2 border-ink/20 pl-3">
                 <span className="block font-medium">{excerpt.location}</span>{excerpt.excerpt}
               </blockquote>}</li>
             })}</ul>}

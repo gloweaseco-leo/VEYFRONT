@@ -9,6 +9,11 @@
 }
 
 @media print {
+  html:has(.vf-customer-report-page),
+  body:has(.vf-customer-report-page) {
+    background: white;
+  }
+
   body:has(.vf-customer-report-page) > :not(.vf-customer-report-page) {
     display: none !important;
   }
@@ -38,6 +43,17 @@
   .vf-report-content .vf-report-panel {
     padding: 9pt;
     border-radius: 4pt;
+  }
+
+  .vf-report-content .vf-report-task-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 12pt;
+  }
+
+  .vf-report-content .vf-report-source {
+    padding: 0;
+    background: transparent;
   }
 
   .vf-customer-report-page .vf-report-hero {
