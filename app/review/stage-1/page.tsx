@@ -35,9 +35,9 @@ const COMPARISON: [string, string, string][] = [
 ]
 
 const PLACEHOLDERS = [
-  'Hartwell Fluid Systems — fictional sample company (both Before and After sites are hand-built mocks).',
+  'Hartwell Fluid Systems — design example with hand-built Before and After sites.',
   'Valve product photo — AI-generated demo image, not a real product.',
-  'Product specs, model numbers, contact details — fictional and non-functional.',
+  'Product specs, model numbers and contact details — sample data for display only.',
   'Product and Contact page tabs — locked until authorized source pages exist.',
   'Sign-up / analysis continuation — simulated UI state only.',
   'Navigation links (Transformations, How It Works, Pricing, Sign In) — visual placeholders.',

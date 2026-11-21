@@ -51,13 +51,13 @@ def run():
     if not executable:
         raise RuntimeError("Chromium binary not installed")
     log = open(OUT / "server.log", "w", encoding="utf-8")
-    server = subprocess.Popen(["pnpm", "start", "-p", "3100"], stdout=log, stderr=subprocess.STDOUT)
+    server = subprocess.Popen(["pnpm", "start", "-p", "3100", "-H", "127.0.0.1"], stdout=log, stderr=subprocess.STDOUT)
     try:
         wait_server()
         with sync_playwright() as p:
-            browser = p.chromium.launch(executable_path=executable, headless=True,
-                                        args=["--no-sandbox"])
             for width in WIDTHS:
+                browser = p.chromium.launch(executable_path=executable, headless=True,
+                                            args=["--no-sandbox"])
                 context = browser.new_context(viewport={"width": width, "height": 860}, device_scale_factor=1)
                 page = context.new_page()
                 js_errors = []
@@ -127,8 +127,7 @@ def run():
                             page.screenshot(path=str(OUT / f"{width}_{route.strip('/').replace('/','_') or 'home'}_zh.png"),
                                             full_page=True, animations="disabled", timeout=30000)
                 check(not js_errors, f"{width} JS errors", js_errors[:5])
-                context.close()
-            browser.close()
+                browser.close()
     finally:
         server.terminate()
         try:
@@ -140,6 +139,8 @@ def run():
 if __name__ == "__main__":
     try:
         run()
+        from check_diagnosis_preview import run as check_diagnosis_preview
+        check_diagnosis_preview()
     except Exception as e:
         failures.append("Browser harness: " + repr(e))
     result = {"status": "PASS" if not failures else "FAIL",

@@ -1,3 +1,4 @@
+import { diagnosisPreviewEnabled } from '@/lib/diagnosis-preview'
 import { put } from '@vercel/blob'
 import { sendLeadAlert } from '@/lib/lead-alert'
 import { sendLeadConfirmation } from '@/lib/lead-confirmation'
@@ -42,6 +43,8 @@ function clean(value: unknown, max: number): string | null {
 }
 
 export async function POST(request: NextRequest) {
+  // VF-A review builds may inherit the live store token. Refuse writes before reading the body.
+  if (diagnosisPreviewEnabled) return reject('Inquiry intake is disabled on this preview.', 403)
   // Only the first-party browser application may submit. Spoofed Origins remain possible
   // outside browsers; this check is not bot authentication or durable rate limiting.
   if (!isSameOrigin(request)) return reject('Origin not allowed.', 403)
