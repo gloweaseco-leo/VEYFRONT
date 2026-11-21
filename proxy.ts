@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { diagnosisPath, diagnosisPreviewEnabled } from '@/lib/diagnosis-preview'
+import { diagnosisPath, diagnosisPreviewEnabled, diagnosisReportPath } from '@/lib/diagnosis-preview'
 
 /**
  * Locale Architecture V2.0 (Preview)
@@ -20,7 +20,7 @@ export function proxy(request: NextRequest) {
 
   const raw = pathname === '/zh' || pathname === '/en' ? '/' : pathname.slice(3)
   const suffix = raw.length > 1 && raw.endsWith('/') ? raw.slice(0, -1) : raw
-  if (!publicPages.has(suffix) && !(diagnosisPreviewEnabled && suffix === diagnosisPath)) return NextResponse.next()
+  if (!publicPages.has(suffix) && !(diagnosisPreviewEnabled && (suffix === diagnosisPath || suffix === diagnosisReportPath))) return NextResponse.next()
 
   const target = request.nextUrl.clone()
   target.pathname = suffix

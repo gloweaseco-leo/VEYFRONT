@@ -6,6 +6,7 @@ import Link from '@/components/l2m/localized-link'
 import { PageShell } from '@/components/site/page-shell'
 import { useLang } from '@/lib/i18n'
 import { diagnosisAddressStatus } from '@/lib/diagnosis-presentation'
+import { diagnosisReportPath } from '@/lib/diagnosis-preview'
 import { previewStates, stateCopy, type PreviewState } from './copy'
 import { exampleReport } from './example'
 import { DiagnosisReport } from './report'
@@ -88,7 +89,7 @@ function AddressPreview() {
   )
 }
 
-function Walkthrough() {
+function Walkthrough({ connectedPreview }: { connectedPreview: boolean }) {
   const { lang } = useLang()
   const zh = lang === 'zh'
   const [state, setState] = useState<PreviewState | null>(null)
@@ -105,9 +106,11 @@ function Walkthrough() {
           </p>
         </div>
         <div className="mt-5 flex flex-wrap items-center gap-3">
-          <button type="button" className={primary} onClick={() => setState('completed')} data-testid="diagnosis-open-report">
+          {connectedPreview ? <Link href={diagnosisReportPath + '?example=1'} className={primary} prefetch={false}>
             {zh ? '查看报告示例' : 'View sample report'}<ArrowRight className="size-4 shrink-0" aria-hidden="true" />
-          </button>
+          </Link> : <button type="button" className={primary} onClick={() => setState('completed')} data-testid="diagnosis-open-report">
+            {zh ? '查看报告示例' : 'View sample report'}<ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+          </button>}
           <button type="button" className={secondary} onClick={() => setState('accepted')} data-testid="diagnosis-start-example">
             {zh ? '从申请开始演示' : 'Walk through from request'}
           </button>
@@ -187,7 +190,7 @@ export function DiagnosisPreview({ offlineG1 = false, connectedPreview = false }
         </aside>
       </div>
 
-      <Walkthrough />
+      <Walkthrough connectedPreview={connectedPreview} />
 
       <section aria-labelledby="diagnosis-contact-title" className="border-t border-ink/10">
         <div className={sectionWidth + ' py-8 sm:py-12'}>
