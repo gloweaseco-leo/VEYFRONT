@@ -32,7 +32,7 @@ export function Hero() {
       {zh?'让海外客户更容易找到您的产品、了解您的实力，并向您发起询盘。':'Building Digital Frontiers for Global Business.'}
      </h1>
      <p className="max-w-2xl text-pretty text-[15px] leading-[1.75] text-ivory/80 sm:text-lg sm:leading-relaxed">
-      {zh?'我们为中国制造业和B2B外贸企业新建、升级中英文官网，整合产品展示、企业实力、搜索基础与在线询盘，并提供首年托管和约定的后续服务。':'Build a new international B2B website or improve your existing one. Professional design, SEO-Native foundations, buyer-ready content and real inquiry paths — delivered together.'}
+      {zh?'我们为制造业和B2B外贸企业新建、升级中英文官网，整合产品展示、企业实力、搜索基础与在线询盘，并提供首年托管和约定的后续服务。':'Build a new international B2B website or improve your existing one. Professional design, SEO-Native foundations, buyer-ready content and real inquiry paths — delivered together.'}
      </p>
      <div className="grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap sm:gap-3" aria-label={zh?'咨询或查看网站升级效果':'Talk to us or explore the redesign'}>
        <Link href="/contact" className="inline-flex min-h-12 items-center justify-center gap-1.5 rounded-lg bg-lime px-2 text-[13px] font-semibold sm:gap-2 sm:rounded-md sm:px-5 sm:text-base text-ink transition-colors hover:bg-lime/90">
